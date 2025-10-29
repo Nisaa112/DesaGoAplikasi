@@ -1,3 +1,5 @@
+// [PERUBAHAN 1] Import halaman detail yang baru
+import 'package:desa_go_aplikasi/page/detail_kegiatan_page.dart'; 
 import 'package:flutter/material.dart';
 
 class KegiatanPage extends StatefulWidget {
@@ -8,23 +10,39 @@ class KegiatanPage extends StatefulWidget {
 }
 
 class _KegiatanPageState extends State<KegiatanPage> {
-  // 0 = Berlangsung, 1 = Mendatang, 2 = Selesai
   int _selectedFilterIndex = 0;
 
-  // Data dummy untuk semua kegiatan
-  final List<Map<String, String>> _allKegiatan = [
-    {'nama': 'Ronda Malam Sektor A', 'tanggal': 'Rabu, 16 Okt 2025', 'waktu': '00:00 - 02:00', 'status': 'Berlangsung'},
-    {'nama': 'Rapat', 'tanggal': 'Sabtu, 18 Okt 2025', 'waktu': '12:00 - 14:00', 'status': 'Akan Datang'},
-    {'nama': 'Kerja Bakti', 'tanggal': 'Selasa, 15 Okt 2025', 'waktu': '07:00 - 10:00', 'status': 'Selesai'},
-    {'nama': 'Posyandu', 'tanggal': 'Rabu, 22 Okt 2025', 'waktu': '08:00 - 10:00', 'status': 'Akan Datang'},
+  // [PERUBAHAN 2] Lengkapi data dummy dan ubah tipenya ke <String, dynamic>
+  final List<Map<String, dynamic>> _allKegiatan = [
+    {
+      'nama': 'Ronda Malam Sektor A', 'title': 'Ronda Malam Sektor A', 'tanggal': 'Rabu, 16 Okt 2025', 'waktu': '00:00 - 02:00', 'status': 'Berlangsung',
+      'durasi': 'Durasi 2 Jam', 'lokasi': 'Pos Ronda Sektor A', 'pj': 'Bapak RT 01', 'detail_kegiatan': 'Menjaga keamanan lingkungan sekitar Sektor A.',
+      'deskripsi': 'Kegiatan ronda malam rutin untuk meningkatkan keamanan dan ketertiban di lingkungan Sektor A. Diharapkan partisipasi aktif dari seluruh warga.'
+    },
+    {
+      'nama': 'Rapat', 'title': 'Rapat Warga Bulanan', 'tanggal': 'Sabtu, 18 Okt 2025', 'waktu': '12:00 - 14:00', 'status': 'Akan Datang',
+      'durasi': 'Durasi 2 Jam', 'lokasi': 'Balai Warga', 'pj': 'Ketua RW', 'detail_kegiatan': 'Membahas agenda kebersihan dan persiapan acara 17 Agustus.',
+      'deskripsi': 'Rapat bulanan yang wajib dihadiri oleh perwakilan setiap RT untuk koordinasi kegiatan desa.'
+    },
+    {
+      'nama': 'Kerja Bakti', 'title': 'Kerja Bakti Bersih Desa', 'tanggal': 'Selasa, 15 Okt 2025', 'waktu': '07:00 - 10:00', 'status': 'Selesai',
+      'durasi': 'Durasi 3 Jam', 'lokasi': 'Area Sekitar Sungai', 'pj': 'Kepala Desa', 'detail_kegiatan': 'Membersihkan sampah di area sungai dan memperbaiki saluran air.',
+      'deskripsi': 'Kegiatan gotong royong untuk menjaga kebersihan dan keindahan desa kita bersama.'
+    },
+    {
+      'nama': 'Posyandu', 'title': 'Posyandu Balita Melati 5', 'tanggal': 'Rabu, 22 Okt 2025', 'waktu': '08:00 - 10:00', 'status': 'Akan Datang',
+      'durasi': 'Durasi 2 Jam', 'lokasi': 'Balai RT 05/RW 06', 'pj': 'Shaqilla salsabila', 'detail_kegiatan': 'penimbangan berat badan dan pengukuran tinggi, Pemberian vitamin A dan Imunisasi, Penyuluhan gizi seimbang untuk balita',
+      'deskripsi': 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.'
+    },
   ];
 
-  List<Map<String, String>> _filteredKegiatan = [];
+  // Ubah juga tipe list ini
+  List<Map<String, dynamic>> _filteredKegiatan = [];
 
   @override
   void initState() {
     super.initState();
-    _filterKegiatan(); // Panggil filter saat halaman pertama kali dibuka
+    _filterKegiatan();
   }
 
   void _filterKegiatan() {
@@ -47,6 +65,7 @@ class _KegiatanPageState extends State<KegiatanPage> {
 
   @override
   Widget build(BuildContext context) {
+    // Sisa build method tidak berubah
     return Scaffold(
       backgroundColor: const Color(0xFF4A4E8A),
       appBar: AppBar(
@@ -90,6 +109,7 @@ class _KegiatanPageState extends State<KegiatanPage> {
   }
 
   Widget _buildFilterChips() {
+    // Tidak ada perubahan di sini
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 16.0),
       child: Row(
@@ -104,6 +124,7 @@ class _KegiatanPageState extends State<KegiatanPage> {
   }
 
   Widget _buildChip(String label, int index) {
+    // Tidak ada perubahan di sini
     bool isSelected = _selectedFilterIndex == index;
     return GestureDetector(
       onTap: () {
@@ -129,8 +150,8 @@ class _KegiatanPageState extends State<KegiatanPage> {
     );
   }
 
-  Widget _buildKegiatanCard(Map<String, String> kegiatan) {
-    // Helper untuk menentukan warna & teks badge
+  Widget _buildKegiatanCard(Map<String, dynamic> kegiatan) {
+    // Tidak ada perubahan pada logic di dalam method ini
     Map<String, dynamic> getStatusInfo(String status) {
       switch (status) {
         case 'Berlangsung':
@@ -146,56 +167,67 @@ class _KegiatanPageState extends State<KegiatanPage> {
     
     var statusInfo = getStatusInfo(kegiatan['status']!);
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16.0),
-      padding: const EdgeInsets.all(16.0),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade200,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            kegiatan['nama']!,
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
+    // [PERUBAHAN 3] Bungkus Container dengan GestureDetector untuk navigasi
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => DetailKegiatanPage(kegiatan: kegiatan),
           ),
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 8.0),
-            child: Divider(color: Colors.grey),
-          ),
-          Row(
-            children: [
-              Icon(Icons.calendar_today_outlined, color: Colors.grey.shade600, size: 18),
-              const SizedBox(width: 8),
-              Text(kegiatan['tanggal']!, style: TextStyle(color: Colors.grey.shade700)),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  Icon(Icons.access_time, color: Colors.grey.shade600, size: 18),
-                  const SizedBox(width: 8),
-                  Text(kegiatan['waktu']!, style: TextStyle(color: Colors.grey.shade700)),
-                ],
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: statusInfo['color'],
-                  borderRadius: BorderRadius.circular(15),
+        );
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 16.0),
+        padding: const EdgeInsets.all(16.0),
+        decoration: BoxDecoration(
+          color: Colors.grey.shade200,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              kegiatan['nama']!,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
+            ),
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 8.0),
+              child: Divider(color: Colors.grey),
+            ),
+            Row(
+              children: [
+                Icon(Icons.calendar_today_outlined, color: Colors.grey.shade600, size: 18),
+                const SizedBox(width: 8),
+                Text(kegiatan['tanggal']!, style: TextStyle(color: Colors.grey.shade700)),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.access_time, color: Colors.grey.shade600, size: 18),
+                    const SizedBox(width: 8),
+                    Text(kegiatan['waktu']!, style: TextStyle(color: Colors.grey.shade700)),
+                  ],
                 ),
-                child: Text(
-                  statusInfo['text'],
-                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: statusInfo['color'],
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                  child: Text(
+                    statusInfo['text'],
+                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
+                  ),
                 ),
-              ),
-            ],
-          ),
-        ],
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

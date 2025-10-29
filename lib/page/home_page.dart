@@ -1,3 +1,5 @@
+import 'package:desa_go_aplikasi/page/kegiatan_page.dart';
+import 'package:desa_go_aplikasi/page/profil_page.dart';
 import 'package:desa_go_aplikasi/widgets/wave_clipper.dart'; // Pastikan path ini benar
 import 'package:flutter/material.dart';
 
@@ -10,7 +12,7 @@ class HomePage extends StatelessWidget {
       backgroundColor: Colors.white,
       body: SingleChildScrollView(
         // Tambahkan physics ini jika Anda ingin halaman selalu bisa di-scroll
-        // physics: const AlwaysScrollableScrollPhysics(),
+        physics: const AlwaysScrollableScrollPhysics(),
         child: Padding(
           padding: const EdgeInsets.fromLTRB(20, 60, 20, 20),
           child: Column(
@@ -34,92 +36,120 @@ class HomePage extends StatelessWidget {
   }
 
   Widget _buildHeader() {
-    return Row(
-      children: [
-        const CircleAvatar(
-          radius: 28,
-          backgroundColor: Color(0xFF4A4E8A),
-          child: Icon(Icons.person_outline, color: Colors.white, size: 32),
-        ),
-        const SizedBox(width: 12),
-        const Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+    return Builder(
+      builder: (context) {
+        return Row(
           children: [
-            Text(
-              'Hello,',
-              style: TextStyle(color: Colors.grey, fontSize: 16),
-            ),
-            Text(
-              'Nama Pengguna',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
-            ),
-          ],
-        ),
-        const Spacer(),
-        Stack(
-          alignment: Alignment.topRight,
-          children: [
-            const Icon(Icons.notifications_none, size: 30, color: Colors.grey),
-            Container(
-              margin: const EdgeInsets.only(top: 2, right: 2),
-              width: 15,
-              height: 15,
-              decoration: BoxDecoration(
-                color: Colors.red,
-                shape: BoxShape.circle,
-                border: Border.all(color: Colors.white, width: 1.5),
-              ),
-              child: const Center(
-                child: Text('1', style: TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold)),
+            GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const ProfilePage()),
+                );
+              },
+              child: const CircleAvatar(
+                radius: 28,
+                backgroundColor: Color(0xFF4A4E8A),
+                child: Icon(Icons.person_outline, color: Colors.white, size: 32),
               ),
             ),
+            const SizedBox(width: 12),
+            const Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Hello,',
+                  style: TextStyle(color: Colors.grey, fontSize: 16),
+                ),
+                Text(
+                  'Nama Pengguna',
+                  style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87),
+                ),
+              ],
+            ),
+            const Spacer(),
+            Stack(
+              alignment: Alignment.topRight,
+              children: [
+                const Icon(Icons.notifications_none, size: 30, color: Colors.grey),
+                Container(
+                  margin: const EdgeInsets.only(top: 2, right: 2),
+                  width: 15,
+                  height: 15,
+                  decoration: BoxDecoration(
+                    color: Colors.red,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white, width: 1.5),
+                  ),
+                  child: const Center(
+                    child: Text('1',
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 8,
+                            fontWeight: FontWeight.bold)),
+                  ),
+                ),
+              ],
+            ),
           ],
-        ),
-      ],
+        );
+      },
     );
   }
 
   Widget _buildScheduleCard(BuildContext context) {
-    return ClipRRect(
+    return InkWell(
+      onTap: () {
+        Navigator.push(
+          context, 
+          MaterialPageRoute(builder: (context) => const KegiatanPage())  
+        );
+      },
       borderRadius: BorderRadius.circular(24),
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: const Color(0xFF7A73C2),
-          borderRadius: BorderRadius.circular(24),
-        ),
-        child: Stack(
-          clipBehavior: Clip.none,
-          children: [
-            Positioned(
-              right: -20,
-              bottom: -40,
-              child: Image.asset(
-                'assets/icon_jam.png', // Ganti dengan path aset Anda
-                height: 130,
-              ),
-            ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Jadwal Kegiatan', style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w800)),
-                const Text('Hari ini', style: TextStyle(color: Colors.white70, fontSize: 14)),
-                const SizedBox(height: 16),
-                _buildScheduleItem('Pos Ronda', 'Pukul 21.00, Lokasi di Pos Ronda'),
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 0),
-                  child: Divider(color: Colors.white24),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(24),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: const Color(0xFF7A73C2),
+            borderRadius: BorderRadius.circular(24),
+          ),
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Positioned(
+                right: -20,
+                bottom: -40,
+                child: Image.asset(
+                  'assets/icon_jam.png', // Ganti dengan path aset Anda
+                  height: 130,
                 ),
-                _buildScheduleItem('Posyandu', 'Pukul 10.00, Lokasi di Puskesmas Citra'),
-              ],
-            ),
-            const Positioned(
-              top: 0,
-              right: 0,
-              child: Icon(Icons.arrow_forward_ios, color: Colors.white54, size: 16),
-            ),
-          ],
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Jadwal Kegiatan', style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w800)),
+                  const Text('Hari ini', style: TextStyle(color: Colors.white70, fontSize: 14)),
+                  const SizedBox(height: 16),
+                  _buildScheduleItem('Pos Ronda', 'Pukul 21.00, Lokasi di Pos Ronda'),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 0),
+                    child: Divider(color: Colors.white24),
+                  ),
+                  _buildScheduleItem('Posyandu', 'Pukul 10.00, Lokasi di Puskesmas Citra'),
+                ],
+              ),
+              const Positioned(
+                top: 0,
+                right: 0,
+                child: Icon(Icons.arrow_forward_ios, color: Colors.white54, size: 16),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -238,6 +268,8 @@ class HomePage extends StatelessWidget {
         _buildHistoryItem('Posyandu', 'Pukul 10.00, Lokasi di Puskesmas Sehat', 'Selesai Pukul 12.00'),
         const SizedBox(height: 12),
         _buildHistoryItem('Posyandu', 'Pukul 10.00, Lokasi di Puskesmas Sehat', 'Selesai Pukul 12.00'),
+        const SizedBox(height: 12),
+        _buildHistoryItem('Posyandu', 'Pukul 10.00, Lokasi di Puskesmas Sehat', 'Selesai Pukul 12.00'),
       ],
     );
   }
@@ -260,7 +292,8 @@ class HomePage extends StatelessWidget {
               Text(status, style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
             ],
           ),
-          const SizedBox(height: 4),
+          // const SizedBox(height: 4),
+          Divider(color: Colors.grey),
           Text(subtitle, style: TextStyle(color: Colors.grey.shade600, fontSize: 14)),
         ],
       ),

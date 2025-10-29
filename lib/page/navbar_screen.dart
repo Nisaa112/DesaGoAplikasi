@@ -1,9 +1,9 @@
+import 'package:desa_go_aplikasi/page/home_page.dart';
 import 'package:desa_go_aplikasi/page/info_warga_page.dart';
 import 'package:desa_go_aplikasi/page/kegiatan_page.dart';
 import 'package:desa_go_aplikasi/page/keuangan_page.dart';
 import 'package:desa_go_aplikasi/page/struktur_page.dart';
 import 'package:flutter/material.dart';
-import 'home_page.dart';
 
 class NavbarScreen extends StatefulWidget {
   const NavbarScreen({super.key});
@@ -13,12 +13,12 @@ class NavbarScreen extends StatefulWidget {
 }
 
 class _NavbarScreenState extends State<NavbarScreen> {
-  int _selectedIndex = 2; 
+  int _selectedIndex = 0; 
 
   static const List<Widget> _pages = <Widget>[
     HomePage(),
-    InfoWargaPage(),
-    StrukturPage(),
+    InfoWargaPage(), 
+    StrukturPage(),  
     KegiatanPage(),
     KeuanganPage(),
   ];
@@ -32,6 +32,8 @@ class _NavbarScreenState extends State<NavbarScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
+
       body: _pages.elementAt(_selectedIndex),
       bottomNavigationBar: _buildBottomNavBar(),
     );
@@ -44,7 +46,7 @@ class _NavbarScreenState extends State<NavbarScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
         decoration: BoxDecoration(
           color: const Color(0xFF2C2C2C),
-          borderRadius: BorderRadius.circular(100),
+          borderRadius: BorderRadius.circular(50), 
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.15),

@@ -1,3 +1,4 @@
+import 'package:desa_go_aplikasi/page/identitas_warga_page.dart';
 import 'package:flutter/material.dart';
 
 class InfoWargaPage extends StatelessWidget {
@@ -5,11 +6,12 @@ class InfoWargaPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Data ini sekarang akan digunakan untuk dikirim ke halaman detail
     final List<Map<String, String>> wargaList = [
-      {'nama': 'Annisa Aulia', 'alamat': 'Gg. Harapan 2, Jl. Arciko'},
-      {'nama': 'Shaqilla Salsabila', 'alamat': 'Gg. Harapan 2, Jl. Arciko'},
-      {'nama': 'Shalwa Ainnur', 'alamat': 'Gg. Harapan 2, Jl. Arciko'},
-      {'nama': 'Sania Eka Wardah', 'alamat': 'Gg. Harapan 2, Jl. Arciko'},
+      {'nama': 'Annisa Aulia Firdaus', 'alamat': 'Gg. Bidan Tati Jambudipa Rt04/Rw03 Warungkondang, Cianjur, 43261', 'nik': '32898366529008', 'telp': '08123455678'},
+      {'nama': 'Shaqilla Salsabila', 'alamat': 'Gg. Harapan 2, Jl. Arciko', 'nik': '3201234567890123', 'telp': '081222222222'},
+      {'nama': 'Shalwa Ainnur', 'alamat': 'Gg. Harapan 2, Jl. Arciko', 'nik': '3201234567890456', 'telp': '081333333333'},
+      {'nama': 'Sania Eka Wardah', 'alamat': 'Gg. Harapan 2, Jl. Arciko', 'nik': '3201234567890789', 'telp': '081444444444'},
     ];
 
     return Scaffold(
@@ -60,6 +62,12 @@ class InfoWargaPage extends StatelessWidget {
                 ),
                 trailing: const Icon(Icons.chevron_right, color: Colors.grey),
                 onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => IdentitasWargaPage(warga: warga),
+                    ),
+                  );
                 },
               );
             },
