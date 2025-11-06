@@ -15,14 +15,11 @@ class KeuanganPage extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: const Color(0xFF4A4E8A),
         elevation: 0,
-        title: const Text('Keuangan', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () {
-            if (Navigator.canPop(context)) {
-              Navigator.pop(context);
-            }
-          },
+        automaticallyImplyLeading: false, 
+        centerTitle: true,
+        title: const Text(
+          'Keuangan',
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
       ),
       body: Container(
