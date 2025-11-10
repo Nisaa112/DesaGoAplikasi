@@ -16,6 +16,7 @@ class LaporanKeuanganPage extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: const Color(0xFF4A4E8A),
         elevation: 0,
+        centerTitle: true,
         title: const Text('Laporan Keuangan', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
@@ -56,7 +57,6 @@ class LaporanKeuanganPage extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         SizedBox(
-          // [PERUBAHAN 1] Perbesar ukuran container chart
           width: 220,
           height: 220,
           child: PieChart(
@@ -68,19 +68,18 @@ class LaporanKeuanganPage extends StatelessWidget {
                 PieChartSectionData(
                   value: 40,
                   color: rondaColor,
-                  // [PERUBAHAN 2] Perbesar radius pie
                   radius: 90, 
                   showTitle: false,
                   badgeWidget: const Text(
                     '40%',
                     style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black87),
                   ),
-                  badgePositionPercentageOffset: 1.2, // Sedikit lebih dekat agar pas
+                  badgePositionPercentageOffset: 1.2,
                 ),
                 PieChartSectionData(
                   value: 30,
                   color: posyanduColor,
-                  radius: 90, // Perbesar radius pie
+                  radius: 90, 
                   showTitle: false,
                   badgeWidget: const Text(
                     '30%',
@@ -91,7 +90,7 @@ class LaporanKeuanganPage extends StatelessWidget {
                 PieChartSectionData(
                   value: 20,
                   color: acaraColor,
-                  radius: 90, // Perbesar radius pie
+                  radius: 90, 
                   showTitle: false,
                   badgeWidget: const Text(
                     '20%',
@@ -102,7 +101,7 @@ class LaporanKeuanganPage extends StatelessWidget {
                 PieChartSectionData(
                   value: 10,
                   color: fasilitasColor,
-                  radius: 90, // Perbesar radius pie
+                  radius: 90,
                   showTitle: false,
                   badgeWidget: const Text(
                     '10%',
@@ -130,7 +129,6 @@ class LaporanKeuanganPage extends StatelessWidget {
     );
   }
   
-  // Sisa method tidak berubah
   Widget _buildHeaderCard() {
     return Container(
       padding: const EdgeInsets.all(20),

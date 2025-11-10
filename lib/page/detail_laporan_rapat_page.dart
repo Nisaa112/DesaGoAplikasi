@@ -147,7 +147,6 @@ class DetailLaporanKegiatanPage extends StatelessWidget {
     );
   }
 
-  // Widget helper untuk item temuan/kejadian
   Widget _buildTemuanItem(String text) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8.0),

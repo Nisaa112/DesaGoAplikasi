@@ -1,4 +1,6 @@
+import 'package:desa_go_aplikasi/viewmodel/auth_viewmodel.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -8,7 +10,58 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  final _serialController = TextEditingController(); 
+  final _passwordController = TextEditingController();
+
   bool _isPasswordVisible = false;
+  bool _isLoading = false;
+
+  @override
+  void dispose() {
+    _serialController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _handleLogin() async {
+    // Validasi menggunakan _serialController
+    if (_serialController.text.isEmpty || _passwordController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        // Perbarui pesan SnackBar
+        const SnackBar(content: Text('Nomor Serial dan Password tidak boleh kosong.')),
+      );
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    final authViewModel = Provider.of<AuthViewModel>(context, listen: false);
+
+    // Kirim Nomor Serial dan Password
+    final bool success = await authViewModel.login(
+      _serialController.text.trim(), // Serial Number
+      _passwordController.text.trim(),
+    );
+    
+    if (!mounted) return;
+
+    setState(() {
+      _isLoading = false;
+    });
+
+    if (success) {
+      Navigator.pushNamedAndRemoveUntil(context, '/home', (route) => false);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(authViewModel.errorMessage ?? 'Terjadi kesalahan.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -40,7 +93,6 @@ class _LoginPageState extends State<LoginPage> {
               ],
             ),
           ),
-
           Expanded(
             child: Container(
               decoration: const BoxDecoration(
@@ -55,11 +107,15 @@ class _LoginPageState extends State<LoginPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Nama Akun', style: TextStyle(color: Colors.black54, fontWeight: FontWeight.w600)),
+                    // Ganti label menjadi Nomor Serial
+                    const Text('Nomor Serial', style: TextStyle(color: Colors.black54, fontWeight: FontWeight.w600)),
                     const SizedBox(height: 8),
                     TextField(
+                      controller: _serialController, // Menggunakan controller serial
+                      // Menghapus TextInputType.emailAddress
                       decoration: InputDecoration(
-                        hintText: 'Masukan Nama Akun',
+                        // Ganti hint text
+                        hintText: 'Masukan Nomor Serial', 
                         hintStyle: TextStyle(color: Colors.grey.shade400),
                         contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
                         border: OutlineInputBorder(
@@ -81,6 +137,7 @@ class _LoginPageState extends State<LoginPage> {
                     const Text('Password', style: TextStyle(color: Colors.black54, fontWeight: FontWeight.w600)),
                     const SizedBox(height: 8),
                     TextField(
+                      controller: _passwordController,
                       obscureText: !_isPasswordVisible,
                       decoration: InputDecoration(
                         hintText: 'Masukan Password',
@@ -116,10 +173,7 @@ class _LoginPageState extends State<LoginPage> {
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: () {
-                          Navigator.pop(context);
-                          Navigator.pushNamed(context, '/home');
-                        },
+                        onPressed: _isLoading ? null : _handleLogin,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF2C2C2C),
                           padding: const EdgeInsets.symmetric(vertical: 16),
@@ -127,14 +181,23 @@ class _LoginPageState extends State<LoginPage> {
                             borderRadius: BorderRadius.circular(30),
                           ),
                         ),
-                        child: const Text(
-                          'Login',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
+                        child: _isLoading
+                            ? const SizedBox(
+                                height: 24,
+                                width: 24,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 3,
+                                ),
+                              )
+                            : const Text(
+                                'Login',
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
                       ),
                     ),
                   ],

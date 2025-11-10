@@ -1,6 +1,9 @@
+// File: home_page.dart
+
 import 'package:desa_go_aplikasi/page/kegiatan_page.dart';
+import 'package:desa_go_aplikasi/page/keuangan_page.dart';
 import 'package:desa_go_aplikasi/page/profil_page.dart';
-import 'package:desa_go_aplikasi/widgets/wave_clipper.dart'; // Pastikan path ini benar
+import 'package:desa_go_aplikasi/widgets/wave_clipper.dart'; 
 import 'package:flutter/material.dart';
 
 class HomePage extends StatelessWidget {
@@ -8,26 +11,28 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: SingleChildScrollView(
-        // Tambahkan physics ini jika Anda ingin halaman selalu bisa di-scroll
+    // ⭐ PERUBAHAN UTAMA: Mengganti Scaffold dengan Material
+    return Material(
+      color: Colors.white, // Latar belakang halaman
+      child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 60, 20, 20),
+          padding: const EdgeInsets.fromLTRB(20, 40, 20, 20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildHeader(),
+              _buildHeader(context),
               const Padding(
                 padding: EdgeInsets.symmetric(vertical: 16.0),
                 child: Divider(color: Color(0xFFF0F0F0), height: 1),
               ),
               _buildScheduleCard(context),
               const SizedBox(height: 24),
-              _buildFinanceCards(),
+              _buildFinanceCards(context),
               const SizedBox(height: 24),
               _buildHistoryList(),
+
+              const SizedBox(height: 100), 
             ],
           ),
         ),
@@ -35,68 +40,64 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader() {
-    return Builder(
-      builder: (context) {
-        return Row(
+  Widget _buildHeader(BuildContext context) {
+    return Row(
+      children: [
+        GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const ProfilePage()),
+            );
+          },
+          child: const CircleAvatar(
+            radius: 28,
+            backgroundColor: Color(0xFF4A4E8A),
+            child: Icon(Icons.person_outline, color: Colors.white, size: 32),
+          ),
+        ),
+        const SizedBox(width: 12),
+        const Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const ProfilePage()),
-                );
-              },
-              child: const CircleAvatar(
-                radius: 28,
-                backgroundColor: Color(0xFF4A4E8A),
-                child: Icon(Icons.person_outline, color: Colors.white, size: 32),
-              ),
+            Text(
+              'Hello,',
+              style: TextStyle(color: Colors.grey, fontSize: 16),
             ),
-            const SizedBox(width: 12),
-            const Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Hello,',
-                  style: TextStyle(color: Colors.grey, fontSize: 16),
-                ),
-                Text(
-                  'Nama Pengguna',
-                  style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87),
-                ),
-              ],
-            ),
-            const Spacer(),
-            Stack(
-              alignment: Alignment.topRight,
-              children: [
-                const Icon(Icons.notifications_none, size: 30, color: Colors.grey),
-                Container(
-                  margin: const EdgeInsets.only(top: 2, right: 2),
-                  width: 15,
-                  height: 15,
-                  decoration: BoxDecoration(
-                    color: Colors.red,
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 1.5),
-                  ),
-                  child: const Center(
-                    child: Text('1',
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 8,
-                            fontWeight: FontWeight.bold)),
-                  ),
-                ),
-              ],
+            Text(
+              'Nama Pengguna',
+              style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87),
             ),
           ],
-        );
-      },
+        ),
+        const Spacer(),
+        Stack(
+          alignment: Alignment.topRight,
+          children: [
+            const Icon(Icons.notifications_none, size: 30, color: Colors.grey),
+            Container(
+              margin: const EdgeInsets.only(top: 2, right: 2),
+              width: 15,
+              height: 15,
+              decoration: BoxDecoration(
+                color: Colors.red,
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white, width: 1.5),
+              ),
+              child: const Center(
+                child: Text('1',
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 8,
+                        fontWeight: FontWeight.bold)),
+              ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 
@@ -105,7 +106,7 @@ class HomePage extends StatelessWidget {
       onTap: () {
         Navigator.push(
           context, 
-          MaterialPageRoute(builder: (context) => const KegiatanPage())  
+          MaterialPageRoute(builder: (context) => const KegiatanPage())
         );
       },
       borderRadius: BorderRadius.circular(24),
@@ -125,14 +126,14 @@ class HomePage extends StatelessWidget {
                 right: -20,
                 bottom: -40,
                 child: Image.asset(
-                  'assets/icon_jam.png', // Ganti dengan path aset Anda
+                  'assets/icon_jam.png', 
                   height: 130,
                 ),
               ),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Jadwal Kegiatan', style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w800)),
+                  const Text('Jadwal Kegiatan', style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w800)),
                   const Text('Hari ini', style: TextStyle(color: Colors.white70, fontSize: 14)),
                   const SizedBox(height: 16),
                   _buildScheduleItem('Pos Ronda', 'Pukul 21.00, Lokasi di Pos Ronda'),
@@ -165,7 +166,7 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildFinanceCards() {
+  Widget _buildFinanceCards(BuildContext context) {
     return Row(
       children: [
         Expanded(
@@ -176,6 +177,13 @@ class HomePage extends StatelessWidget {
             bgColor: const Color(0xFFFFF6E5),
             waveColor: const Color(0xFFFFC212),
             borderColor: const Color(0xFFFFC212),
+            // ✅ Tambahkan fungsi onTap
+            onTap: () {
+              Navigator.push(
+                context, 
+                MaterialPageRoute(builder: (context) => const KeuanganPage())
+              );
+            },
           ),
         ),
         const SizedBox(width: 16),
@@ -187,6 +195,13 @@ class HomePage extends StatelessWidget {
             bgColor: const Color(0xFFE9E8F9),
             waveColor: const Color(0xFF46467A),
             borderColor: const Color(0xFF46467A),
+            // ✅ Tambahkan fungsi onTap
+            onTap: () {
+              Navigator.push(
+                context, 
+                MaterialPageRoute(builder: (context) => const KeuanganPage())
+              );
+            },
           ),
         ),
       ],
@@ -200,57 +215,68 @@ class HomePage extends StatelessWidget {
     required Color bgColor,
     required Color waveColor,
     required Color borderColor,
+    // ✅ Tambahkan parameter onTap
+    required VoidCallback onTap, 
   }) {
-    return Container(
-      decoration: BoxDecoration(
+    return Material( // Gunakan Material agar InkWell bisa bekerja
+      color: Colors.transparent, 
+      borderRadius: BorderRadius.circular(23),
+      child: InkWell( // ⬅️ InkWell untuk interaksi tap
+        onTap: onTap, // ⬅️ Pasang fungsi tap di sini
         borderRadius: BorderRadius.circular(23),
-        border: Border.all(color: borderColor, width: 1.5),
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(22.5),
-        child: Stack(
-          children: [
-            Positioned.fill(
-              child: Container(color: bgColor),
-            ),
-            
-            ClipPath(
-              clipper: WaveClipper(isIncome: true),
-              child: Container(color: waveColor),
-            ),
-
-            Positioned(
-              top: 1, 
-              left: 1, 
-              child: Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: waveColor,
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 5,
-                      offset: const Offset(0, 2),
-                    )
-                  ]
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(23),
+            border: Border.all(color: borderColor, width: 1.5),
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(22.5),
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  child: Container(color: bgColor),
                 ),
-                child: Icon(icon, color: Colors.white, size: 20),
-              ),
-            ),
+                
+                // Asumsi WaveClipper di sini harus ada
+                ClipPath(
+                  clipper: WaveClipper(isIncome: title == 'Pemasukan'), 
+                  child: Container(color: waveColor),
+                ),
 
-            Padding(
-              padding: const EdgeInsets.only(left: 30, right: 16, top: 16, bottom: 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(title, style: const TextStyle(color: Colors.black54, fontSize: 14)),
-                  const SizedBox(height: 4),
-                  Text(amount, style: const TextStyle(fontSize: 25, fontWeight: FontWeight.bold, color: Colors.black87)),
-                ],
-              ),
+                Positioned(
+                  top: 1, 
+                  left: 1, 
+                  child: Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: waveColor,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 5,
+                          offset: const Offset(0, 2),
+                        )
+                      ]
+                    ),
+                    child: Icon(icon, color: Colors.white, size: 20),
+                  ),
+                ),
+
+                Padding(
+                  padding: const EdgeInsets.only(left: 30, right: 16, top: 16, bottom: 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(title, style: const TextStyle(color: Colors.black54, fontSize: 14)),
+                      const SizedBox(height: 4),
+                      Text(amount, style: const TextStyle(fontSize: 25, fontWeight: FontWeight.bold, color: Colors.black87)),
+                    ],
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
@@ -292,8 +318,7 @@ class HomePage extends StatelessWidget {
               Text(status, style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
             ],
           ),
-          // const SizedBox(height: 4),
-          Divider(color: Colors.grey),
+          const Divider(color: Colors.grey),
           Text(subtitle, style: TextStyle(color: Colors.grey.shade600, fontSize: 14)),
         ],
       ),

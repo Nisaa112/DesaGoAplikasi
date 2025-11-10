@@ -1,8 +1,8 @@
+import 'package:desa_go_aplikasi/models/warga_model.dart';
 import 'package:flutter/material.dart';
 
 class IdentitasWargaPage extends StatelessWidget {
-  // Variabel ini akan menampung data yang DIKIRIM dari halaman sebelumnya
-  final Map<String, String> warga;
+   final Data warga;
 
   // Constructor ini MENERIMA data tersebut
   const IdentitasWargaPage({super.key, required this.warga});
@@ -42,15 +42,13 @@ class IdentitasWargaPage extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Sekarang, 'warga' di sini akan merujuk ke data yang dikirim
-                _buildInfoField(label: 'NIK', value: warga['nik'] ?? 'Data tidak ada'),
-                const SizedBox(height: 20),
-                _buildInfoField(label: 'Nama', value: warga['nama'] ?? 'Data tidak ada'),
-                const SizedBox(height: 20),
-                _buildInfoField(label: 'Alamat', value: warga['alamat'] ?? 'Data tidak ada', maxLines: 3),
-                const SizedBox(height: 20),
-                _buildInfoField(label: 'No.Telp', value: warga['telp'] ?? 'Data tidak ada'),
-                const SizedBox(height: 30),
+                Text('Nama: ${warga.nama ?? '-'}', style: TextStyle(fontSize: 18)),
+                SizedBox(height: 8),
+                Text('NIK: ${warga.nik ?? '-'}', style: TextStyle(fontSize: 18)),
+                SizedBox(height: 8),
+                Text('Alamat: ${warga.alamat ?? '-'}', style: TextStyle(fontSize: 18)),
+                SizedBox(height: 8),
+                Text('No. Telepon: ${warga.noTelp ?? '-'}', style: TextStyle(fontSize: 18)),
                 Align(
                   alignment: Alignment.bottomRight,
                   child: Image.asset(

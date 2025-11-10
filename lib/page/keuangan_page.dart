@@ -4,7 +4,6 @@ import 'package:fl_chart/fl_chart.dart'; // Import package chart
 class KeuanganPage extends StatelessWidget {
   const KeuanganPage({super.key});
 
-  // Warna untuk chart
   final Color pengeluaranColor = const Color(0xFF4A4E8A);
   final Color pemasukanColor = const Color(0xFFFFC94D);
 
@@ -49,7 +48,6 @@ class KeuanganPage extends StatelessWidget {
     );
   }
 
-  // Widget untuk bagian "Total Dana"
   Widget _buildHeaderSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -67,7 +65,6 @@ class KeuanganPage extends StatelessWidget {
     );
   }
 
-  // Widget untuk bagian "Overview" dan Chart
   Widget _buildChartSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -86,17 +83,17 @@ class KeuanganPage extends StatelessWidget {
         ),
         const SizedBox(height: 20),
         SizedBox(
-          height: 200, // Tinggi untuk chart
+          height: 200, 
           child: BarChart(
             BarChartData(
               alignment: BarChartAlignment.spaceAround,
-              maxY: 250, // Nilai Y tertinggi pada chart (dalam 'k')
-              barTouchData: BarTouchData(enabled: false), // Menonaktifkan interaksi sentuh
+              maxY: 250,
+              barTouchData: BarTouchData(enabled: false), 
               titlesData: FlTitlesData(
                 show: true,
-                bottomTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)), // Sembunyikan label bawah
-                rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)), // Sembunyikan label kanan
-                topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)), // Sembunyikan label atas
+                bottomTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)), 
+                rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)), 
+                topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)), 
                 leftTitles: AxisTitles(
                   sideTitles: SideTitles(
                     showTitles: true,
@@ -115,36 +112,32 @@ class KeuanganPage extends StatelessWidget {
                   ),
                 ),
               ),
-              borderData: FlBorderData(show: false), // Sembunyikan border chart
-              gridData: FlGridData(show: false), // Sembunyikan grid
-              barGroups: _getBarGroups(), // Data untuk bar
+              borderData: FlBorderData(show: false), 
+              gridData: FlGridData(show: false), 
+              barGroups: _getBarGroups(), 
             ),
           ),
         ),
         const SizedBox(height: 16),
-        _buildChartLegend(), // Legend di bawah chart
+        _buildChartLegend(), 
       ],
     );
   }
 
-  // Data dummy untuk group bar chart
   List<BarChartGroupData> _getBarGroups() {
-    // Data (dalam ribuan, misal 220 = 220k)
-    final List<double> pengeluaranData = [220, 200, 120, 230, 90, 200];
-    final List<double> pemasukanData = [85, 175, 170, 160, 180, 170];
+    final List<double> pengeluaranData = [85, 175, 170, 160, 180, 170];
+    final List<double> pemasukanData = [220, 200, 120, 230, 90, 200];
     
     return List.generate(pengeluaranData.length, (index) {
       return BarChartGroupData(
         x: index,
         barRods: [
-          // Bar Pengeluaran
           BarChartRodData(
             toY: pengeluaranData[index],
             color: pengeluaranColor,
             width: 14,
             borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),
           ),
-          // Bar Pemasukan
           BarChartRodData(
             toY: pemasukanData[index],
             color: pemasukanColor,
@@ -156,7 +149,6 @@ class KeuanganPage extends StatelessWidget {
     });
   }
 
-  // Widget untuk legend chart
   Widget _buildChartLegend() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -185,7 +177,6 @@ class KeuanganPage extends StatelessWidget {
     );
   }
 
-  // Widget untuk bagian summary Pemasukan & Pengeluaran
   Widget _buildSummarySection() {
     return Column(
       children: [

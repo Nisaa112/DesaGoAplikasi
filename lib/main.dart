@@ -1,9 +1,15 @@
 import 'package:desa_go_aplikasi/page/login_page.dart';
 import 'package:desa_go_aplikasi/page/navbar_screen.dart';
+import 'package:desa_go_aplikasi/page/authwrapper.dart';
 import 'package:desa_go_aplikasi/page/welcome_page.dart';
+import 'package:desa_go_aplikasi/viewmodel/auth_viewmodel.dart';
+import 'package:desa_go_aplikasi/viewmodel/warga_viewmodel.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  
   runApp(const MyApp());
 }
 
@@ -12,21 +18,22 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'DesaGo! App',
-      initialRoute: '/',
-      routes: {
-        '/': (context) => const WelcomePage(), // WelcomePage tetap menjadi halaman awal
-        '/login': (context) => const LoginPage(), // LoginPage tetap di rute /login
-        
-        // [PERUBAHAN UTAMA DI SINI]
-        // Rute '/home' sekarang tidak lagi memanggil HomePage secara langsung,
-        // tetapi memanggil MainScreen. MainScreen akan menampilkan HomePage
-        // sebagai halaman default-nya (index 0) DAN juga menampilkan
-        // BottomNavigationBar yang kita inginkan.
-        '/home': (context) => const NavbarScreen(),
-      },
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => AuthViewModel()),
+        ChangeNotifierProvider(create: (_) => WargaViewmodel()),
+      ],
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        title: 'DesaGo! App',
+        initialRoute: '/',
+        routes: {
+          '/': (context) => AuthWrapper(),
+          '/welcome': (context) => const WelcomePage(),
+          '/login': (context) => const LoginPage(),
+          '/home': (context) => const NavbarScreen(),
+        },
+      ),
     );
   }
 }

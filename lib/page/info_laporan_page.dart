@@ -1,6 +1,7 @@
 import 'package:desa_go_aplikasi/page/info_warga_page.dart';
 import 'package:desa_go_aplikasi/page/laporan_kegiatan_page.dart';
 import 'package:desa_go_aplikasi/page/laporan_keuangan_page.dart';
+import 'package:desa_go_aplikasi/page/laporan_rapat_page.dart';
 import 'package:desa_go_aplikasi/page/struktur_page.dart';
 import 'package:flutter/material.dart';
 
@@ -63,7 +64,7 @@ class InfoLaporanPage extends StatelessWidget {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const StrukturPage()),
+                    MaterialPageRoute(builder: (context) => const LaporanRapatPage()),
                   );
                 },
               ),
