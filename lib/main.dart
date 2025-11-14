@@ -26,7 +26,7 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         title: 'DesaGo! App',
-        initialRoute: '/',
+        initialRoute: '/welcome',
         routes: {
           '/': (context) => AuthWrapper(),
           '/welcome': (context) => const WelcomePage(),

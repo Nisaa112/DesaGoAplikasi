@@ -5,10 +5,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 
 class AuthService {
-  static const String _baseUrl = 'https://thaddeus-blastomycotic-margy.ngrok-free.dev/api';
+  static const String _baseUrl = 'https://spinose-transovarian-merrill.ngrok-free.dev/api';
   
   static const String _tokenKey = 'auth_token';
-  // Parameter pertama sekarang disebut 'serial'
   Future<LoginModel> login(String serial, String password) async { 
     final url = Uri.parse('$_baseUrl/auth/login');
 
@@ -20,10 +19,14 @@ class AuthService {
           'Accept': 'application/json',
         },
         body: jsonEncode({
-          'serial_number': serial, // Menggunakan serial_number di body
+          'serial_number': serial,
           'password': password,
         }),
       ).timeout(const Duration(seconds: 30));
+
+      print('DEBUG LOGIN URL: $url');
+      print('DEBUG LOGIN Status: ${response.statusCode}');
+      print('DEBUG LOGIN Body: ${response.body}');
 
       final responseBody = jsonDecode(response.body);
 
@@ -41,8 +44,8 @@ class AuthService {
         throw Exception(errorMessage);
       }
     } catch (e) {
-      print('❌ Error saat login: $e');
-      throw Exception('Tidak dapat terhubung ke server. Periksa koneksi internet Anda.');
+        print('❌ Error saat login (Catch All): $e');
+        throw Exception('Terjadi kesalahan yang tidak terduga saat login. $e');
     }
   }
 

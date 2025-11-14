@@ -2,15 +2,16 @@ import 'package:desa_go_aplikasi/models/warga_model.dart';
 import 'package:flutter/material.dart';
 
 class IdentitasWargaPage extends StatelessWidget {
-   final Data warga;
+  final Data warga;
 
-  // Constructor ini MENERIMA data tersebut
   const IdentitasWargaPage({super.key, required this.warga});
 
   @override
   Widget build(BuildContext context) {
-    // [PERUBAHAN] HAPUS variabel dummy 'warga' dari sini.
-    // final Map<String, String> warga = { ... }; // <-- BARIS INI DIHAPUS
+    final String nik = warga.nik ?? '-';
+    final String nama = warga.nama ?? '-';
+    final String alamat = warga.alamat ?? '-';
+    final String noTelp = warga.noTelp ?? '-';
 
     return Scaffold(
       backgroundColor: const Color(0xFF4A4E8A),
@@ -40,22 +41,32 @@ class IdentitasWargaPage extends StatelessWidget {
           child: Padding(
             padding: const EdgeInsets.all(24.0),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start, 
               children: [
-                Text('Nama: ${warga.nama ?? '-'}', style: TextStyle(fontSize: 18)),
-                SizedBox(height: 8),
-                Text('NIK: ${warga.nik ?? '-'}', style: TextStyle(fontSize: 18)),
-                SizedBox(height: 8),
-                Text('Alamat: ${warga.alamat ?? '-'}', style: TextStyle(fontSize: 18)),
-                SizedBox(height: 8),
-                Text('No. Telepon: ${warga.noTelp ?? '-'}', style: TextStyle(fontSize: 18)),
-                Align(
-                  alignment: Alignment.bottomRight,
-                  child: Image.asset(
-                    'assets/identitas_illustration.png', // Ganti dengan path aset Anda
-                    width: MediaQuery.of(context).size.width * 0.7,
-                  ),
+                _buildInfoField(
+                  label: 'NIK', 
+                  value: nik, 
+                  maxLines: 1 
                 ),
+                const SizedBox(height: 20),
+                _buildInfoField(
+                  label: 'Nama', 
+                  value: nama, 
+                  maxLines: 1
+                ),
+                const SizedBox(height: 20),
+                _buildInfoField(
+                  label: 'Alamat', 
+                  value: alamat, 
+                  maxLines: 3 
+                ),
+                const SizedBox(height: 20),
+                _buildInfoField(
+                  label: 'No.Telp', 
+                  value: noTelp, 
+                  maxLines: 1 
+                ),
+                const SizedBox(height: 40), 
               ],
             ),
           ),
@@ -70,7 +81,7 @@ class IdentitasWargaPage extends StatelessWidget {
       children: [
         Text(
           label,
-          style: TextStyle(color: Colors.grey.shade700, fontSize: 14),
+          style: TextStyle(color: Colors.grey.shade700.withOpacity(0.7), fontSize: 16), 
         ),
         const SizedBox(height: 8),
         Container(
@@ -78,12 +89,13 @@ class IdentitasWargaPage extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(15),
-            border: Border.all(color: Colors.grey.shade300),
+            borderRadius: BorderRadius.circular(10), 
+            border: Border.all(color: Colors.grey.shade400),
           ),
           child: Text(
             value,
             maxLines: maxLines,
+            overflow: TextOverflow.ellipsis,
             style: const TextStyle(fontSize: 16, color: Colors.black87),
           ),
         ),

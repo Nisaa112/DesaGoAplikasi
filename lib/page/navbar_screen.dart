@@ -3,7 +3,6 @@ import 'package:desa_go_aplikasi/page/info_laporan_page.dart';
 import 'package:desa_go_aplikasi/page/informasi_publik_page.dart';
 import 'package:desa_go_aplikasi/page/kegiatan_page.dart';
 import 'package:desa_go_aplikasi/page/keuangan_page.dart';
-import 'package:desa_go_aplikasi/page/struktur_page.dart';
 import 'package:flutter/material.dart';
 
 class NavbarScreen extends StatefulWidget {

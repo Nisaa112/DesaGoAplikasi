@@ -1,12 +1,10 @@
-// lib/page/info_warga_page.dart
 
-import 'package:desa_go_aplikasi/models/warga_model.dart'; // Import model Data
+import 'package:desa_go_aplikasi/models/warga_model.dart';
 import 'package:desa_go_aplikasi/page/identitas_warga_page.dart';
 import 'package:desa_go_aplikasi/viewmodel/warga_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-// 1. Ubah menjadi StatefulWidget
 class InfoWargaPage extends StatefulWidget {
   const InfoWargaPage({super.key});
 
@@ -15,11 +13,9 @@ class InfoWargaPage extends StatefulWidget {
 }
 
 class _InfoWargaPageState extends State<InfoWargaPage> {
-  // 2. Panggil method fetchWarga() saat halaman pertama kali dibuka
   @override
   void initState() {
     super.initState();
-    // Gunakan addPostFrameCallback untuk memastikan context sudah siap
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<WargaViewmodel>(context, listen: false).fetchWarga();
     });
@@ -27,7 +23,6 @@ class _InfoWargaPageState extends State<InfoWargaPage> {
 
   @override
   Widget build(BuildContext context) {
-    // 3. Dengarkan perubahan dari WargaViewmodel
     final wargaViewModel = Provider.of<WargaViewmodel>(context);
 
     return Scaffold(
@@ -61,14 +56,12 @@ class _InfoWargaPageState extends State<InfoWargaPage> {
             topLeft: Radius.circular(30),
             topRight: Radius.circular(30),
           ),
-          // 4. Bangun UI berdasarkan state dari ViewModel
           child: _buildBody(wargaViewModel),
         ),
       ),
     );
   }
 
-  // Widget helper untuk membangun body berdasarkan state
   Widget _buildBody(WargaViewmodel viewModel) {
     if (viewModel.isLoading && viewModel.wargaList.isEmpty) {
       return const Center(child: CircularProgressIndicator());
@@ -84,12 +77,10 @@ class _InfoWargaPageState extends State<InfoWargaPage> {
       return const Center(child: Text('Tidak ada data warga.'));
     }
 
-    // Jika data ada, tampilkan ListView
     return ListView.separated(
       padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 16.0),
       itemCount: viewModel.wargaList.length,
       itemBuilder: (context, index) {
-        // Ambil data warga dari viewmodel
         final Data warga = viewModel.wargaList[index];
         return ListTile(
           contentPadding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
@@ -106,7 +97,6 @@ class _InfoWargaPageState extends State<InfoWargaPage> {
             Navigator.push(
               context,
               MaterialPageRoute(
-                // 5. Kirim objek 'Data' ke halaman detail
                 builder: (context) => IdentitasWargaPage(warga: warga),
               ),
             );
