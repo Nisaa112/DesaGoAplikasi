@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:desa_go_aplikasi/models/struktur_model.dart' as StrukturModel;
 
 class IdentitasPejabatPage extends StatelessWidget {
-  // Variabel untuk menampung data yang dikirim dari halaman sebelumnya
-  final Map<String, String> member;
+  final StrukturModel.Data member;
 
-  // Constructor untuk menerima data
   const IdentitasPejabatPage({super.key, required this.member});
 
   @override
@@ -38,23 +37,27 @@ class IdentitasPejabatPage extends StatelessWidget {
             padding: const EdgeInsets.all(24.0),
             child: Column(
               children: [
-                // Foto Profil
-                const CircleAvatar(
+                CircleAvatar(
                   radius: 60,
-                  backgroundImage: AssetImage('assets/pejabat_profile.png'), // Ganti dengan path aset Anda
+                  backgroundColor: Colors.grey.shade300, 
+                  backgroundImage: member.foto != null
+                    ? NetworkImage(member.foto!)
+                    : null,
+                child: member.foto == null
+                    ? const Icon(Icons.person, color: Colors.white, size: 60,)
+                    : null,
                 ),
                 const SizedBox(height: 32),
 
-                // Daftar Informasi
-                _buildInfoField(label: 'Jabatan', value: member['jabatan'] ?? 'N/A'),
+                _buildInfoField(label: 'Jabatan', value: member.jabatan?.namaJabatan ?? 'N/A'),
                 const SizedBox(height: 20),
-                _buildInfoField(label: 'NIK', value: member['nik'] ?? 'N/A'),
+                _buildInfoField(label: 'NIK', value: member.nik ?? 'N/A'),
                 const SizedBox(height: 20),
-                _buildInfoField(label: 'Nama', value: member['nama'] ?? 'N/A'),
+                _buildInfoField(label: 'Nama', value: member.nama ?? 'N/A'),
                 const SizedBox(height: 20),
-                _buildInfoField(label: 'Alamat', value: member['alamat'] ?? 'N/A', maxLines: 3),
+                _buildInfoField(label: 'Alamat', value: member.alamat ?? 'N/A', maxLines: 3),
                 const SizedBox(height: 20),
-                _buildInfoField(label: 'No.Telp', value: member['telp'] ?? 'N/A'),
+                _buildInfoField(label: 'No.Telp', value: member.noTelp ?? 'N/A'),
               ],
             ),
           ),
@@ -63,7 +66,6 @@ class IdentitasPejabatPage extends StatelessWidget {
     );
   }
 
-  // Widget helper yang sama seperti halaman sebelumnya
   Widget _buildInfoField({required String label, required String value, int maxLines = 1}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

@@ -1,113 +1,132 @@
-// [PERUBAHAN 1] Import halaman detail pejabat
-import 'package:desa_go_aplikasi/page/identitas_pejabat_page.dart';
+import 'package:desa_go_aplikasi/viewmodel/struktur_viewmodel.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:desa_go_aplikasi/models/struktur_model.dart' as StrukturModel;
+import 'package:desa_go_aplikasi/page/identitas_pejabat_page.dart';
 
-class StrukturPage extends StatelessWidget {
+class StrukturPage extends StatefulWidget {
   const StrukturPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    // [PERUBAHAN 2] Lengkapi data dummy agar memiliki semua field yang dibutuhkan
-    final List<Map<String, String>> membersList = [
-      {
-        'nama': 'Sania Eka Wardah',
-        'jabatan': 'Ketua RW',
-        'nik': '32898366529008',
-        'alamat': 'Gg. Bidan Tati Jambudipa Rt04/Rw03 Warungkondang, Cianjur, 43261',
-        'telp': '08123455678'
-      },
-      {
-        'nama': 'Shaqilla Salsabila',
-        'jabatan': 'Ketua RT',
-        'nik': '3201234567890123',
-        'alamat': 'Alamat Shaqilla Salsabila',
-        'telp': '081222222222'
-      },
-      {
-        'nama': 'Shalwa Ainnur Hafidzin',
-        'jabatan': 'Sekretaris 1',
-        'nik': '3201234567890456',
-        'alamat': 'Alamat Shalwa Ainnur Hafidzin',
-        'telp': '081333333333'
-      },
-      {
-        'nama': 'Annisa Aulia Firdaus',
-        'jabatan': 'Sekretaris 2',
-        'nik': '3201234567890789',
-        'alamat': 'Alamat Annisa Aulia Firdaus',
-        'telp': '081444444444'
-      },
-    ];
+  State<StrukturPage> createState() => _StrukturPageState();
+}
 
-    return Scaffold(
-      backgroundColor: const Color(0xFF4A4E8A),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF4A4E8A),
-        elevation: 0,
-        title: const Text(
-          'Struktur Keanggotaan',
-          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+class _StrukturPageState extends State<StrukturPage> {
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<StrukturViewModel>(context, listen: false).fetchStruktur();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<StrukturViewModel>(
+      builder: (context, viewModel, child) {
+        return Scaffold(
+          backgroundColor: const Color(0xFF4A4E8A),
+          appBar: AppBar(
+            backgroundColor: const Color(0xFF4A4E8A),
+            elevation: 0,
+            title: const Text(
+              'Struktur Keanggotaan',
+              style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+            ),
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back, color: Colors.white),
+              onPressed: () {
+                if (Navigator.canPop(context)) {
+                  Navigator.pop(context);
+                }
+              },
+            ),
+          ),
+          body: Container(
+            width: double.infinity,
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(30),
+                topRight: Radius.circular(30),
+              ),
+            ),
+            child: _buildBody(viewModel),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildBody(StrukturViewModel viewModel) {
+    if (viewModel.isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    } else if (viewModel.errorMessage.isNotEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text('Gagal memuat data: ${viewModel.errorMessage}', textAlign: TextAlign.center),
+            const SizedBox(height: 10),
+            ElevatedButton(
+              onPressed: () {
+                viewModel.fetchStruktur();
+              },
+              child: const Text('Coba Lagi'),
+            ),
+          ],
         ),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () {
-            if (Navigator.canPop(context)) {
-              Navigator.pop(context);
-            }
+      );
+    } else if (viewModel.strukturList.isEmpty) {
+      return const Center(child: Text('Tidak ada data struktur keanggotaan.'));
+    } else {
+      return ClipRRect(
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(30),
+          topRight: Radius.circular(30),
+        ),
+        child: ListView.separated(
+          padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 16.0),
+          itemCount: viewModel.strukturList.length,
+          itemBuilder: (context, index) {
+            final StrukturModel.Data member = viewModel.strukturList[index];
+            return ListTile(
+              contentPadding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 0),
+              leading: CircleAvatar(
+                radius: 24,
+                backgroundColor: Colors.grey.shade300,
+                backgroundImage: member.foto != null
+                    ? NetworkImage(member.foto!)
+                    : null,
+                child: member.foto == null
+                    ? const Icon(Icons.person, color: Colors.white)
+                    : null,
+              ),
+              title: Text(
+                member.nama ?? 'Nama tidak tersedia',
+                style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black87, fontSize: 16),
+              ),
+              subtitle: Text(
+                member.jabatan?.namaJabatan ?? 'Jabatan tidak tersedia',
+                style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
+              ),
+              trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => IdentitasPejabatPage(member: member),
+                  ),
+                );
+              },
+            );
+          },
+          separatorBuilder: (context, index) {
+            return const Divider(height: 1, indent: 8, endIndent: 8);
           },
         ),
-      ),
-      body: Container(
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(30),
-            topRight: Radius.circular(30),
-          ),
-        ),
-        child: ClipRRect(
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(30),
-            topRight: Radius.circular(30),
-          ),
-          child: ListView.separated(
-            padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 16.0),
-            itemCount: membersList.length,
-            itemBuilder: (context, index) {
-              final member = membersList[index];
-              return ListTile(
-                contentPadding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
-                leading: CircleAvatar(
-                  radius: 24,
-                  backgroundColor: Colors.grey.shade300,
-                ),
-                title: Text(
-                  member['nama']!,
-                  style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black87, fontSize: 16),
-                ),
-                subtitle: Text(
-                  member['jabatan']!,
-                  style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
-                ),
-                trailing: const Icon(Icons.chevron_right, color: Colors.grey),
-                onTap: () {
-                  // [PERUBAHAN 3] Tambahkan aksi navigasi di sini
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      // Kirim data 'member' dari item yang di-tap ke halaman detail
-                      builder: (context) => IdentitasPejabatPage(member: member),
-                    ),
-                  );
-                },
-              );
-            },
-            separatorBuilder: (context, index) {
-              return const Divider(height: 1, indent: 8, endIndent: 8);
-            },
-          ),
-        ),
-      ),
-    );
+      );
+    }
   }
 }

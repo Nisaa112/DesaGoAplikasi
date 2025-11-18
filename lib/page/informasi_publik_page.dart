@@ -12,7 +12,6 @@ class InformasiPublikPage extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: const Color(0xFF4A4E8A),
         elevation: 0,
-        // Halaman utama tidak perlu tombol kembali
         automaticallyImplyLeading: false, 
         centerTitle: true,
         title: const Text(
@@ -38,7 +37,6 @@ class InformasiPublikPage extends StatelessWidget {
                 context: context,
                 label: 'Data Warga',
                 onTap: () {
-                  // Navigasi ke halaman InfoWargaPage
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => const InfoWargaPage()),
@@ -50,7 +48,6 @@ class InformasiPublikPage extends StatelessWidget {
                 context: context,
                 label: 'Struktur Keanggotaan',
                 onTap: () {
-                  // Navigasi ke halaman StrukturPage
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => const StrukturPage()),
@@ -64,7 +61,6 @@ class InformasiPublikPage extends StatelessWidget {
     );
   }
 
-  // Widget helper untuk membuat tombol navigasi
   Widget _buildNavigationButton({required BuildContext context, required String label, required VoidCallback onTap}) {
     return GestureDetector(
       onTap: onTap,

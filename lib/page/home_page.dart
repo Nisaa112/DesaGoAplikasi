@@ -1,19 +1,23 @@
-// File: home_page.dart
-
 import 'package:desa_go_aplikasi/page/kegiatan_page.dart';
 import 'package:desa_go_aplikasi/page/keuangan_page.dart';
 import 'package:desa_go_aplikasi/page/profil_page.dart';
-import 'package:desa_go_aplikasi/widgets/wave_clipper.dart'; 
+import 'package:desa_go_aplikasi/widgets/wave_clipper.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:desa_go_aplikasi/viewmodel/auth_viewmodel.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
   @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  @override
   Widget build(BuildContext context) {
-    // ⭐ PERUBAHAN UTAMA: Mengganti Scaffold dengan Material
     return Material(
-      color: Colors.white, // Latar belakang halaman
+      color: Colors.white,
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         child: Padding(
@@ -21,7 +25,12 @@ class HomePage extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildHeader(context),
+              // Menggunakan Consumer untuk mendapatkan dan menampilkan nama pengguna
+              Consumer<AuthViewModel>(
+                builder: (context, authViewModel, child) {
+                  return _buildHeader(context, authViewModel.userName);
+                },
+              ),
               const Padding(
                 padding: EdgeInsets.symmetric(vertical: 16.0),
                 child: Divider(color: Color(0xFFF0F0F0), height: 1),
@@ -32,7 +41,7 @@ class HomePage extends StatelessWidget {
               const SizedBox(height: 24),
               _buildHistoryList(),
 
-              const SizedBox(height: 100), 
+              const SizedBox(height: 100),
             ],
           ),
         ),
@@ -40,7 +49,11 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
+  // Menerima userName sebagai parameter
+  Widget _buildHeader(BuildContext context, String? userName) {
+    // Menampilkan nama pengguna, dengan default 'Pengguna' jika null
+    final String displayUserName = userName ?? 'Pengguna';
+
     return Row(
       children: [
         GestureDetector(
@@ -57,17 +70,17 @@ class HomePage extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 12),
-        const Column(
+        Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
+            const Text(
               'Hello,',
               style: TextStyle(color: Colors.grey, fontSize: 16),
             ),
             Text(
-              'Nama Pengguna',
-              style: TextStyle(
-                  fontSize: 18,
+              displayUserName,
+              style: const TextStyle(
+                  fontSize: 20,
                   fontWeight: FontWeight.bold,
                   color: Colors.black87),
             ),
@@ -105,7 +118,7 @@ class HomePage extends StatelessWidget {
     return InkWell(
       onTap: () {
         Navigator.push(
-          context, 
+          context,
           MaterialPageRoute(builder: (context) => const KegiatanPage())
         );
       },
@@ -126,7 +139,7 @@ class HomePage extends StatelessWidget {
                 right: -20,
                 bottom: -40,
                 child: Image.asset(
-                  'assets/icon_jam.png', 
+                  'assets/icon_jam.png',
                   height: 130,
                 ),
               ),
@@ -177,10 +190,9 @@ class HomePage extends StatelessWidget {
             bgColor: const Color(0xFFFFF6E5),
             waveColor: const Color(0xFFFFC212),
             borderColor: const Color(0xFFFFC212),
-            // ✅ Tambahkan fungsi onTap
             onTap: () {
               Navigator.push(
-                context, 
+                context,
                 MaterialPageRoute(builder: (context) => const KeuanganPage())
               );
             },
@@ -195,10 +207,9 @@ class HomePage extends StatelessWidget {
             bgColor: const Color(0xFFE9E8F9),
             waveColor: const Color(0xFF46467A),
             borderColor: const Color(0xFF46467A),
-            // ✅ Tambahkan fungsi onTap
             onTap: () {
               Navigator.push(
-                context, 
+                context,
                 MaterialPageRoute(builder: (context) => const KeuanganPage())
               );
             },
@@ -215,14 +226,13 @@ class HomePage extends StatelessWidget {
     required Color bgColor,
     required Color waveColor,
     required Color borderColor,
-    // ✅ Tambahkan parameter onTap
-    required VoidCallback onTap, 
+    required VoidCallback onTap,
   }) {
-    return Material( // Gunakan Material agar InkWell bisa bekerja
-      color: Colors.transparent, 
+    return Material(
+      color: Colors.transparent,
       borderRadius: BorderRadius.circular(23),
-      child: InkWell( // ⬅️ InkWell untuk interaksi tap
-        onTap: onTap, // ⬅️ Pasang fungsi tap di sini
+      child: InkWell(
+        onTap: onTap,
         borderRadius: BorderRadius.circular(23),
         child: Container(
           decoration: BoxDecoration(
@@ -236,16 +246,15 @@ class HomePage extends StatelessWidget {
                 Positioned.fill(
                   child: Container(color: bgColor),
                 ),
-                
-                // Asumsi WaveClipper di sini harus ada
+
                 ClipPath(
-                  clipper: WaveClipper(isIncome: title == 'Pemasukan'), 
+                  clipper: WaveClipper(isIncome: title == 'Pemasukan'),
                   child: Container(color: waveColor),
                 ),
 
                 Positioned(
-                  top: 1, 
-                  left: 1, 
+                  top: 1,
+                  left: 1,
                   child: Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(

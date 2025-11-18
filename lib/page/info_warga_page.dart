@@ -83,7 +83,7 @@ class _InfoWargaPageState extends State<InfoWargaPage> {
       itemBuilder: (context, index) {
         final Data warga = viewModel.wargaList[index];
         return ListTile(
-          contentPadding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 0),
           title: Text(
             warga.nama ?? 'Nama tidak tersedia',
             style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black87),

@@ -3,6 +3,7 @@ import 'package:desa_go_aplikasi/page/navbar_screen.dart';
 import 'package:desa_go_aplikasi/page/authwrapper.dart';
 import 'package:desa_go_aplikasi/page/welcome_page.dart';
 import 'package:desa_go_aplikasi/viewmodel/auth_viewmodel.dart';
+import 'package:desa_go_aplikasi/viewmodel/struktur_viewmodel.dart';
 import 'package:desa_go_aplikasi/viewmodel/warga_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -22,6 +23,7 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => AuthViewModel()),
         ChangeNotifierProvider(create: (_) => WargaViewmodel()),
+        ChangeNotifierProvider(create: (_) => StrukturViewModel()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,

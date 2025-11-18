@@ -41,7 +41,7 @@ class _NavbarScreenState extends State<NavbarScreen> {
   
   Widget _buildBottomNavBar() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
         decoration: BoxDecoration(
@@ -63,6 +63,7 @@ class _NavbarScreenState extends State<NavbarScreen> {
             _buildNavItem(Icons.volunteer_activism, Icons.volunteer_activism_outlined, 2),
             _buildNavItem(Icons.calendar_month, Icons.calendar_month_outlined, 3),
             _buildNavItem(Icons.account_balance_wallet, Icons.account_balance_wallet_outlined, 4),
+            _buildNavItem(Icons.report_problem, Icons.report_problem_outlined, 5),
           ],
         ),
       ),
@@ -74,8 +75,8 @@ class _NavbarScreenState extends State<NavbarScreen> {
     return GestureDetector(
       onTap: () => _onItemTapped(index),
       child: Container(
-        width: 60,
-        height: 50,
+        width: 50,
+        height: 40,
         decoration: BoxDecoration(
           color: isSelected ? Colors.white : Colors.transparent,
           shape: BoxShape.circle,
