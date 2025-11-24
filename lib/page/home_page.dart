@@ -1,5 +1,8 @@
 import 'package:desa_go_aplikasi/page/kegiatan_page.dart';
 import 'package:desa_go_aplikasi/page/keuangan_page.dart';
+import 'package:desa_go_aplikasi/page/notifikasi_page.dart';
+import 'package:desa_go_aplikasi/page/pemasukan_page.dart';
+import 'package:desa_go_aplikasi/page/pengeluaran_page.dart';
 import 'package:desa_go_aplikasi/page/profil_page.dart';
 import 'package:desa_go_aplikasi/widgets/wave_clipper.dart';
 import 'package:flutter/material.dart';
@@ -85,28 +88,36 @@ class _HomePageState extends State<HomePage> {
           ],
         ),
         const Spacer(),
-        Stack(
-          alignment: Alignment.topRight,
-          children: [
-            const Icon(Icons.notifications_none, size: 30, color: Colors.grey),
-            Container(
-              margin: const EdgeInsets.only(top: 2, right: 2),
-              width: 15,
-              height: 15,
-              decoration: BoxDecoration(
-                color: Colors.red,
-                shape: BoxShape.circle,
-                border: Border.all(color: Colors.white, width: 1.5),
+        InkWell(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const NotifikasiPage()),
+            );
+          },
+          child: Stack(
+            alignment: Alignment.topRight,
+            children: [
+              const Icon(Icons.notifications_none, size: 30, color: Colors.grey),
+              Container(
+                margin: const EdgeInsets.only(top: 2, right: 2),
+                width: 15,
+                height: 15,
+                decoration: BoxDecoration(
+                  color: Colors.red,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white, width: 1.5),
+                ),
+                child: const Center(
+                  child: Text('1',
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 8,
+                          fontWeight: FontWeight.bold)),
+                ),
               ),
-              child: const Center(
-                child: Text('1',
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 8,
-                        fontWeight: FontWeight.bold)),
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ],
     );
@@ -191,7 +202,7 @@ class _HomePageState extends State<HomePage> {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const KeuanganPage())
+                MaterialPageRoute(builder: (context) => PemasukanPage())
               );
             },
           ),
@@ -208,7 +219,7 @@ class _HomePageState extends State<HomePage> {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const KeuanganPage())
+                MaterialPageRoute(builder: (context) => PengeluaranPage())
               );
             },
           ),

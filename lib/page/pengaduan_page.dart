@@ -1,3 +1,4 @@
+import 'package:desa_go_aplikasi/page/pengaduan_form_page.dart';
 import 'package:flutter/material.dart';
 
 class PengaduanPage extends StatelessWidget {
@@ -188,7 +189,6 @@ class PengaduanPage extends StatelessWidget {
                   ),
                 ),
 
-                // Daftar Pengaduan
                 Expanded(
                   child: ListView.builder(
                     padding: EdgeInsets.zero, // Hapus padding default
@@ -202,7 +202,6 @@ class PengaduanPage extends StatelessWidget {
             ),
           ),
           
-          // Tombol Tambah Pengaduan (ditempatkan di tengah-bawah)
           Positioned(
             bottom: 80, // Jarak di atas Bottom Nav Bar
             left: 0,
@@ -210,8 +209,10 @@ class PengaduanPage extends StatelessWidget {
             child: Center(
               child: ElevatedButton.icon(
                 onPressed: () {
-                  // Aksi untuk menambah pengaduan
-                  print('Tambah Pengaduan ditekan');
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const FormPengaduanPage()),
+                  );
                 },
                 icon: const Icon(Icons.add, color: Colors.black87),
                 label: const Text(
