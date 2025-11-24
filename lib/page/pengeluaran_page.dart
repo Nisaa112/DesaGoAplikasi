@@ -12,11 +12,11 @@ class PengeluaranPage extends StatelessWidget {
   PengeluaranPage({super.key});
 
   final List<PengeluaranItem> dummyPengeluaran =  [
-    PengeluaranItem(deskripsi: 'Dana Iuran Warga', jumlah: 300000.00, tanggal: DateTime(2025, 7, 23)),
-    PengeluaranItem(deskripsi: 'Dana Iuran Warga', jumlah: 300000.00, tanggal: DateTime(2025, 7, 23)),
-    PengeluaranItem(deskripsi: 'Dana Iuran Warga', jumlah: 300000.00, tanggal: DateTime(2025, 7, 23)),
-    PengeluaranItem(deskripsi: 'Dana Iuran Warga', jumlah: 300000.00, tanggal: DateTime(2025, 7, 23)),
-    PengeluaranItem(deskripsi: 'Dana Iuran Warga', jumlah: 300000.00, tanggal: DateTime(2025, 7, 23)),
+    PengeluaranItem(deskripsi: 'Acara 17 Agustusan', jumlah: 300000.00, tanggal: DateTime(2025, 7, 23)),
+    PengeluaranItem(deskripsi: 'Acara 17 Agustusan', jumlah: 300000.00, tanggal: DateTime(2025, 7, 23)),
+    PengeluaranItem(deskripsi: 'Acara 17 Agustusan', jumlah: 300000.00, tanggal: DateTime(2025, 7, 23)),
+    PengeluaranItem(deskripsi: 'Acara 17 Agustusan', jumlah: 300000.00, tanggal: DateTime(2025, 7, 23)),
+    PengeluaranItem(deskripsi: 'Acara 17 Agustusan', jumlah: 300000.00, tanggal: DateTime(2025, 7, 23)),
     PengeluaranItem(deskripsi: 'Donasi Kebersihan', jumlah: 150000.00, tanggal: DateTime(2025, 7, 24)),
     PengeluaranItem(deskripsi: 'Sewa Balai Warga', jumlah: 500000.00, tanggal: DateTime(2025, 7, 25)),
   ];
