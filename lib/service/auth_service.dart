@@ -5,7 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 
 class AuthService {
-  static const String _baseUrl = 'https://spinose-transovarian-merrill.ngrok-free.dev/api';
+  static const String _baseUrl = 'https://exiguous-smilelessly-marylynn.ngrok-free.dev/api';
   
   static const String _tokenKey = 'auth_token';
   Future<LoginModel> login(String serial, String password) async { 

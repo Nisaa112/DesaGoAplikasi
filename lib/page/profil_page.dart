@@ -17,7 +17,6 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   void initState() {
     super.initState();
-    // Isi TextField dengan data dummy saat halaman dibuka
     _nikController.text = '32898366529008';
     _namaController.text = 'Annisa Aulia Firdaus';
     _alamatController.text = 'Gg. Bidan Tati Jambudipa Rt04/Rw03 Warungkondang, Cianjur, 43261';
@@ -26,7 +25,6 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   void dispose() {
-    // Selalu dispose controller untuk menghindari memory leak
     _nikController.dispose();
     _namaController.dispose();
     _alamatController.dispose();
@@ -79,13 +77,12 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  // Widget untuk foto profil dengan ikon edit
   Widget _buildProfilePicture() {
     return Stack(
       children: [
         const CircleAvatar(
           radius: 60,
-          backgroundImage: AssetImage('assets/profile_picture.png'), // Ganti dengan path aset Anda
+          backgroundImage: AssetImage('assets/profile_picture.png'),
         ),
         Positioned(
           bottom: 0,
@@ -106,7 +103,6 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  // Widget helper untuk membuat TextField agar tidak berulang
   Widget _buildTextField({required String label, required TextEditingController controller, int maxLines = 1}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -119,7 +115,7 @@ class _ProfilePageState extends State<ProfilePage> {
           decoration: InputDecoration(
             contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
             filled: true,
-            fillColor: Colors.grey.shade100, // Warna latar field
+            fillColor: Colors.grey.shade100, 
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(15),
               borderSide: BorderSide(color: Colors.grey.shade300),
@@ -138,7 +134,6 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  // Widget untuk tombol Simpan
   Widget _buildSaveButton() {
     return SizedBox(
       width: double.infinity,

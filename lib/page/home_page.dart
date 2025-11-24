@@ -25,7 +25,6 @@ class _HomePageState extends State<HomePage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Menggunakan Consumer untuk mendapatkan dan menampilkan nama pengguna
               Consumer<AuthViewModel>(
                 builder: (context, authViewModel, child) {
                   return _buildHeader(context, authViewModel.userName);
@@ -49,9 +48,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // Menerima userName sebagai parameter
   Widget _buildHeader(BuildContext context, String? userName) {
-    // Menampilkan nama pengguna, dengan default 'Pengguna' jika null
     final String displayUserName = userName ?? 'Pengguna';
 
     return Row(
@@ -80,9 +77,10 @@ class _HomePageState extends State<HomePage> {
             Text(
               displayUserName,
               style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87),
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87
+              ),
             ),
           ],
         ),

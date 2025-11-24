@@ -61,7 +61,10 @@ class _StrukturPageState extends State<StrukturPage> {
 
   Widget _buildBody(StrukturViewModel viewModel) {
     if (viewModel.isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return const Center(child: CircularProgressIndicator(
+        color: const Color(0xFF4A4E8A),
+        backgroundColor: Colors.white,)
+      );
     } else if (viewModel.errorMessage.isNotEmpty) {
       return Center(
         child: Column(
@@ -80,52 +83,59 @@ class _StrukturPageState extends State<StrukturPage> {
       );
     } else if (viewModel.strukturList.isEmpty) {
       return const Center(child: Text('Tidak ada data struktur keanggotaan.'));
-    } else {
-      return ClipRRect(
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(30),
-          topRight: Radius.circular(30),
-        ),
-        child: ListView.separated(
-          padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 16.0),
-          itemCount: viewModel.strukturList.length,
-          itemBuilder: (context, index) {
-            final StrukturModel.Data member = viewModel.strukturList[index];
-            return ListTile(
-              contentPadding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 0),
-              leading: CircleAvatar(
-                radius: 24,
-                backgroundColor: Colors.grey.shade300,
-                backgroundImage: member.foto != null
-                    ? NetworkImage(member.foto!)
-                    : null,
-                child: member.foto == null
-                    ? const Icon(Icons.person, color: Colors.white)
-                    : null,
-              ),
-              title: Text(
-                member.nama ?? 'Nama tidak tersedia',
-                style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black87, fontSize: 16),
-              ),
-              subtitle: Text(
-                member.jabatan?.namaJabatan ?? 'Jabatan tidak tersedia',
-                style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
-              ),
-              trailing: const Icon(Icons.chevron_right, color: Colors.grey),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => IdentitasPejabatPage(member: member),
-                  ),
-                );
-              },
-            );
-          },
-          separatorBuilder: (context, index) {
-            return const Divider(height: 1, indent: 8, endIndent: 8);
-          },
-        ),
+    }  else {
+      return RefreshIndicator(
+        color: const Color(0xFFFFC212),
+        backgroundColor: Colors.white,
+        onRefresh: () async {
+          await viewModel.fetchStruktur();
+        },
+        child: ClipRRect(
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(30),
+            topRight: Radius.circular(30),
+          ),
+          child: ListView.separated(
+            padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 16.0),
+            itemCount: viewModel.strukturList.length,
+            itemBuilder: (context, index) {
+              final StrukturModel.Data member = viewModel.strukturList[index];
+              return ListTile(
+                contentPadding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 0),
+                leading: CircleAvatar(
+                  radius: 24,
+                  backgroundColor: Colors.grey.shade300,
+                  backgroundImage: member.foto != null
+                      ? NetworkImage(member.foto!)
+                      : null,
+                  child: member.foto == null
+                      ? const Icon(Icons.person, color: Colors.white)
+                      : null,
+                ),
+                title: Text(
+                  member.nama ?? 'Nama tidak tersedia',
+                  style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black87, fontSize: 16),
+                ),
+                subtitle: Text(
+                  member.jabatan?.namaJabatan ?? 'Jabatan tidak tersedia',
+                  style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
+                ),
+                trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => IdentitasPejabatPage(member: member),
+                    ),
+                  );
+                },
+              );
+            },
+            separatorBuilder: (context, index) {
+              return const Divider(height: 1, indent: 8, endIndent: 8);
+            },
+          ),
+        )
       );
     }
   }

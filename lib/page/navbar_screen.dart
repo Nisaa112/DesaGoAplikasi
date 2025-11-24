@@ -3,6 +3,7 @@ import 'package:desa_go_aplikasi/page/info_laporan_page.dart';
 import 'package:desa_go_aplikasi/page/informasi_publik_page.dart';
 import 'package:desa_go_aplikasi/page/kegiatan_page.dart';
 import 'package:desa_go_aplikasi/page/keuangan_page.dart';
+import 'package:desa_go_aplikasi/page/pengaduan_page.dart';
 import 'package:flutter/material.dart';
 
 class NavbarScreen extends StatefulWidget {
@@ -18,9 +19,10 @@ class _NavbarScreenState extends State<NavbarScreen> {
   static const List<Widget> _pages = <Widget>[
     HomePage(),
     InformasiPublikPage(), 
-    InfoLaporanPage(),  
     KegiatanPage(),
     KeuanganPage(),
+    InfoLaporanPage(),  
+    PengaduanPage(),
   ];
 
   void _onItemTapped(int index) {
@@ -41,9 +43,9 @@ class _NavbarScreenState extends State<NavbarScreen> {
   
   Widget _buildBottomNavBar() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20),
+      padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 20),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
         decoration: BoxDecoration(
           color: const Color(0xFF2C2C2C),
           borderRadius: BorderRadius.circular(50), 
@@ -60,10 +62,10 @@ class _NavbarScreenState extends State<NavbarScreen> {
           children: [
             _buildNavItem(Icons.home_filled, Icons.home_outlined, 0),
             _buildNavItem(Icons.groups, Icons.groups_outlined, 1),
-            _buildNavItem(Icons.volunteer_activism, Icons.volunteer_activism_outlined, 2),
-            _buildNavItem(Icons.calendar_month, Icons.calendar_month_outlined, 3),
-            _buildNavItem(Icons.account_balance_wallet, Icons.account_balance_wallet_outlined, 4),
-            _buildNavItem(Icons.report_problem, Icons.report_problem_outlined, 5),
+            _buildNavItem(Icons.calendar_month, Icons.calendar_month_outlined, 2),
+            _buildNavItem(Icons.account_balance_wallet, Icons.account_balance_wallet_outlined, 3),
+            _buildNavItem(Icons.library_books, Icons.library_books_outlined, 4),
+            _buildNavItem(Icons.support_agent, Icons.support_agent_outlined, 5),
           ],
         ),
       ),
@@ -75,8 +77,8 @@ class _NavbarScreenState extends State<NavbarScreen> {
     return GestureDetector(
       onTap: () => _onItemTapped(index),
       child: Container(
-        width: 50,
-        height: 40,
+        width: 55,
+        height: 45,
         decoration: BoxDecoration(
           color: isSelected ? Colors.white : Colors.transparent,
           shape: BoxShape.circle,
@@ -84,7 +86,7 @@ class _NavbarScreenState extends State<NavbarScreen> {
         child: Icon(
           isSelected ? selectedIcon : unselectedIcon,
           color: isSelected ? const Color(0xFF4A4E8A) : Colors.white60,
-          size: 28,
+          size: 25,
         ),
       ),
     );

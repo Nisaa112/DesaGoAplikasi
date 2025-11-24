@@ -63,49 +63,70 @@ class _InfoWargaPageState extends State<InfoWargaPage> {
   }
 
   Widget _buildBody(WargaViewmodel viewModel) {
-    if (viewModel.isLoading && viewModel.wargaList.isEmpty) {
+    if (viewModel.isLoading) {
       return const Center(child: CircularProgressIndicator());
-    }
-
-    if (viewModel.errorMessage.isNotEmpty && viewModel.wargaList.isEmpty) {
+    } else if (viewModel.errorMessage.isNotEmpty) {
       return Center(
-        child: Text('Gagal memuat data: ${viewModel.errorMessage}'),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text('Gagal memuat data: ${viewModel.errorMessage}', textAlign: TextAlign.center),
+            const SizedBox(height: 10),
+            ElevatedButton(
+              onPressed: () {
+                viewModel.fetchWarga();
+              },
+              child: const Text('Coba Lagi'),
+            ),
+          ],
+        ),
+      );
+    } else if (viewModel.wargaList.isEmpty) {
+      return const Center(child: Text('Tidak ada data Warga.'));
+    }  else {
+      return RefreshIndicator(
+        color: const Color(0xFFFFC212),
+        backgroundColor: Colors.white,
+        onRefresh: () async {
+          await viewModel.fetchWarga();
+        },
+        child: ClipRRect(
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(30),
+            topRight: Radius.circular(30),
+          ),
+          child: ListView.separated(
+            padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 16.0),
+            itemCount: viewModel.wargaList.length,
+            itemBuilder: (context, index) {
+              final Data warga = viewModel.wargaList[index];
+              return ListTile(
+                contentPadding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 0),
+                title: Text(
+                  warga.nama ?? 'Nama tidak tersedia',
+                  style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black87),
+                ),
+                subtitle: Text(
+                  warga.alamat ?? 'Alamat tidak tersedia',
+                  style: TextStyle(color: Colors.grey.shade600),
+                ),
+                trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => IdentitasWargaPage(warga: warga),
+                    ),
+                  );
+                },
+              );
+            },
+            separatorBuilder: (context, index) {
+              return const Divider(height: 1, indent: 8, endIndent: 8);
+            },
+          )
+        )
       );
     }
-
-    if (viewModel.wargaList.isEmpty) {
-      return const Center(child: Text('Tidak ada data warga.'));
-    }
-
-    return ListView.separated(
-      padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 16.0),
-      itemCount: viewModel.wargaList.length,
-      itemBuilder: (context, index) {
-        final Data warga = viewModel.wargaList[index];
-        return ListTile(
-          contentPadding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 0),
-          title: Text(
-            warga.nama ?? 'Nama tidak tersedia',
-            style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black87),
-          ),
-          subtitle: Text(
-            warga.alamat ?? 'Alamat tidak tersedia',
-            style: TextStyle(color: Colors.grey.shade600),
-          ),
-          trailing: const Icon(Icons.chevron_right, color: Colors.grey),
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => IdentitasWargaPage(warga: warga),
-              ),
-            );
-          },
-        );
-      },
-      separatorBuilder: (context, index) {
-        return const Divider(height: 1, indent: 8, endIndent: 8);
-      },
-    );
   }
 }

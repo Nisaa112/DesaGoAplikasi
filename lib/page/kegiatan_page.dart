@@ -51,7 +51,7 @@ class _KegiatanPageState extends State<KegiatanPage> {
         // [PERUBAHAN] Tombol kembali dihapus dan judul di tengah
         automaticallyImplyLeading: false,
         centerTitle: true,
-        title: const Text('Kegiatan', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+        title: const Text('Jadwal', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
       ),
       body: Container(
         width: double.infinity,

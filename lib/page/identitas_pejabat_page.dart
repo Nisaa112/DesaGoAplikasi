@@ -51,8 +51,8 @@ class IdentitasPejabatPage extends StatelessWidget {
 
                 _buildInfoField(label: 'Jabatan', value: member.jabatan?.namaJabatan ?? 'N/A'),
                 const SizedBox(height: 20),
-                _buildInfoField(label: 'NIK', value: member.nik ?? 'N/A'),
-                const SizedBox(height: 20),
+                // _buildInfoField(label: 'NIK', value: member.nik ?? 'N/A'),
+                // const SizedBox(height: 20),
                 _buildInfoField(label: 'Nama', value: member.nama ?? 'N/A'),
                 const SizedBox(height: 20),
                 _buildInfoField(label: 'Alamat', value: member.alamat ?? 'N/A', maxLines: 3),

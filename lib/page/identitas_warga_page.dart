@@ -43,12 +43,12 @@ class IdentitasWargaPage extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start, 
               children: [
-                _buildInfoField(
-                  label: 'NIK', 
-                  value: nik, 
-                  maxLines: 1 
-                ),
-                const SizedBox(height: 20),
+                // _buildInfoField(
+                //   label: 'NIK', 
+                //   value: nik, 
+                //   maxLines: 1 
+                // ),
+                // const SizedBox(height: 20),
                 _buildInfoField(
                   label: 'Nama', 
                   value: nama, 

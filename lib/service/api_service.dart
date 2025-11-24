@@ -5,7 +5,7 @@ import 'package:desa_go_aplikasi/utils/token_storage.dart';
 import 'package:http/http.dart' as http;
 
 class ApiService {
-  static const String baseUrl = 'https://spinose-transovarian-merrill.ngrok-free.dev';
+  static const String baseUrl = 'https://exiguous-smilelessly-marylynn.ngrok-free.dev';
 
   static Future<List<WargaModel.Data>> fetchWarga() async {
     final token = await TokenStorage.getToken();
