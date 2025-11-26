@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:desa_go_aplikasi/models/agenda_model.dart' as Agenda;
 import 'package:desa_go_aplikasi/models/posyandu_model.dart' as Posyandu;
 import 'package:desa_go_aplikasi/models/rapat_model.dart' as Rapat;
 import 'package:desa_go_aplikasi/models/ronda_model.dart' as Ronda;
@@ -78,7 +79,7 @@ class DatabaseHelper {
         tujuan TEXT,
         kesimpulan TEXT,
         created_at TEXT,
-        updated_at TEXT,
+        updated_at TEXT
       )
     ''');
 
@@ -90,7 +91,7 @@ class DatabaseHelper {
         tanggal TEXT,
         lokasi TEXT,
         created_at TEXT,
-        updated_at TEXT,
+        updated_at TEXT
       )
     ''');
 
@@ -101,7 +102,7 @@ class DatabaseHelper {
         lokasi TEXT,
         detail TEXT,
         created_at TEXT,
-        updated_at TEXT,
+        updated_at TEXT
       )
     ''');
 
@@ -113,11 +114,22 @@ class DatabaseHelper {
         jam_mulai TEXT,
         jam_selesai TEXT,
         area_patroli TEXT,
-        hadir TEXT,
+        hadir INTEGER,
         created_at TEXT,
         updated_at TEXT,
         ronda TEXT,
-        warga TEXT,
+        warga TEXT
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE agenda (
+        id INTEGER PRIMARY KEY,
+        nama_agenda TEXT,
+        tanggal TEXT,
+        lokasi TEXT,
+        created_at TEXT,
+        updated_at TEXT
       )
     ''');
   }
@@ -472,5 +484,50 @@ class DatabaseHelper {
   Future<void> clearDetailRondaTable() async {
     final db = await database;
     await db.delete('detail_ronda');
+  }
+  
+  // --------------------------------------------------------------------------
+  // --- AGENDA ---
+  // --------------------------------------------------------------------------
+
+  Future<int> insertAgenda(Agenda.Data agenda) async {
+    final db = await database;
+
+    Map<String, dynamic> row = {
+      'id': agenda.id,
+      'nama_agenda': agenda.namaAgenda,
+      'tanggal': agenda.tanggal,
+      'lokasi': agenda.lokasi,
+      'created_at': agenda.createdAt,
+      'updated_at': agenda.updatedAt,
+    };
+
+    return await db.insert(
+      'agenda',
+      row,
+      conflictAlgorithm: ConflictAlgorithm.replace,
+    );
+  }
+
+  Future<List<Agenda.Data>> getAllAgenda() async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query('agenda');
+
+    return List.generate(maps.length, (i) {
+
+      return Agenda.Data(
+        id: maps[i]['id'],
+        namaAgenda: maps[i]['nama_agenda'],
+        tanggal: maps[i]['tanggal'],
+        lokasi: maps[i]['lokasi'],
+        updatedAt: maps[i]['updated_at'],
+        createdAt: maps[i]['created_at'],
+      );
+    });
+  }
+  
+  Future<void> clearAgendaTable() async {
+    final db = await database;
+    await db.delete('agenda');
   }
 }
