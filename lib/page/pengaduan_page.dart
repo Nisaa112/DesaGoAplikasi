@@ -13,7 +13,7 @@ class PengaduanPage extends StatelessWidget {
     {
       'judul': 'Administrasi surat',
       'deskripsi': 'Pengajuan administrasi surat untuk...',
-      'status': 'Di Proses',
+      'status': 'Diproses',
     },
     {
       'judul': 'Maling',
@@ -81,51 +81,6 @@ class PengaduanPage extends StatelessWidget {
     );
   }
 
-  // --- Widget Bottom Navigasi (Bottom Bar) ---
-  Widget _buildBottomNavBar() {
-    // Warna Utama
-    const Color primaryColor = Color(0xFF4A4E8A);
-    // Warna Ikon Tidak Aktif
-    const Color inactiveIconColor = Colors.white;
-    // Warna Ikon Aktif (Asumsi berdasarkan warna ungu di badge profile)
-    const Color activeIconColor = Color(0xFF9370DB); 
-
-    return Container(
-      height: 70, // Sesuaikan tinggi sesuai kebutuhan
-      decoration: const BoxDecoration(
-        color: Color(0xFF333333), // Warna latar belakang hitam/abu-abu gelap
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(25),
-          topRight: Radius.circular(25),
-        ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          IconButton(icon: const Icon(Icons.home, color: inactiveIconColor, size: 28), onPressed: () {}),
-          IconButton(icon: const Icon(Icons.people, color: inactiveIconColor, size: 28), onPressed: () {}),
-          IconButton(icon: const Icon(Icons.group_work, color: inactiveIconColor, size: 28), onPressed: () {}), // Ikon untuk kegiatan/info
-          IconButton(icon: const Icon(Icons.calendar_today, color: inactiveIconColor, size: 28), onPressed: () {}),
-          IconButton(icon: const Icon(Icons.credit_card, color: inactiveIconColor, size: 28), onPressed: () {}),
-          
-          // Ikon Aktif (Pengaduan/Profile) - Menggunakan Container/Widget untuk latar belakang ungu
-          InkWell(
-            onTap: () {},
-            child: Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: primaryColor, // Latar belakang ungu
-                borderRadius: BorderRadius.circular(15),
-              ),
-              child: const Icon(Icons.person, color: Colors.white, size: 28),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-
   @override
   Widget build(BuildContext context) {
     const Color primaryColor = Color(0xFF4A4E8A);
@@ -133,25 +88,21 @@ class PengaduanPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: primaryColor,
       appBar: AppBar(
-        backgroundColor: primaryColor,
+        backgroundColor: const Color(0xFF4A4E8A),
         elevation: 0,
+        automaticallyImplyLeading: false, 
+        centerTitle: true,
         title: const Text(
           'Pengaduan',
           style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
       ),
       body: Stack(
         children: [
-          // Bagian Body (Daftar Pengaduan)
           Container(
             width: double.infinity,
             height: double.infinity,
             padding: const EdgeInsets.symmetric(horizontal: 24.0),
-            margin: const EdgeInsets.only(top: 20.0), // Jarak dari App Bar
             decoration: const BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.only(
@@ -162,7 +113,6 @@ class PengaduanPage extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                // Dropdown Filter "Milik Saya"
                 Padding(
                   padding: const EdgeInsets.only(top: 16.0, bottom: 8.0),
                   child: Row(
@@ -171,7 +121,7 @@ class PengaduanPage extends StatelessWidget {
                       DropdownButton<String>(
                         value: 'Milik Saya',
                         icon: const Icon(Icons.keyboard_arrow_down, color: Colors.black87),
-                        elevation: 16,
+                        elevation: 1,
                         style: const TextStyle(color: Colors.black87, fontSize: 14),
                         underline: Container(), // Hapus garis bawah
                         items: <String>['Milik Saya', 'Semua Pengaduan']
@@ -203,7 +153,7 @@ class PengaduanPage extends StatelessWidget {
           ),
           
           Positioned(
-            bottom: 80, // Jarak di atas Bottom Nav Bar
+            bottom: 0,
             left: 0,
             right: 0,
             child: Center(
@@ -220,20 +170,18 @@ class PengaduanPage extends StatelessWidget {
                   style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold),
                 ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFFFC212), // Warna Kuning/Oranye
+                  backgroundColor: const Color(0xFFFFC212),
                   padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30),
                   ),
-                  elevation: 5,
+                  elevation: 0,
                 ),
               ),
             ),
           ),
         ],
       ),
-      // Bottom Navigasi (Sama dengan gambar)
-      bottomNavigationBar: _buildBottomNavBar(),
     );
   }
 }

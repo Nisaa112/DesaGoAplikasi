@@ -193,7 +193,7 @@ class _FormPengaduanPageState extends State<FormPengaduanPage> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      elevation: 5,
+                      elevation: 0,
                     ),
                   ),
                 ),
