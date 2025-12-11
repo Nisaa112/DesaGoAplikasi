@@ -1,4 +1,5 @@
 import 'package:desa_go_aplikasi/page/admin_home_page.dart';
+import 'package:desa_go_aplikasi/page/admin_info_rt_page.dart';
 import 'package:desa_go_aplikasi/page/admin_info_warga_page.dart';
 import 'package:desa_go_aplikasi/page/admin_struktur_page.dart';
 import 'package:desa_go_aplikasi/page/info_warga_page.dart';
@@ -57,20 +58,21 @@ class AdminInformasiPublikPage extends StatelessWidget {
                   );
                 },
               ),
+              const SizedBox(height: 16),
               _buildNavigationButton(
                 context: context,
-                label: 'Data Warga',
+                label: 'Data RT',
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const AdminInfoWargaPage()),
+                    MaterialPageRoute(builder: (context) => const AdminInfoRtPage()),
                   );
                 },
               ),
               const SizedBox(height: 16),
               _buildNavigationButton(
                 context: context,
-                label: 'Struktur Keanggotaan',
+                label: 'Manage User',
                 onTap: () {
                   Navigator.push(
                     context,

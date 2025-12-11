@@ -13,7 +13,6 @@ class AdminInfoWargaPage extends StatefulWidget {
 }
 
 class _AdminInfoWargaPageState extends State<AdminInfoWargaPage> {
-  // Key unik untuk mengontrol item mana yang sedang terbuka
   GlobalKey<_SlidableListItemState>? _currentlyOpenItemKey;
 
   @override
@@ -24,7 +23,6 @@ class _AdminInfoWargaPageState extends State<AdminInfoWargaPage> {
     });
   }
 
-  // Fungsi untuk konfirmasi dan penghapusan
   Future<bool> _confirmAndDelete(Warga.Data warga) async {
     final bool? confirm = await showDialog<bool>(
       context: context,
@@ -65,7 +63,6 @@ class _AdminInfoWargaPageState extends State<AdminInfoWargaPage> {
     return false;
   }
 
-  // Navigasi ke halaman Edit
   void _navigateToEditPage(Warga.Data warga) {
     Navigator.push(
       context,
@@ -73,7 +70,6 @@ class _AdminInfoWargaPageState extends State<AdminInfoWargaPage> {
         builder: (context) => AdminIdentitasWargaPage(warga: warga),
       ),
     ).then((_) {
-      // Refresh data setelah kembali dari halaman edit
       Provider.of<WargaViewModel>(context, listen: false).loadWarga();
     });
   }
@@ -89,16 +85,13 @@ class _AdminInfoWargaPageState extends State<AdminInfoWargaPage> {
     );
   }
   
-  // Fungsi dipanggil oleh item anak ketika item lain dibuka
   void _handleItemOpen(GlobalKey<_SlidableListItemState> key) {
     if (_currentlyOpenItemKey != null && _currentlyOpenItemKey != key) {
-      // Tutup item yang sebelumnya terbuka
       _currentlyOpenItemKey?.currentState?.closeItem();
     }
     _currentlyOpenItemKey = key;
   }
   
-  // Fungsi dipanggil oleh item anak ketika item ditutup
   void _handleItemClose() {
     _currentlyOpenItemKey = null;
   }
@@ -115,7 +108,7 @@ class _AdminInfoWargaPageState extends State<AdminInfoWargaPage> {
         backgroundColor: primaryColor,
         elevation: 0,
         title: const Text(
-          'Warga Desa (Admin)',
+          'Warga Desa',
           style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
         leading: IconButton(
@@ -216,7 +209,6 @@ class _AdminInfoWargaPageState extends State<AdminInfoWargaPage> {
             itemBuilder: (context, index) {
               final Warga.Data warga = viewModel.listWarga[index];
               
-              // >>> MENGGUNAKAN WIDGET SLIDABLE KUSTOM <<<
               final itemKey = GlobalKey<_SlidableListItemState>(); 
               
               return _SlidableListItem(
@@ -224,23 +216,19 @@ class _AdminInfoWargaPageState extends State<AdminInfoWargaPage> {
                 warga: warga,
                 onEdit: _navigateToEditPage,
                 
-                // PERBAIKAN: Closure onDelete sekarang mengembalikan Future<bool>
                 onDelete: (w) async {
                   final result = await _confirmAndDelete(w);
-                  // Jika berhasil dihapus, muat ulang data untuk menghilangkan item
                   if (result) {
                     viewModel.loadWarga();
                   } else {
-                    // Jika dibatalkan/gagal, tutup kembali slidable
                     itemKey.currentState?.closeItem();
                   }
-                  return result; // Mengembalikan hasil bool
+                  return result; 
                 },
 
                 onItemOpen: _handleItemOpen,
                 onItemClose: _handleItemClose,
               );
-              // >>> SELESAI MENGGUNAKAN WIDGET SLIDABLE KUSTOM <<<
             },
             separatorBuilder: (context, index) {
               return const Divider(height: 1, indent: 8, endIndent: 8);
@@ -252,14 +240,9 @@ class _AdminInfoWargaPageState extends State<AdminInfoWargaPage> {
   }
 }
 
-// =========================================================================
-// WIDGET KUSTOM: _SlidableListItem
-// =========================================================================
-
 class _SlidableListItem extends StatefulWidget {
   final Warga.Data warga;
   final void Function(Warga.Data) onEdit;
-  // PERBAIKAN: onDelete sekarang mengembalikan Future<bool>
   final Future<bool> Function(Warga.Data) onDelete; 
   final void Function(GlobalKey<_SlidableListItemState>) onItemOpen;
   final void Function() onItemClose;
@@ -281,9 +264,7 @@ class _SlidableListItemState extends State<_SlidableListItem> with SingleTickerP
   late AnimationController _controller;
   late Animation<double> _slideAnimation;
 
-  // Lebar menu aksi (Edit + Hapus). Misalnya 70px per tombol.
   static const double _actionExtent = 140.0; 
-  // Batas swipe minimum agar item tetap terbuka setelah dilepas
   static const double _openThreshold = _actionExtent / 2;
 
   @override
@@ -298,7 +279,6 @@ class _SlidableListItemState extends State<_SlidableListItem> with SingleTickerP
 
   @override
   void dispose() {
-    // Pastikan menutup slidable yang terbuka sebelum dispose
     if (_controller.value.abs() > 0) {
         widget.onItemClose();
     }
@@ -306,13 +286,10 @@ class _SlidableListItemState extends State<_SlidableListItem> with SingleTickerP
     super.dispose();
   }
   
-  // Metode publik untuk menutup item dari luar
   void closeItem() {
     if (_controller.value.abs() > 0) {
-      // Pastikan animasi dimulai dari posisi saat ini
       _slideAnimation = Tween(begin: _slideAnimation.value, end: 0.0).animate(_controller);
       _controller.forward(from: 0.0).then((_) {
-        // Setelah animasi selesai, reset controller dan panggil callback close
         _slideAnimation = Tween(begin: 0.0, end: 0.0).animate(_controller);
         widget.onItemClose();
       });
@@ -321,11 +298,9 @@ class _SlidableListItemState extends State<_SlidableListItem> with SingleTickerP
 
   void _handleDragUpdate(DragUpdateDetails details) {
     setState(() {
-      // Hanya izinkan geser ke kiri (nilai negatif)
       double newOffset = _slideAnimation.value + details.primaryDelta!;
       newOffset = newOffset.clamp(-_actionExtent, 0.0);
       
-      // Update Tween/Animation agar posisi visual berubah saat drag
       _slideAnimation = Tween(begin: newOffset, end: newOffset).animate(_controller);
     });
   }
@@ -334,13 +309,11 @@ class _SlidableListItemState extends State<_SlidableListItem> with SingleTickerP
     final double currentOffset = _slideAnimation.value;
 
     if (currentOffset.abs() > _openThreshold) {
-      // Buka menu (geser ke -_actionExtent)
       _slideAnimation = Tween(begin: currentOffset, end: -_actionExtent).animate(_controller);
       _controller.forward(from: 0.0).then((_) {
         widget.onItemOpen(widget.key as GlobalKey<_SlidableListItemState>);
       });
     } else {
-      // Tutup menu (geser kembali ke 0)
       _slideAnimation = Tween(begin: currentOffset, end: 0.0).animate(_controller);
       _controller.forward(from: 0.0).then((_) {
         widget.onItemClose();
@@ -350,10 +323,8 @@ class _SlidableListItemState extends State<_SlidableListItem> with SingleTickerP
 
   void _handleTap() {
     if (_controller.value.abs() > 0) {
-      // Jika menu terbuka, tutup saat diklik
       closeItem();
     } else {
-      // Jika menu tertutup, jalankan aksi default (Edit/Detail)
       widget.onEdit(widget.warga);
     }
   }
@@ -367,12 +338,10 @@ class _SlidableListItemState extends State<_SlidableListItem> with SingleTickerP
       onHorizontalDragEnd: _handleDragEnd,
       child: Stack(
         children: <Widget>[
-          // Latar Belakang: Tombol Aksi (Edit & Hapus)
           Positioned.fill(
             child: Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: <Widget>[
-                // Tombol Edit
                 InkWell(
                   onTap: () {
                     closeItem();
@@ -385,15 +354,12 @@ class _SlidableListItemState extends State<_SlidableListItem> with SingleTickerP
                     child: const Icon(Icons.edit, color: Colors.white),
                   ),
                 ),
-                // Tombol Hapus
                 InkWell(
                   onTap: () async {
-                    // Panggil onDelete yang akan menjalankan konfirmasi dan penghapusan.
-                    // closeItem() dipanggil di parent tergantung hasil penghapusan.
                     await widget.onDelete(widget.warga);
                   },
                   child: Container(
-                    width: _actionExtent / 2, // 70px
+                    width: _actionExtent / 2, 
                     color: Colors.red,
                     alignment: Alignment.center,
                     child: const Icon(Icons.delete, color: Colors.white),
@@ -403,18 +369,16 @@ class _SlidableListItemState extends State<_SlidableListItem> with SingleTickerP
             ),
           ),
           
-          // Konten Utama (ListTile) yang akan digeser
           AnimatedBuilder(
             animation: _controller,
             builder: (context, child) {
               return Transform.translate(
-                // Menggunakan _slideAnimation.value (akan bernilai antara 0 hingga -140)
                 offset: Offset(_slideAnimation.value, 0),
                 child: child,
               );
             },
             child: Container(
-              color: Colors.white, // Penting agar background tidak tembus
+              color: Colors.white,
               child: ListTile(
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 0),
                 title: Text(
@@ -426,7 +390,6 @@ class _SlidableListItemState extends State<_SlidableListItem> with SingleTickerP
                   style: TextStyle(color: Colors.grey.shade600),
                 ),
                 trailing: const Icon(Icons.chevron_right, color: Colors.grey),
-                // onTap dihandle oleh GestureDetector _handleTap
               ),
             ),
           ),

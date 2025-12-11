@@ -5,6 +5,7 @@ import 'package:desa_go_aplikasi/models/posyandu_model.dart' as PosyanduModel;
 import 'package:desa_go_aplikasi/models/rapat_model.dart' as RapatModel;
 import 'package:desa_go_aplikasi/models/warga_model.dart' as WargaModel;
 import 'package:desa_go_aplikasi/models/struktur_model.dart' as StrukturModel;
+import 'package:desa_go_aplikasi/models/rt_model.dart' as RtModel;
 import 'package:desa_go_aplikasi/utils/token_storage.dart';
 import 'package:http/http.dart' as http;
 
@@ -13,7 +14,6 @@ import '../models/ronda_model.dart' as RondaModel;
 class ApiService {
   static const String baseUrl = 'https://exiguous-smilelessly-marylynn.ngrok-free.dev';
 
-  // Helper untuk menangani request API POST/PUT
   static Future<dynamic> _handleApiRequest(
     Future<http.Response> request, String operationType, String endpoint
   ) async {
@@ -22,14 +22,13 @@ class ApiService {
       print("📤 Response Body $endpoint: ${response.body}");
 
       if (response.statusCode >= 200 && response.statusCode < 300) {
-        // Untuk DELETE (200/204) atau Update sukses tanpa body khusus
         if (response.body.isEmpty) return null; 
         
         final decoded = jsonDecode(response.body);
         if (decoded['data'] != null) {
           return decoded['data'];
         } else if (response.statusCode == 200) {
-            // Untuk Update yang sukses dan mengembalikan status 200 dengan message
+            
             return null;
         } else {
           throw Exception('Respons API tidak valid: data tidak ditemukan');
@@ -49,7 +48,6 @@ class ApiService {
   // --- WARGA ---
   // --------------------------------------------------------------------------
 
-  // READ (sudah ada)
   static Future<List<WargaModel.Data>> fetchWarga() async {
     final token = await TokenStorage.getToken();
     final response = await http.get(
@@ -61,7 +59,7 @@ class ApiService {
     );
 
     print('📥 Response status Warga: ${response.statusCode}');
-    // print('📥 Response body Warga: ${response.body}'); // Dinonaktifkan agar tidak terlalu banyak log
+    // print('📥 Response body Warga: ${response.body}');
 
     if (response.statusCode == 200) {
       Map<String, dynamic> decodedBody = jsonDecode(response.body);
@@ -77,7 +75,6 @@ class ApiService {
     }
   }
   
-  // CREATE (sudah ada)
   static Future<WargaModel.Data?> createWarga(WargaModel.Data warga) async {
     final token = await TokenStorage.getToken();
     final result = await _handleApiRequest(
@@ -100,7 +97,7 @@ class ApiService {
     return null;
   }
 
-  // UPDATE (sudah ada)
+  
   static Future<void> updateWarga(WargaModel.Data warga) async {
     final token = await TokenStorage.getToken();
     await _handleApiRequest(
@@ -114,7 +111,6 @@ class ApiService {
     );
   }
 
-  // DELETE (sudah ada)
   static Future<void> deleteWarga(int id) async {
     final token = await TokenStorage.getToken();
     await _handleApiRequest(
@@ -131,7 +127,6 @@ class ApiService {
   // --- STRUKTUR ---
   // --------------------------------------------------------------------------
 
-  // READ (sudah ada)
   static Future<List<StrukturModel.Data>> fetchStruktur() async {
     final token = await TokenStorage.getToken();
     final response = await http.get(
@@ -158,7 +153,6 @@ class ApiService {
     }
   }
  
-  // CREATE (sudah ada)
   static Future<StrukturModel.Data?> createStruktur(StrukturModel.Data struktur) async {
     final token = await TokenStorage.getToken();
     final result = await _handleApiRequest(
@@ -181,7 +175,7 @@ class ApiService {
     return null;
   }
 
-  // UPDATE (sudah ada)
+  
   static Future<void> updateStruktur(StrukturModel.Data struktur) async {
     final token = await TokenStorage.getToken();
     await _handleApiRequest(
@@ -195,7 +189,6 @@ class ApiService {
     );
   }
 
-  // DELETE (sudah ada)
   static Future<void> deleteStruktur(int id) async {
     final token = await TokenStorage.getToken();
     await _handleApiRequest(
@@ -212,7 +205,6 @@ class ApiService {
   // --- RAPAT ---
   // --------------------------------------------------------------------------
 
-  // READ (sudah ada)
   static Future<List<RapatModel.Data>> fetchRapat() async {
     final token = await TokenStorage.getToken();
     final response = await http.get(
@@ -239,7 +231,6 @@ class ApiService {
     }
   }
     
-  // CREATE (BARU)
   static Future<RapatModel.Data?> createRapat(RapatModel.Data rapat) async {
     final token = await TokenStorage.getToken();
     final result = await _handleApiRequest(
@@ -262,7 +253,6 @@ class ApiService {
     return null;
   }
 
-  // UPDATE (BARU)
   static Future<void> updateRapat(RapatModel.Data rapat) async {
     final token = await TokenStorage.getToken();
     await _handleApiRequest(
@@ -276,7 +266,6 @@ class ApiService {
     );
   }
 
-  // DELETE (BARU)
   static Future<void> deleteRapat(int id) async {
     final token = await TokenStorage.getToken();
     await _handleApiRequest(
@@ -293,7 +282,6 @@ class ApiService {
   // --- AGENDA ---
   // --------------------------------------------------------------------------
 
-  // READ (sudah ada)
   static Future<List<AgendaModel.Data>> fetchAgenda() async {
     final token = await TokenStorage.getToken();
     final response = await http.get(
@@ -320,7 +308,6 @@ class ApiService {
     }
   }
 
-  // CREATE (BARU)
   static Future<AgendaModel.Data?> createAgenda(AgendaModel.Data agenda) async {
     final token = await TokenStorage.getToken();
     final result = await _handleApiRequest(
@@ -343,7 +330,6 @@ class ApiService {
     return null;
   }
 
-  // UPDATE (BARU)
   static Future<void> updateAgenda(AgendaModel.Data agenda) async {
     final token = await TokenStorage.getToken();
     await _handleApiRequest(
@@ -357,7 +343,6 @@ class ApiService {
     );
   }
 
-  // DELETE (BARU)
   static Future<void> deleteAgenda(int id) async {
     final token = await TokenStorage.getToken();
     await _handleApiRequest(
@@ -374,7 +359,6 @@ class ApiService {
   // --- POSYANDU ---
   // --------------------------------------------------------------------------
 
-  // READ (sudah ada)
   static Future<List<PosyanduModel.Data>> fetchPosyandu() async {
     final token = await TokenStorage.getToken();
     final response = await http.get(
@@ -401,7 +385,6 @@ class ApiService {
     }
   }
 
-  // CREATE (BARU)
   static Future<PosyanduModel.Data?> createPosyandu(PosyanduModel.Data posyandu) async {
     final token = await TokenStorage.getToken();
     final result = await _handleApiRequest(
@@ -424,7 +407,6 @@ class ApiService {
     return null;
   }
 
-  // UPDATE (BARU)
   static Future<void> updatePosyandu(PosyanduModel.Data posyandu) async {
     final token = await TokenStorage.getToken();
     await _handleApiRequest(
@@ -438,7 +420,6 @@ class ApiService {
     );
   }
 
-  // DELETE (BARU)
   static Future<void> deletePosyandu(int id) async {
     final token = await TokenStorage.getToken();
     await _handleApiRequest(
@@ -455,7 +436,6 @@ class ApiService {
   // --- RONDA ---
   // --------------------------------------------------------------------------
 
-  // READ (sudah ada)
   static Future<List<RondaModel.Data>> fetchRonda() async {
     final token = await TokenStorage.getToken();
     final response = await http.get(
@@ -482,7 +462,6 @@ class ApiService {
     }
   }
     
-  // CREATE (BARU)
   static Future<RondaModel.Data?> createRonda(RondaModel.Data ronda) async {
     final token = await TokenStorage.getToken();
     final result = await _handleApiRequest(
@@ -505,7 +484,6 @@ class ApiService {
     return null;
   }
 
-  // UPDATE (BARU)
   static Future<void> updateRonda(RondaModel.Data ronda) async {
     final token = await TokenStorage.getToken();
     await _handleApiRequest(
@@ -519,7 +497,6 @@ class ApiService {
     );
   }
 
-  // DELETE (BARU)
   static Future<void> deleteRonda(int id) async {
     final token = await TokenStorage.getToken();
     await _handleApiRequest(
@@ -536,7 +513,6 @@ class ApiService {
   // --- DETAIL RONDA ---
   // --------------------------------------------------------------------------
 
-  // READ (sudah ada)
   static Future<List<RondaModel.DetailRondas>> fetchRondaDetail() async {
     final token = await TokenStorage.getToken();
     final response = await http.get(
@@ -564,7 +540,6 @@ class ApiService {
     }
   }
     
-  // CREATE (BARU)
   static Future<RondaModel.DetailRondas?> createRondaDetail(RondaModel.DetailRondas detailRonda) async {
     final token = await TokenStorage.getToken();
     final result = await _handleApiRequest(
@@ -587,7 +562,6 @@ class ApiService {
     return null;
   }
 
-  // UPDATE (BARU)
   static Future<void> updateRondaDetail(RondaModel.DetailRondas detailRonda) async {
     final token = await TokenStorage.getToken();
     await _handleApiRequest(
@@ -601,7 +575,6 @@ class ApiService {
     );
   }
 
-  // DELETE (BARU)
   static Future<void> deleteRondaDetail(int id) async {
     final token = await TokenStorage.getToken();
     await _handleApiRequest(
@@ -618,7 +591,6 @@ class ApiService {
   // --- PENGADUAN ---
   // --------------------------------------------------------------------------
 
-  // READ (sudah ada)
   static Future<List<PengaduanModel.Data>> fetchPengaduan() async {
     final token = await TokenStorage.getToken();
     final response = await http.get(
@@ -646,7 +618,6 @@ class ApiService {
     }
   }
   
-  // CREATE (sudah ada)
   static Future<PengaduanModel.Data?> createPengaduan(PengaduanModel.Data pengaduan) async {
     final token = await TokenStorage.getToken();
     final result = await _handleApiRequest(
@@ -669,7 +640,7 @@ class ApiService {
     return null;
   }
 
-  // UPDATE (sudah ada)
+  
   static Future<void> updatePengaduan(PengaduanModel.Data pengaduan) async {
     final token = await TokenStorage.getToken();
     await _handleApiRequest(
@@ -683,7 +654,6 @@ class ApiService {
     );
   }
 
-  // DELETE (sudah ada)
   static Future<void> deletePengaduan(int id) async {
     final token = await TokenStorage.getToken();
     await _handleApiRequest(
@@ -695,4 +665,84 @@ class ApiService {
       'pengaduan',
     );
   }
+  
+  // --------------------------------------------------------------------------
+  // --- RT ---
+  // --------------------------------------------------------------------------
+
+  static Future<List<RtModel.Data>> fetchRt() async {
+    final token = await TokenStorage.getToken();
+    final response = await http.get(
+      Uri.parse('$baseUrl/api/rt'),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Accept': 'application/json',
+      },
+    );
+
+    print('📥 Response status RT: ${response.statusCode}');
+    // print('📥 Response body RT: ${response.body}');
+
+    if (response.statusCode == 200) {
+      Map<String, dynamic> decodedBody = jsonDecode(response.body);
+
+      if (decodedBody['data'] is List) {
+        List<dynamic> dataList = decodedBody['data'];
+        return dataList.map((json) => RtModel.Data.fromJson(json)).toList();
+      } else {
+        return [];
+      }
+    } else {
+      throw Exception('Gagal mengambil data RT dari API');
+    }
+  }
+  
+  static Future<RtModel.Data?> createRt(RtModel.Data rt) async {
+    final token = await TokenStorage.getToken();
+    final result = await _handleApiRequest(
+      http.post(
+        Uri.parse('$baseUrl/api/rt'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: jsonEncode(rt.toJson()),
+      ),
+      'tambah',
+      'rt',
+    );
+    
+    if (result != null) {
+        return RtModel.Data.fromJson(result);
+    }
+    return null;
+  }
+
+  
+  static Future<void> updateRt(RtModel.Data rt) async {
+    final token = await TokenStorage.getToken();
+    await _handleApiRequest(
+      http.put(
+        Uri.parse('$baseUrl/api/rt/${rt.id}'),
+        headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $token'},
+        body: jsonEncode(rt.toJson()),
+      ),
+      'mengupdate',
+      'rt',
+    );
+  }
+
+  static Future<void> deleteRt(int id) async {
+    final token = await TokenStorage.getToken();
+    await _handleApiRequest(
+      http.delete(
+        Uri.parse('$baseUrl/api/rt/$id'),
+        headers: {'Authorization': 'Bearer $token', 'Accept': 'application/json'},
+      ),
+      'menghapus',
+      'rt',
+    );
+  }
+
 }

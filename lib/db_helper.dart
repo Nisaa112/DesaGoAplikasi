@@ -5,6 +5,7 @@ import 'package:desa_go_aplikasi/models/pengaduan_model.dart' as Pengaduan;
 import 'package:desa_go_aplikasi/models/posyandu_model.dart' as Posyandu;
 import 'package:desa_go_aplikasi/models/rapat_model.dart' as Rapat;
 import 'package:desa_go_aplikasi/models/ronda_model.dart' as Ronda;
+import 'package:desa_go_aplikasi/models/rt_model.dart' as Rt;
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'package:desa_go_aplikasi/models/warga_model.dart' as Warga;
@@ -19,7 +20,7 @@ class DatabaseHelper {
   // Nama file database
   static final _databaseName = "DesaGo.db";
   // Versi database saat ini.
-  static final _databaseVersion = 2; 
+  static final _databaseVersion = 3; 
 
   DatabaseHelper._privateConstructor();
   static final DatabaseHelper instance = DatabaseHelper._privateConstructor();
@@ -31,18 +32,16 @@ class DatabaseHelper {
     return _database!;
   }
 
-  // Inisialisasi Database
   _initDatabase() async {
     String path = join(await getDatabasesPath(), _databaseName);
     return await openDatabase(
       path,
       version: _databaseVersion, 
-      onCreate: _onCreate, 
+      onCreate: _onCreate,
       onUpgrade: _onUpgrade
     );
   }
 
-  // Pembuatan tabel awal
   Future _onCreate(Database db, int version) async {
     // ------------------- WARGA -------------------
     await db.execute('''
@@ -163,30 +162,44 @@ class DatabaseHelper {
         updated_at TEXT
       )
     ''');
+    // ------------------- RT -------------------
+    await db.execute('''
+      CREATE TABLE rt (
+        id INTEGER PRIMARY KEY,
+        id_rw INTEGER,
+        nama_rt TEXT,
+        created_at TEXT,
+        updated_at TEXT,
+        rw TEXT
+      )
+    ''');
   }
 
   // Logika Migrasi
   Future _onUpgrade(Database db, int oldVersion, int newVersion) async {
     if (oldVersion < 2) {
-      print("Migrasi Database: Membuat tabel 'pengaduan' untuk versi lama.");
+      print("Migrasi Database: Membuat tabel 'pengaduan' untuk versi 2.");
       await db.execute('''
         CREATE TABLE pengaduan (
+          id INTEGER PRIMARY KEY, id_user INTEGER, recipient TEXT,
+          kategori TEXT, judul TEXT, pesan TEXT, status TEXT, 
+          assigned_to TEXT, is_public INTEGER, priority INTEGER,
+          response TEXT, responded_at TEXT, ip_address TEXT,
+          user_agent TEXT, created_at TEXT, updated_at TEXT
+        )
+      ''');
+    }
+    
+    if (oldVersion < 3) {
+      print("Migrasi Database: Membuat tabel 'rt' untuk versi 3.");
+      await db.execute('''
+        CREATE TABLE rt (
           id INTEGER PRIMARY KEY,
-          id_user INTEGER,
-          recipient TEXT,
-          kategori TEXT,
-          judul TEXT,
-          pesan TEXT,
-          status TEXT,
-          assigned_to TEXT,
-          is_public INTEGER, 
-          priority INTEGER,
-          response TEXT,
-          responded_at TEXT,
-          ip_address TEXT,
-          user_agent TEXT,
+          id_rw INTEGER,
+          nama_rt TEXT,
           created_at TEXT,
-          updated_at TEXT
+          updated_at TEXT,
+          rw TEXT
         )
       ''');
     }
@@ -258,6 +271,71 @@ class DatabaseHelper {
   }
 
   // ==========================================================================
+  // --- CRUD RT (Rt.Data) ---
+  // ==========================================================================
+
+  Future<int> insertRt(Rt.Data rt) async {
+    final db = await database;
+    final rwJson = rt.rw != null ? jsonEncode(rt.rw!.toJson()) : null;
+
+    Map<String, dynamic> row = {
+      'id': rt.id, 
+      'id_rw': rt.idRw, 
+      'nama_rt': rt.namaRt,
+      'created_at': rt.createdAt, 
+      'updated_at': rt.updatedAt, 
+      'rw': rwJson
+    };
+    row.removeWhere((key, value) => value == null);
+
+    return await db.insert('rt', row, conflictAlgorithm: ConflictAlgorithm.replace);
+  }
+
+  Future<List<Rt.Data>> getAllRt() async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query('rt');
+
+    return List.generate(maps.length, (i) {
+      final rwMap = maps[i]['rw'] != null ? jsonDecode(maps[i]['rw']) : null;
+
+      return Rt.Data(
+        id: maps[i]['id'], idRw: maps[i]['id_rw'], 
+        namaRt: maps[i]['nama_rt'], 
+        updatedAt: maps[i]['updated_at'],
+        createdAt: maps[i]['created_at'],
+        rw: rwMap != null ? Rt.Rw.fromJson(rwMap) : null,
+      );
+    });
+  }
+
+  Future<int> updateRt(Rt.Data rt) async {
+    final db = await database;
+    if (rt.id == null) throw Exception("ID rt tidak boleh null untuk update.");
+
+    final rwJson = rt.rw != null ? jsonEncode(rt.rw!.toJson()) : null;
+
+    Map<String, dynamic> row = {
+      'id_rw': rt.idRw, 
+      'nama_rt': rt.namaRt,
+      'updated_at': rt.updatedAt, 
+      'rw': rwJson,
+    };
+    row.removeWhere((key, value) => value == null);
+
+    return await db.update('rt', row, where: 'id = ?', whereArgs: [rt.id]);
+  }
+
+  Future<int> deleteRt(int id) async {
+    final db = await database;
+    return await db.delete('rt', where: 'id = ?', whereArgs: [id]);
+  }
+
+  Future<void> clearRtTable() async {
+    final db = await database;
+    await db.delete('rt');
+  }
+
+  // ==========================================================================
   // --- CRUD STRUKTUR (Struktur.Data) ---
   // ==========================================================================
 
@@ -294,7 +372,7 @@ class DatabaseHelper {
         noTelp: maps[i]['no_telp'], alamat: maps[i]['alamat'], foto: maps[i]['foto'],
         updatedAt: maps[i]['updated_at'], createdAt: maps[i]['created_at'],
         rw: rwMap != null ? RwModel.Rw.fromJson(rwMap) : null,
-        rt: rtMap != null ? RtModel.Rt.fromJson(rtMap) : null,
+        rt: rtMap != null ? RtModel.Data.fromJson(rtMap) : null,
         jabatan: jabatanMap != null ? JabatanModel.Data.fromJson(jabatanMap) : null,
       );
     });

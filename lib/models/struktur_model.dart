@@ -44,7 +44,7 @@ class Data {
   String? createdAt;
   String? updatedAt;
   RwModel.Rw? rw;
-  RtModel.Rt? rt;
+  RtModel.Data? rt;
   JabatanModel.Data? jabatan; 
 
   Data(
@@ -77,7 +77,7 @@ class Data {
     updatedAt = json['updated_at'];
     
     rw = json['rw'] != null ? RwModel.Rw.fromJson(json['rw']) : null;
-    rt = json['rt'] != null ? RtModel.Rt.fromJson(json['rt']) : null;
+    rt = json['rt'] != null ? RtModel.Data.fromJson(json['rt']) : null;
     jabatan = json['jabatan'] != null ? JabatanModel.Data.fromJson(json['jabatan']) : null;
   }
 

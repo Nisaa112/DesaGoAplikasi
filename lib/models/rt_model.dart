@@ -1,15 +1,15 @@
 class RtModel {
   String? message;
-  List<Rt>? data;
+  List<Data>? data;
 
   RtModel({this.message, this.data});
 
   RtModel.fromJson(Map<String, dynamic> json) {
     message = json['message'];
     if (json['data'] != null) {
-      data = <Rt>[];
+      data = <Data>[];
       json['data'].forEach((v) {
-        data!.add(new Rt.fromJson(v));
+        data!.add(new Data.fromJson(v));
       });
     }
   }
@@ -24,7 +24,7 @@ class RtModel {
   }
 }
 
-class Rt {
+class Data {
   int? id;
   String? namaRt;
   int? idRw;
@@ -32,7 +32,7 @@ class Rt {
   String? updatedAt;
   Rw? rw;
 
-  Rt(
+  Data(
       {this.id,
       this.namaRt,
       this.idRw,
@@ -40,13 +40,32 @@ class Rt {
       this.updatedAt,
       this.rw});
 
-  Rt.fromJson(Map<String, dynamic> json) {
+  Data.fromJson(Map<String, dynamic> json) {
     id = json['id'];
     namaRt = json['nama_rt'];
     idRw = json['id_rw'];
     createdAt = json['created_at'];
     updatedAt = json['updated_at'];
     rw = json['rw'] != null ? new Rw.fromJson(json['rw']) : null;
+  }
+
+  // >>> PENAMBAHAN METODE copyWith DI SINI <<<
+  Data copyWith({
+    int? id,
+    String? namaRt,
+    int? idRw,
+    String? createdAt,
+    String? updatedAt,
+    Rw? rw,
+  }) {
+    return Data(
+      id: id ?? this.id,
+      namaRt: namaRt ?? this.namaRt,
+      idRw: idRw ?? this.idRw,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rw: rw ?? this.rw,
+    );
   }
 
   Map<String, dynamic> toJson() {
