@@ -19,6 +19,9 @@ class AuthViewModel extends ChangeNotifier {
   
   String? _userEmail; 
   String? get userEmail => _userEmail;
+  
+  String? _userRole; 
+  String? get userRole => _userRole;
 
   int? _userId;
   int? get userId => _userId;
@@ -30,7 +33,6 @@ class AuthViewModel extends ChangeNotifier {
     checkAuthStatus();
   }
 
-  /// Cek status login saat aplikasi dimulai.
   Future<void> checkAuthStatus() async {
     _isLoading = true;
     notifyListeners();
@@ -38,12 +40,24 @@ class AuthViewModel extends ChangeNotifier {
     _token = await TokenStorage.getToken();
 
     if (_token != null && _token!.isNotEmpty) {
-      // Jika token ada, muat data user dari storage
-      _userId = await TokenStorage.getUserId();
-      _userName = await TokenStorage.getUserName();
-      // _userEmail = await TokenStorage.getUserEmail(); // Ambil juga email/serial dari storage
-      _isLoggedIn = true;
-      print('✅ Sesi ditemukan untuk user: $_userName (ID: $_userId)');
+      print('⏳ Token lokal ditemukan. Memvalidasi ke server...');
+      
+      final isTokenValid = await _authService.verifyToken(_token!);
+      
+      if (isTokenValid) {
+        _userId = await TokenStorage.getUserId();
+        _userName = await TokenStorage.getUserName();
+        _userEmail = await TokenStorage.getUserEmail();
+        _userRole = await TokenStorage.getUserRole();
+        _isLoggedIn = true;
+        print('✅ Sesi ditemukan & valid untuk user: $_userName (ID: $_userId) (Role: $_userRole)');
+      } else {
+        print('⚠️ Token tidak valid dari server. Sesi akan dihapus.');
+        await TokenStorage.clearAll();
+        _token = null;
+        _isLoggedIn = false;
+        _userRole = null;
+      }
     } else {
       _isLoggedIn = false;
     }
@@ -59,69 +73,61 @@ class AuthViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      // Panggil AuthService dengan Nomor Serial dan Password
       final loginData = await _authService.login(serial, password);
       
       final user = loginData.user;
-      if (user == null || user.id == null) {
-        throw Exception("Data user tidak valid dari server.");
+      final accessToken = loginData.accessToken;
+
+      final userRole = user?.role; 
+      
+      if (user == null || user.id == null || accessToken == null || userRole == null) {
+        throw Exception("Data user atau token tidak valid dari server.");
       }
 
-      // Simpan seluruh data sesi menggunakan TokenStorage
       await TokenStorage.saveUserSession(
+        token: accessToken,
         id: user.id!,
         name: user.name ?? 'No Name',
-        // Menggunakan serialNumber jika email nullable
         email: user.serialNumber ?? 'No Serial', 
+        role: userRole,
       ); 
-      // AuthService sudah menyimpan token, jadi tidak perlu disimpan lagi di sini.
 
-      // Update state di ViewModel
       _isLoggedIn = true;
-      _token = loginData.accessToken;
+      _token = accessToken;
       _userId = user.id;
       _userName = user.name;
-      // Gunakan serialNumber untuk _userEmail agar ada nilai yang tersimpan
       _userEmail = user.serialNumber; 
+      _userRole = userRole; 
 
-      // TODO: Panggil fungsi fetch data untuk ViewModel lain di sini jika perlu
-      // await Provider.of<TugasViewModel>(context, listen: false).fetchTugas();
 
       _isLoading = false;
       notifyListeners();
-      return true; // Sukses
+      return true; 
 
     } catch (e) {
       _errorMessage = e.toString().replaceAll("Exception: ", "");
       _isLoading = false;
       _isLoggedIn = false;
       notifyListeners();
-      return false; // Gagal
+      return false;
     }
   }
 
-  /// Fungsi untuk menangani proses logout.
   Future<void> logout(BuildContext context) async {
-    // Panggil AuthService untuk logout (menghapus token lokal)
-    await _authService.logout();
-
-    // Hapus semua sisa data sesi dari storage
+    await _authService.logout(); 
     await TokenStorage.clearAll();
     
-    // TODO: Hapus data lokal dari ViewModel lain
-    // await Provider.of<TugasViewModel>(context, listen: false).clearLocalData();
-    // await Provider.of<LabelViewModel>(context, listen: false).clearLocalData();
-
-    // Reset state ViewModel
     _isLoggedIn = false;
     _token = null;
     _userId = null;
     _userName = null;
     _userEmail = null;
+    _userRole = null;
     
     print("🔴 Pengguna berhasil logout.");
     notifyListeners();
 
+    // Navigasi ke halaman login dan hapus semua rute sebelumnya
     Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
   }
 }

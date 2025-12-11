@@ -1,8 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart'; 
 
-class KeuanganPage extends StatelessWidget {
-  const KeuanganPage({super.key});
+// MARK: - Tambahkan import untuk halaman Pemasukan dan Pengeluaran
+// Ganti path ini dengan path file Anda yang sebenarnya
+import 'bendahara_pemasukan_page.dart'; // Asumsi nama file: bendahara_pemasukan_page.dart
+import 'bendahara_pengeluaran_page.dart'; // Asumsi nama file: bendahara_pengeluaran_page.dart
+// Catatan: Saya menggunakan nama kelas BendaharaPemasukanPage dan PengeluaranPage sesuai kode yang Anda berikan.
+
+
+class BendaharaKeuanganPage extends StatelessWidget {
+  const BendaharaKeuanganPage({super.key});
 
   final Color pengeluaranColor = const Color(0xFF4A4E8A);
   final Color pemasukanColor = const Color(0xFFFFC94D);
@@ -40,7 +47,8 @@ class KeuanganPage extends StatelessWidget {
               const SizedBox(height: 24),
               _buildChartSection(),
               const SizedBox(height: 24),
-              _buildSummarySection(),
+              // Mengirim context ke summary section
+              _buildSummarySection(context),
             ],
           ),
         ),
@@ -177,29 +185,56 @@ class KeuanganPage extends StatelessWidget {
     );
   }
 
-  Widget _buildSummarySection() {
+  // MODIFIKASI: Menerima BuildContext untuk Navigasi
+  Widget _buildSummarySection(BuildContext context) {
     return Column(
       children: [
-        _buildSummaryCard('Pemasukan:', 'Rp350.000,00'),
+        // Kartu Pemasukan
+        _buildSummaryCard(
+          context: context, // Kirim context
+          title: 'Pemasukan:', 
+          amount: 'Rp350.000,00',
+          destinationPage: BendaharaPemasukanPage(), 
+        ),
         const SizedBox(height: 12),
-        _buildSummaryCard('Pengeluaran:', 'Rp100.000,00'),
+        // Kartu Pengeluaran
+        _buildSummaryCard(
+          context: context, // Kirim context
+          title: 'Pengeluaran:', 
+          amount: 'Rp100.000,00',
+          destinationPage: PengeluaranPage(), // Halaman tujuan Pengeluaran
+        ),
       ],
     );
   }
 
-  Widget _buildSummaryCard(String title, String amount) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade200,
-        borderRadius: BorderRadius.circular(15),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(title, style: TextStyle(color: Colors.grey.shade700, fontSize: 16)),
-          Text(amount, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.black87)),
-        ],
+  // MODIFIKASI: Menerima BuildContext dan Widget tujuan
+  Widget _buildSummaryCard({
+    required BuildContext context, 
+    required String title, 
+    required String amount,
+    required Widget destinationPage, // Menambahkan parameter untuk halaman tujuan
+  }) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => destinationPage),
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        decoration: BoxDecoration(
+          color: Colors.grey.shade200,
+          borderRadius: BorderRadius.circular(15),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(title, style: TextStyle(color: Colors.grey.shade700, fontSize: 16)),
+            const Icon(Icons.chevron_right, color: Colors.grey), // Tambah icon panah
+          ],
+        ),
       ),
     );
   }

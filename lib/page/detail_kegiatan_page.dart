@@ -7,20 +7,22 @@ class DetailKegiatanPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Map<String, dynamic> getStatusInfo(String status) {
+    Color getStatusColor(String status) {
       switch (status) {
-        case 'Berlangsung':
-          return {'color': const Color(0xFF4CAF50), 'text': 'Berlangsung'};
-        case 'Akan Datang':
-          return {'color': const Color(0xFF7A73C2), 'text': 'Akan Datang'};
-        case 'Selesai':
-          return {'color': const Color(0xFF2C2C2C), 'text': 'Selesai'};
-        default:
-          return {'color': Colors.grey, 'text': 'N/A'};
+        case 'Berlangsung': return const Color(0xFF4CAF50);
+        case 'Akan Datang': return const Color(0xFF7A73C2);
+        case 'Selesai': return const Color(0xFF2C2C2C);
+        default: return Colors.grey;
       }
     }
-    
-    var statusInfo = getStatusInfo(kegiatan['status']!);
+
+    final String title = kegiatan['title_detail'] ?? kegiatan['nama'] ?? 'Detail Kegiatan';
+    final String tipe = kegiatan['tipe'] ?? 'Kegiatan';
+    final String status = kegiatan['status'] ?? 'N/A';
+    final String tanggal = kegiatan['tanggal'] ?? '-';
+    final String waktu = kegiatan['waktu'] ?? '-';
+    final String lokasi = kegiatan['lokasi'] ?? '-';
+    final Color statusColor = getStatusColor(status);
 
     return Scaffold(
       backgroundColor: const Color(0xFF4A4E8A),
@@ -28,7 +30,7 @@ class DetailKegiatanPage extends StatelessWidget {
         backgroundColor: const Color(0xFF4A4E8A),
         elevation: 0,
         title: Text(
-          kegiatan['nama']!, // Judul AppBar dinamis
+          tipe, 
           style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
         leading: IconButton(
@@ -57,51 +59,64 @@ class DetailKegiatanPage extends StatelessWidget {
                 children: [
                   Expanded(
                     child: Text(
-                      kegiatan['title'] ?? 'Posyandu Balita Melati 5',
-                      style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black87),
+                      title,
+                      style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black87),
                     ),
                   ),
                   const SizedBox(width: 16),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
-                      color: statusInfo['color'],
+                      color: statusColor,
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
-                      statusInfo['text'],
-                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                      status,
+                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: 24),
 
-              // Bagian Info Waktu
-              _buildInfoRow(Icons.calendar_today_outlined, kegiatan['tanggal']!),
-              const SizedBox(height: 12),
-              _buildInfoRow(Icons.access_time, kegiatan['waktu']!),
-              const SizedBox(height: 12),
-              _buildInfoRow(Icons.timelapse_outlined, kegiatan['durasi'] ?? 'Durasi 2 Jam'),
-              const SizedBox(height: 32),
+              _buildInfoRow(Icons.calendar_today_outlined, tanggal),
+              const SizedBox(height: 8),
+              _buildInfoRow(Icons.access_time, waktu),
+              const SizedBox(height: 8),
+              _buildInfoRow(Icons.location_on_outlined, lokasi),
+              const SizedBox(height: 24),
 
-              // Bagian Informasi Tambahan
-              const Text('Informasi tambahan', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 12),
-              _buildRichTextInfo('Lokasi', kegiatan['lokasi'] ?? 'Balai RT 05/RW 06'),
-              const SizedBox(height: 8),
-              _buildRichTextInfo('Penanggung jawab', kegiatan['pj'] ?? 'Shaqilla salsabila'),
-              const SizedBox(height: 8),
-              _buildRichTextInfo('Kegiatan', kegiatan['detail_kegiatan'] ?? 'penimbangan berat badan dan pengukuran tinggi, Pemberian vitamin A dan Imunisasi, Penyuluhan gizi seimbang untuk balita'),
-              const SizedBox(height: 32),
-              
-              // Bagian Deskripsi Tambahan
-              const Text('Deskripsi Tambahan', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 12),
-              Text(
-                kegiatan['deskripsi'] ?? 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.',
-                style: TextStyle(color: Colors.grey.shade700, height: 1.5),
-              ),
+              const Text('Informasi Detail', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 2),
+
+              if (kegiatan['pj'] != null && kegiatan['pj'].toString().isNotEmpty)
+                _buildRichTextInfo('Penanggung Jawab', kegiatan['pj']),
+
+              if (kegiatan['tujuan'] != null && kegiatan['tujuan'].toString().isNotEmpty)
+                _buildRichTextInfo('Tujuan', kegiatan['tujuan']),
+
+              if (kegiatan['kesimpulan'] != null && kegiatan['kesimpulan'].toString().isNotEmpty)
+                 Padding(
+                   padding: const EdgeInsets.only(top: 8.0),
+                   child: _buildRichTextInfo('Kesimpulan', kegiatan['kesimpulan']),
+                 ),
+
+              if (kegiatan['detail'] != null && kegiatan['detail'].toString().isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(top: 12.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text("Deskripsi / Catatan:", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Colors.black87)),
+                      const SizedBox(height: 4),
+                      Text(
+                        kegiatan['detail'],
+                        style: TextStyle(color: Colors.grey.shade700, height: 1.5),
+                        textAlign: TextAlign.justify,
+                      ),
+                    ],
+                  ),
+                ),
             ],
           ),
         ),
@@ -109,28 +124,31 @@ class DetailKegiatanPage extends StatelessWidget {
     );
   }
 
-  // Widget helper untuk baris ikon dan teks
   Widget _buildInfoRow(IconData icon, String text) {
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Icon(icon, color: Colors.grey.shade600, size: 20),
         const SizedBox(width: 12),
-        Text(text, style: TextStyle(color: Colors.grey.shade700, fontSize: 16)),
+        Expanded(child: Text(text, style: TextStyle(color: Colors.grey.shade700, fontSize: 16))),
       ],
     );
   }
   
   Widget _buildRichTextInfo(String label, String value) {
-    return RichText(
-      text: TextSpan(
-        style: TextStyle(fontSize: 15, color: Colors.grey.shade700, height: 1.4),
-        children: [
-          TextSpan(
-            text: '$label : ',
-            style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black87),
-          ),
-          TextSpan(text: value),
-        ],
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8.0),
+      child: RichText(
+        text: TextSpan(
+          style: TextStyle(fontSize: 15, color: Colors.grey.shade700, height: 1.4),
+          children: [
+            TextSpan(
+              text: '$label : ',
+              style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black87),
+            ),
+            TextSpan(text: value),
+          ],
+        ),
       ),
     );
   }

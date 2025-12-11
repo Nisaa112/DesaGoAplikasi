@@ -6,14 +6,14 @@ import 'package:desa_go_aplikasi/viewmodel/ronda_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-class KegiatanPage extends StatefulWidget {
-  const KegiatanPage({super.key});
+class AdminKegiatanPage extends StatefulWidget {
+  const AdminKegiatanPage({super.key});
 
   @override
-  State<KegiatanPage> createState() => _KegiatanPageState();
+  State<AdminKegiatanPage> createState() => _AdminKegiatanPageState();
 }
 
-class _KegiatanPageState extends State<KegiatanPage> {
+class _AdminKegiatanPageState extends State<AdminKegiatanPage> {
   int _selectedFilterIndex = 0;
   final List<String> _filters = ['Ronda', 'Posyandu', 'Agenda', 'Rapat'];
   bool _isInit = true; 
@@ -162,6 +162,33 @@ class _KegiatanPageState extends State<KegiatanPage> {
             centerTitle: true,
             title: const Text('Jadwal', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
           ),
+          // ==========================================================
+          // ✅ FLOATING ACTION BUTTON BARU
+          floatingActionButton: SizedBox(
+            width: 200, 
+            height: 50, 
+            child: FloatingActionButton.extended(
+              onPressed: () {
+                // Tambahkan logika navigasi ke halaman Tambah Kegiatan di sini
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Navigasi ke halaman Tambah Kegiatan')),
+                );
+              },
+              backgroundColor: const Color(0xFFFFCC33), // Warna kuning
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10), // Bentuk kotak melengkung
+              ),
+              icon: const Icon(Icons.add, color: Colors.black),
+              label: const Text(
+                'Tambah Kegiatan',
+                style: TextStyle(
+                  color: Colors.black, 
+                  fontWeight: FontWeight.bold
+                ),
+              ),
+            ),
+          ),
+          // ==========================================================
           body: Container(
             width: double.infinity,
             decoration: const BoxDecoration(
@@ -204,7 +231,8 @@ class _KegiatanPageState extends State<KegiatanPage> {
       },
     );
   }
-
+  // ... (Sisa fungsi _buildFilterChips, _buildChip, dan _buildKegiatanCard)
+  // ... (Tidak ada perubahan pada sisa fungsi)
   Widget _buildFilterChips() {
     return Padding(
       padding: const EdgeInsets.only(top: 20.0, left: 16.0, right: 16.0, bottom: 4.0),

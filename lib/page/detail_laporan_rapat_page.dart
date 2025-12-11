@@ -50,13 +50,11 @@ class DetailLaporanKegiatanPage extends StatelessWidget {
               _buildInfoRow(Icons.person_outline, 'Koordinator Tim Ronda RT 01'),
               const SizedBox(height: 32),
 
-              // Petugas Ronda
               const Text('Petugas Ronda', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               const SizedBox(height: 12),
               _buildPetugasList(),
               const SizedBox(height: 32),
               
-              // Temuan & Kejadian
               _buildSectionTitle(Icons.info_outline, 'Temuan & Kejadian'),
               const SizedBox(height: 12),
               _buildTemuanItem('Situasi Aman Dan Kondusif'),
@@ -65,7 +63,6 @@ class DetailLaporanKegiatanPage extends StatelessWidget {
               _buildTemuanItem('Tidak ada kejadian mencurigakan'),
               const SizedBox(height: 32),
 
-              // Deskripsi & Hasil
               _buildSectionTitle(Icons.edit_note_outlined, 'Deskripsi & Hasil'),
               const SizedBox(height: 12),
               Text(
@@ -74,7 +71,6 @@ class DetailLaporanKegiatanPage extends StatelessWidget {
               ),
               const SizedBox(height: 40),
 
-              // Tombol Export
               _buildExportButton(),
             ],
           ),
@@ -83,7 +79,6 @@ class DetailLaporanKegiatanPage extends StatelessWidget {
     );
   }
 
-  // Widget helper untuk baris info (tanggal, waktu, koordinator)
   Widget _buildInfoRow(IconData icon, String text) {
     return Row(
       children: [
@@ -94,7 +89,6 @@ class DetailLaporanKegiatanPage extends StatelessWidget {
     );
   }
   
-  // Widget helper untuk daftar petugas (2 kolom)
   Widget _buildPetugasList() {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -122,7 +116,6 @@ class DetailLaporanKegiatanPage extends StatelessWidget {
     );
   }
 
-  // Widget helper untuk teks dengan bullet point
   Widget _buildBulletedText(String text) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8.0),
@@ -136,7 +129,6 @@ class DetailLaporanKegiatanPage extends StatelessWidget {
     );
   }
   
-  // Widget helper untuk judul section (temuan, deskripsi)
   Widget _buildSectionTitle(IconData icon, String title) {
     return Row(
       children: [
@@ -164,7 +156,6 @@ class DetailLaporanKegiatanPage extends StatelessWidget {
     );
   }
 
-  // Widget helper untuk tombol Export
   Widget _buildExportButton() {
     return SizedBox(
       width: double.infinity,

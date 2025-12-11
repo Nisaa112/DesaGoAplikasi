@@ -1,5 +1,4 @@
-
-import 'package:desa_go_aplikasi/models/warga_model.dart';
+import 'package:desa_go_aplikasi/models/warga_model.dart' as Warga; // Diperbaiki: menggunakan prefix 'Warga'
 import 'package:desa_go_aplikasi/page/identitas_warga_page.dart';
 import 'package:desa_go_aplikasi/viewmodel/warga_viewmodel.dart';
 import 'package:flutter/material.dart';
@@ -17,13 +16,15 @@ class _InfoWargaPageState extends State<InfoWargaPage> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<WargaViewmodel>(context, listen: false).fetchWarga();
+      // PERBAIKAN: Mengganti fetchWarga() menjadi loadWarga()
+      Provider.of<WargaViewModel>(context, listen: false).loadWarga();
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final wargaViewModel = Provider.of<WargaViewmodel>(context);
+    // PERBAIKAN: Mengganti WargaViewmodel menjadi WargaViewModel
+    final wargaViewModel = Provider.of<WargaViewModel>(context);
 
     return Scaffold(
       backgroundColor: const Color(0xFF4A4E8A),
@@ -62,10 +63,11 @@ class _InfoWargaPageState extends State<InfoWargaPage> {
     );
   }
 
-  Widget _buildBody(WargaViewmodel viewModel) {
+  Widget _buildBody(WargaViewModel viewModel) {
+    // PERBAIKAN: Menyesuaikan penamaan listWarga dan errorMessage
     if (viewModel.isLoading) {
       return const Center(child: CircularProgressIndicator());
-    } else if (viewModel.errorMessage.isNotEmpty) {
+    } else if (viewModel.errorMessage != null && viewModel.errorMessage!.isNotEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -74,21 +76,23 @@ class _InfoWargaPageState extends State<InfoWargaPage> {
             const SizedBox(height: 10),
             ElevatedButton(
               onPressed: () {
-                viewModel.fetchWarga();
+                // PERBAIKAN: Mengganti fetchWarga() menjadi loadWarga()
+                viewModel.loadWarga();
               },
               child: const Text('Coba Lagi'),
             ),
           ],
         ),
       );
-    } else if (viewModel.wargaList.isEmpty) {
+    } else if (viewModel.listWarga.isEmpty) {
       return const Center(child: Text('Tidak ada data Warga.'));
-    }  else {
+    } else {
       return RefreshIndicator(
         color: const Color(0xFFFFC212),
         backgroundColor: Colors.white,
         onRefresh: () async {
-          await viewModel.fetchWarga();
+          // PERBAIKAN: Mengganti fetchWarga() menjadi loadWarga() (akan memicu sync)
+          await viewModel.loadWarga();
         },
         child: ClipRRect(
           borderRadius: const BorderRadius.only(
@@ -97,9 +101,10 @@ class _InfoWargaPageState extends State<InfoWargaPage> {
           ),
           child: ListView.separated(
             padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 16.0),
-            itemCount: viewModel.wargaList.length,
+            itemCount: viewModel.listWarga.length,
             itemBuilder: (context, index) {
-              final Data warga = viewModel.wargaList[index];
+              // PERBAIKAN: Menggunakan Warga.Data karena sudah diimport dengan prefix
+              final Warga.Data warga = viewModel.listWarga[index];
               return ListTile(
                 contentPadding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 0),
                 title: Text(

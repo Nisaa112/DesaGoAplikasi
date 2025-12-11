@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:desa_go_aplikasi/viewmodel/auth_viewmodel.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -8,7 +10,6 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  // Controller untuk mengelola teks di dalam TextField
   final _nikController = TextEditingController();
   final _namaController = TextEditingController();
   final _alamatController = TextEditingController();
@@ -17,10 +18,16 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   void initState() {
     super.initState();
-    _nikController.text = '32898366529008';
-    _namaController.text = 'Annisa Aulia Firdaus';
-    _alamatController.text = 'Gg. Bidan Tati Jambudipa Rt04/Rw03 Warungkondang, Cianjur, 43261';
-    _telpController.text = '08123455678';
+    
+    Future.microtask(() {
+      final authViewModel = Provider.of<AuthViewModel>(context, listen: false);
+
+      _nikController.text = authViewModel.userEmail ?? 'N/A (Serial/Email)'; 
+      _namaController.text = authViewModel.userName ?? 'N/A';
+
+      _alamatController.text = 'Gg. Bidan Tati Jambudipa Rt04/Rw03 Warungkondang, Cianjur, 43261'; 
+      _telpController.text = '08123455678';
+    });
   }
 
   @override
@@ -34,55 +41,82 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF4A4E8A),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF4A4E8A),
-        elevation: 0,
-        title: const Text('Profil Pengguna', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(30),
-            topRight: Radius.circular(30),
+    return Consumer<AuthViewModel>(
+      builder: (context, authViewModel, child) {
+        return Scaffold(
+          backgroundColor: const Color(0xFF4A4E8A),
+          appBar: AppBar(
+            backgroundColor: const Color(0xFF4A4E8A),
+            elevation: 0,
+            title: const Text('Profil Pengguna',
+                style:
+                    TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back, color: Colors.white),
+              onPressed: () => Navigator.pop(context),
+            ),
           ),
-        ),
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
-          child: Column(
-            children: [
-              _buildProfilePicture(),
-              const SizedBox(height: 32),
-              _buildTextField(label: 'NIK', controller: _nikController),
-              const SizedBox(height: 20),
-              _buildTextField(label: 'Nama', controller: _namaController),
-              const SizedBox(height: 20),
-              _buildTextField(label: 'Alamat', controller: _alamatController, maxLines: 3),
-              const SizedBox(height: 20),
-              _buildTextField(label: 'No.Telp', controller: _telpController),
-              const SizedBox(height: 40),
-              _buildSaveButton(),
-            ],
+          body: Container(
+            width: double.infinity,
+            height: double.infinity,
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(30),
+                topRight: Radius.circular(30),
+              ),
+            ),
+            child: SingleChildScrollView(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
+              child: Column(
+                children: [
+                  _buildProfilePicture(),
+                  const SizedBox(height: 32),
+                  // NIK (Read-Only)
+                  _buildTextField(
+                      label: 'NIK (Serial Number)',
+                      controller: _nikController,
+                      isReadOnly: true),
+                  const SizedBox(height: 20),
+                  // Nama (Editable)
+                  _buildTextField(
+                      label: 'Nama', controller: _namaController, isReadOnly: false),
+                  const SizedBox(height: 20),
+                  // Alamat (Read-Only)
+                  _buildTextField(
+                      label: 'Alamat',
+                      controller: _alamatController,
+                      maxLines: 3,
+                      isReadOnly: true),
+                  const SizedBox(height: 20),
+                  // No.Telp (Read-Only)
+                  _buildTextField(
+                      label: 'No.Telp',
+                      controller: _telpController,
+                      isReadOnly: true),
+                  const SizedBox(height: 40),
+                  _buildSaveButton(),
+                  const SizedBox(height: 20), // Jarak untuk tombol Logout
+                  _buildLogoutButton(authViewModel),
+                ],
+              ),
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
   Widget _buildProfilePicture() {
     return Stack(
       children: [
-        const CircleAvatar(
+        CircleAvatar(
           radius: 60,
-          backgroundImage: AssetImage('assets/profile_picture.png'),
+          // Menggunakan Icon sebagai fallback jika tidak ada aset gambar
+          child: Icon(Icons.person, size: 60, color: Colors.white.withOpacity(0.7)),
+          backgroundColor: const Color(0xFF4A4E8A).withOpacity(0.8),
+          //backgroundImage: const AssetImage('assets/profile_picture.png'),
         ),
         Positioned(
           bottom: 0,
@@ -103,26 +137,38 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  Widget _buildTextField({required String label, required TextEditingController controller, int maxLines = 1}) {
+  Widget _buildTextField(
+      {required String label,
+      required TextEditingController controller,
+      int maxLines = 1,
+      bool isReadOnly = false}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: TextStyle(color: Colors.grey.shade700, fontSize: 14)),
+        Text(label,
+            style: TextStyle(color: Colors.grey.shade700, fontSize: 14)),
         const SizedBox(height: 8),
         TextField(
           controller: controller,
+          readOnly: isReadOnly, // Control read-only status
           maxLines: maxLines,
+          style: TextStyle(
+            color: isReadOnly ? Colors.grey.shade600 : Colors.black,
+            fontWeight: isReadOnly ? FontWeight.normal : FontWeight.bold,
+          ),
           decoration: InputDecoration(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
             filled: true,
-            fillColor: Colors.grey.shade100, 
+            fillColor: isReadOnly ? Colors.grey.shade200 : Colors.grey.shade100, 
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(15),
               borderSide: BorderSide(color: Colors.grey.shade300),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(15),
-              borderSide: BorderSide(color: Colors.grey.shade300),
+              borderSide: BorderSide(
+                  color: isReadOnly ? Colors.grey.shade400 : Colors.grey.shade300),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(15),
@@ -139,7 +185,7 @@ class _ProfilePageState extends State<ProfilePage> {
       width: double.infinity,
       child: ElevatedButton(
         onPressed: () {
-          // Aksi ketika tombol simpan ditekan
+          print('Nama yang diperbarui: ${_namaController.text}');
         },
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFF2C2C2C),
@@ -150,7 +196,35 @@ class _ProfilePageState extends State<ProfilePage> {
         ),
         child: const Text(
           'Simpan Perubahan',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+          style: TextStyle(
+              fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLogoutButton(AuthViewModel authViewModel) {
+    return SizedBox(
+      width: double.infinity,
+      child: OutlinedButton(
+        onPressed: () {
+          authViewModel.logout(context);
+        },
+        style: OutlinedButton.styleFrom(
+          side: BorderSide(color: Colors.red.shade600, width: 2),
+          padding: const EdgeInsets.symmetric(vertical: 18),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(30),
+          ),
+          overlayColor: Colors.red.withOpacity(0.1), 
+        ),
+        child: Text(
+          'Logout',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Colors.red.shade600,
+          ),
         ),
       ),
     );

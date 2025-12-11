@@ -27,7 +27,6 @@ class _LoginPageState extends State<LoginPage> {
     // Validasi menggunakan _serialController
     if (_serialController.text.isEmpty || _passwordController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        // Perbarui pesan SnackBar
         const SnackBar(content: Text('Nomor Serial dan Password tidak boleh kosong.')),
       );
       return;
@@ -39,9 +38,8 @@ class _LoginPageState extends State<LoginPage> {
 
     final authViewModel = Provider.of<AuthViewModel>(context, listen: false);
 
-    // Kirim Nomor Serial dan Password
     final bool success = await authViewModel.login(
-      _serialController.text.trim(), // Serial Number
+      _serialController.text.trim(), 
       _passwordController.text.trim(),
     );
     
@@ -52,7 +50,30 @@ class _LoginPageState extends State<LoginPage> {
     });
 
     if (success) {
-      Navigator.pushNamedAndRemoveUntil(context, '/home', (route) => false);
+      // START OF UPDATE: Pemeriksaan Role Pengguna (Admin, Bendahara, Warga)
+      
+      // Menggunakan operator '??' untuk memberikan nilai default 'warga' 
+      // jika role yang diambil adalah null, dan memaksa nilainya menjadi huruf kecil.
+      final String userRole = (authViewModel.userRole ?? 'warga').toLowerCase(); 
+
+      String targetRoute;
+
+      if (userRole == 'admin') {
+        // Jika peran adalah admin
+        targetRoute = '/admin-home'; 
+      } else if (userRole == 'bendahara') {
+        // Jika peran adalah bendahara
+        targetRoute = '/bendahara-home'; 
+      } else {
+        // Jika peran adalah warga atau peran lain/default
+        targetRoute = '/home';
+      }
+
+      // Navigasi ke halaman sesuai peran, hapus semua route sebelumnya
+      Navigator.pushNamedAndRemoveUntil(context, targetRoute, (route) => false);
+      
+      // END OF UPDATE
+
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -107,14 +128,11 @@ class _LoginPageState extends State<LoginPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Ganti label menjadi Nomor Serial
                     const Text('Nomor Serial', style: TextStyle(color: Colors.black54, fontWeight: FontWeight.w600)),
                     const SizedBox(height: 8),
                     TextField(
-                      controller: _serialController, // Menggunakan controller serial
-                      // Menghapus TextInputType.emailAddress
+                      controller: _serialController, 
                       decoration: InputDecoration(
-                        // Ganti hint text
                         hintText: 'Masukan Nomor Serial', 
                         hintStyle: TextStyle(color: Colors.grey.shade400),
                         contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),

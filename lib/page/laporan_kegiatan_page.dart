@@ -1,4 +1,3 @@
-// [PERUBAHAN 1] Import halaman detail yang baru
 import 'package:desa_go_aplikasi/page/detail_laporan_kegiatan_page.dart';
 import 'package:flutter/material.dart';
 
@@ -7,7 +6,6 @@ class LaporanKegiatanPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Data dummy untuk daftar laporan
     final List<String> laporanList = [
       'Pembangunan Pos Ronda',
       'Acara 17 Agustus 2025',
@@ -63,11 +61,9 @@ class LaporanKegiatanPage extends StatelessWidget {
                 ),
                 trailing: const Icon(Icons.chevron_right, color: Colors.grey),
                 onTap: () {
-                  // [PERUBAHAN 2] Tambahkan aksi navigasi di sini
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      // Kirim judul laporan ke halaman detail
                       builder: (context) => DetailLaporanKegiatanPage(reportTitle: laporanTitle),
                     ),
                   );

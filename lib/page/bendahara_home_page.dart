@@ -9,14 +9,23 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:desa_go_aplikasi/viewmodel/auth_viewmodel.dart';
 
-class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+class BendaharaHomePage extends StatefulWidget {
+  const BendaharaHomePage({super.key});
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  State<BendaharaHomePage> createState() => _BendaharaHomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _BendaharaHomePageState extends State<BendaharaHomePage> {
+  final String _totalDana = 'Rp250.000,00';
+  final String _pemasukan = 'Rp350.000';
+  final String _pengeluaran = 'Rp100.000';
+  
+  final List<Map<String, String>> _riwayatTransaksi = [
+    {'title': 'Dana Iuran Warga', 'amount': 'Rp300.000,00', 'date': 'Senin, 23 Juli 2025'},
+    {'title': 'Dana Iuran Warga', 'amount': 'Rp300.000,00', 'date': 'Senin, 23 Juli 2025'},
+  ];
+
   @override
   Widget build(BuildContext context) {
     return Material(
@@ -35,13 +44,13 @@ class _HomePageState extends State<HomePage> {
               ),
               const Padding(
                 padding: EdgeInsets.symmetric(vertical: 16.0),
-                child: Divider(color: Color(0xFFF0F0F0), height: 1),
+                child: SizedBox.shrink(), 
               ),
-              _buildScheduleCard(context),
+              _buildTotalDanaCard(context), 
               const SizedBox(height: 24),
               _buildFinanceCards(context),
               const SizedBox(height: 24),
-              _buildHistoryList(),
+              _buildHistoryList(), 
 
               const SizedBox(height: 100),
             ],
@@ -86,7 +95,7 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
             const Text(
-              'Sebagai Warga',
+              'Sebagai Bendahara',
               style: TextStyle(color: Colors.grey, fontSize: 14),
             ),
           ],
@@ -127,71 +136,92 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildScheduleCard(BuildContext context) {
+  Widget _buildTotalDanaCard(BuildContext context) {
     return InkWell(
       onTap: () {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const KegiatanPage())
+          MaterialPageRoute(builder: (context) => const KeuanganPage())
         );
       },
       borderRadius: BorderRadius.circular(24),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(24),
-        child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: const Color(0xFF7A73C2),
-            borderRadius: BorderRadius.circular(24),
-          ),
-          child: Stack(
-            clipBehavior: Clip.none,
-            children: [
-              Positioned(
-                right: -20,
-                bottom: -40,
-                child: Image.asset(
-                  'assets/icon_jam.png',
-                  height: 130,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
+        decoration: BoxDecoration(
+          color: const Color(0xFF7A73C2), 
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF7A73C2).withOpacity(0.5),
+              blurRadius: 15,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Total Dana', 
+                  style: TextStyle(color: Colors.white70, fontSize: 16, fontWeight: FontWeight.normal)
                 ),
-              ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('Jadwal Kegiatan', style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w800)),
-                  const Text('Hari ini', style: TextStyle(color: Colors.white70, fontSize: 14)),
-                  const SizedBox(height: 16),
-                  _buildScheduleItem('Pos Ronda', 'Pukul 21.00, Lokasi di Pos Ronda'),
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 0),
-                    child: Divider(color: Colors.white24),
+                const SizedBox(height: 4),
+                Text(
+                  _totalDana, 
+                  style: const TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.w800)
+                ),
+                const SizedBox(height: 12),
+                
+                Container(
+                  height: 40,
+                  alignment: Alignment.bottomCenter,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      _buildGraphBar(0.5, const Color(0xFFE5C02A)),
+                      _buildGraphBar(0.8, const Color(0xFFE5C02A)),
+                      _buildGraphBar(0.3, const Color(0xFFE5C02A)),
+                      _buildGraphBar(0.6, const Color(0xFFE5C02A)),
+                      _buildGraphBar(0.2, const Color(0xFFE5C02A)),
+                      _buildGraphBar(0.7, const Color(0xFFE5C02A)),
+                      _buildGraphBar(0.9, const Color(0xFFE5C02A)),
+                      _buildGraphBar(0.4, const Color(0xFFE5C02A)),
+                      _buildGraphBar(0.7, const Color(0xFFE5C02A)),
+                      _buildGraphBar(0.5, const Color(0xFFE5C02A)),
+                    ],
                   ),
-                  _buildScheduleItem('Posyandu', 'Pukul 10.00, Lokasi di Puskesmas Citra'),
-                ],
-              ),
-              const Positioned(
-                top: 0,
-                right: 0,
-                child: Icon(Icons.arrow_forward_ios, color: Colors.white54, size: 16),
-              ),
-            ],
-          ),
+                ),
+              ],
+            ),
+            const Positioned(
+              top: 0,
+              right: 0,
+              child: Icon(Icons.arrow_forward, color: Colors.white54, size: 24),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildScheduleItem(String title, String subtitle) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
-        Text(subtitle, style: const TextStyle(color: Colors.white70, fontSize: 12)),
-      ],
+  Widget _buildGraphBar(double heightFactor, Color color) {
+    return Container(
+      width: 5,
+      height: 40 * heightFactor,
+      margin: const EdgeInsets.symmetric(horizontal: 4),
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(2),
+      ),
     );
   }
 
+  
   Widget _buildFinanceCards(BuildContext context) {
     return Row(
       children: [
@@ -309,20 +339,21 @@ class _HomePageState extends State<HomePage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
-          'Riwayat Kegiatan:',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87),
+          'Riwayat Transaksi:',
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.normal, color: Colors.black87),
         ),
         const SizedBox(height: 12),
-        _buildHistoryItem('Posyandu', 'Pukul 10.00, Lokasi di Puskesmas Sehat', 'Selesai Pukul 12.00'),
-        const SizedBox(height: 12),
-        _buildHistoryItem('Posyandu', 'Pukul 10.00, Lokasi di Puskesmas Sehat', 'Selesai Pukul 12.00'),
-        const SizedBox(height: 12),
-        _buildHistoryItem('Posyandu', 'Pukul 10.00, Lokasi di Puskesmas Sehat', 'Selesai Pukul 12.00'),
+        ..._riwayatTransaksi.map((item) => Column(
+              children: [
+                _buildHistoryItem(item['title']!, item['amount']!, item['date']!),
+                const SizedBox(height: 12),
+              ],
+            )).toList(),
       ],
     );
   }
 
-  Widget _buildHistoryItem(String title, String subtitle, String status) {
+  Widget _buildHistoryItem(String title, String amount, String date) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
@@ -330,18 +361,27 @@ class _HomePageState extends State<HomePage> {
         color: const Color(0xFFF0F2F5),
         borderRadius: BorderRadius.circular(16),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.black87)),
-              Text(status, style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
+              Text(
+                title, 
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.black87)
+              ),
+              const SizedBox(height: 4),
+              Text(
+                amount, 
+                style: TextStyle(color: Colors.grey.shade600, fontSize: 14)
+              ),
             ],
           ),
-          const Divider(color: Colors.grey),
-          Text(subtitle, style: TextStyle(color: Colors.grey.shade600, fontSize: 14)),
+          Text(
+            date, 
+            style: TextStyle(color: Colors.grey.shade600, fontSize: 12)
+          ),
         ],
       ),
     );

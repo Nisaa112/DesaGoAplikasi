@@ -4,20 +4,25 @@ import 'package:desa_go_aplikasi/viewmodel/pengaduan_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-class FormPengaduanPage extends StatefulWidget {
+class AdminPengaduanFormPage extends StatefulWidget {
   final PengaduanModel.Data? pengaduan;
-  const FormPengaduanPage({super.key, this.pengaduan});
+  const AdminPengaduanFormPage({super.key, this.pengaduan});
 
   @override
-  State<FormPengaduanPage> createState() => _FormPengaduanPageState();
+  State<AdminPengaduanFormPage> createState() => _AdminPengaduanFormPageState();
 }
 
-class _FormPengaduanPageState extends State<FormPengaduanPage> {
+class _AdminPengaduanFormPageState extends State<AdminPengaduanFormPage> {
   String? _selectedKategori;
   final List<String> _kategoriList = ['Infrastruktur', 'Pelayanan', 'Lain-lain'];
 
   String? _selectedPrioritas;
   final List<String> _prioritasList = ['Rendah', 'Sedang', 'Tinggi'];
+  
+  // ✅ STATE DAN LIST STATUS UNTUK ADMIN
+  String? _selectedStatus;
+  // Nilai yang disimpan ke database (biasanya huruf kecil)
+  final List<String> _statusList = ['pending', 'diproses', 'selesai']; 
 
   bool _isLaporanPublik = false;
   bool _isSubmitting = false;
@@ -37,6 +42,12 @@ class _FormPengaduanPageState extends State<FormPengaduanPage> {
       _selectedKategori = widget.pengaduan!.kategori;
       _selectedPrioritas = _mapPriorityIntToString(widget.pengaduan!.priority);
       _isLaporanPublik = widget.pengaduan!.isPublic ?? false;
+      
+      // ✅ INISIALISASI STATUS DARI DATA
+      _selectedStatus = widget.pengaduan!.status; 
+    } else {
+      // Jika buat baru (oleh Admin), default status adalah 'pending'
+      _selectedStatus = 'pending';
     }
   }
 
@@ -55,10 +66,13 @@ class _FormPengaduanPageState extends State<FormPengaduanPage> {
   }
 
   Future<void> _kirimPengaduan() async {
+    // Validasi wajib diisi
     if (_namaLaporanController.text.isEmpty ||
         _pesanController.text.isEmpty ||
         _selectedKategori == null ||
-        _selectedPrioritas == null) {
+        _selectedPrioritas == null ||
+        _selectedStatus == null 
+        ) {
         _showSnackbar('Semua field wajib diisi', Colors.red);
         return;
     }
@@ -74,7 +88,7 @@ class _FormPengaduanPageState extends State<FormPengaduanPage> {
       kategori: _selectedKategori,
       judul: _namaLaporanController.text,
       pesan: _pesanController.text,
-      status: widget.pengaduan?.status ?? 'pending',
+      status: _selectedStatus, // ✅ Hanya status yang mungkin berubah
       isPublic: _isLaporanPublik,
       priority: _mapPriorityStringToInt(_selectedPrioritas),
       createdAt: widget.pengaduan?.createdAt,
@@ -84,7 +98,7 @@ class _FormPengaduanPageState extends State<FormPengaduanPage> {
     try {
       if (isEditMode) {
         await viewModel.updatePengaduan(pengaduanToSave);
-        _showSnackbar('Pengaduan berhasil diupdate!', const Color(0xFF5CB85C));
+        _showSnackbar('Status pengaduan berhasil diupdate!', const Color(0xFF5CB85C));
       } else {
         await viewModel.addPengaduan(pengaduanToSave);
         _showSnackbar('Pengaduan berhasil dikirim!', const Color(0xFF5CB85C));
@@ -122,8 +136,7 @@ class _FormPengaduanPageState extends State<FormPengaduanPage> {
   @override
   Widget build(BuildContext context) {
     const Color primaryColor = Color(0xFF4A4E8A);
-    final isEditMode = widget.pengaduan != null;
-    final titleText = isEditMode ? 'Edit Pengaduan' : 'Form Pengaduan Baru';
+    final titleText = 'Update Status Pengaduan'; 
 
     return Scaffold(
       backgroundColor: primaryColor,
@@ -155,8 +168,9 @@ class _FormPengaduanPageState extends State<FormPengaduanPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Icon Header (Opsional, dibiarkan saja)
                 Container(
-                  height: 150,
+                  height: 100, // Sedikit diperkecil biar hemat tempat
                   width: double.infinity,
                   decoration: BoxDecoration(
                     color: Colors.grey.shade200,
@@ -164,79 +178,115 @@ class _FormPengaduanPageState extends State<FormPengaduanPage> {
                   ),
                   child: const Center(
                     child: Icon(
-                      Icons.camera_alt,
-                      size: 60,
+                      Icons.camera_alt, // Ganti icon biar lebih cocok untuk admin
+                      size: 50,
                       color: Colors.grey,
                     ),
                   ),
                 ),
                 const SizedBox(height: 24),
 
+                // ==========================
+                // 1. KATEGORI (DISABLED)
+                // ==========================
                 const Text('Kategori', style: TextStyle(fontSize: 16, color: Colors.black87)),
                 const SizedBox(height: 8),
                 _buildDropdownField(
                   value: _selectedKategori,
                   hint: 'Pilih kategori...',
                   items: _kategoriList,
-                  onChanged: (newValue) {
-                    setState(() {
-                      _selectedKategori = newValue;
-                    });
-                  },
+                  enabled: false, // 🔒 DISABLED
+                  onChanged: (newValue) {}, 
                 ),
                 const SizedBox(height: 20),
 
+                // ==========================
+                // 2. NAMA LAPORAN (DISABLED)
+                // ==========================
                 const Text('Nama Laporan', style: TextStyle(fontSize: 16, color: Colors.black87)),
                 const SizedBox(height: 8),
                 _buildTextField(
                   controller: _namaLaporanController,
                   hintText: 'Nama Laporan',
                   maxLines: 1,
+                  enabled: false, // 🔒 DISABLED
                 ),
                 const SizedBox(height: 20),
 
+                // ==========================
+                // 3. PESAN (DISABLED)
+                // ==========================
                 const Text('Pesan (Deskripsi)', style: TextStyle(fontSize: 16, color: Colors.black87)),
                 const SizedBox(height: 8),
                 _buildTextField(
                   controller: _pesanController,
                   hintText: 'Pesan',
                   maxLines: 3,
+                  enabled: false, // 🔒 DISABLED
                 ),
-
-                const Text('Ditugaskan untuk (Opsional)', style: TextStyle(fontSize: 16, color: Colors.black87)),
+                const SizedBox(height: 20),
+                
+                // ==========================
+                // 4. STATUS PENGADUAN (ENABLED / BISA DIEDIT)
+                // ==========================
+                Row(
+                  children: const [
+                    Text('Status Pengaduan', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87)),
+                    SizedBox(width: 8),
+                  ],
+                ),
                 const SizedBox(height: 8),
-                _buildTextField(
-                  controller: _ditugaskanUntukController,
-                  hintText: 'Contoh: Kepala Desa/Dinas X',
-                  maxLines: 1,
+                _buildDropdownField(
+                  value: _selectedStatus,
+                  hint: 'Pilih status...',
+                  items: _statusList,
+                  enabled: true, // ✅ ENABLED (HANYA INI YANG BISA DIUBAH)
+                  onChanged: (newValue) {
+                    setState(() {
+                      _selectedStatus = newValue; 
+                    });
+                  },
                 ),
                 const SizedBox(height: 20),
 
+                // ==========================
+                // 5. DITUGASKAN UNTUK (DISABLED)
+                // ==========================
+                const Text('Ditugaskan untuk', style: TextStyle(fontSize: 16, color: Colors.black87)),
+                const SizedBox(height: 8),
+                _buildTextField(
+                  controller: _ditugaskanUntukController,
+                  hintText: '-',
+                  maxLines: 1,
+                  enabled: false, // 🔒 DISABLED
+                ),
+                const SizedBox(height: 20),
+
+                // ==========================
+                // 6. PRIORITAS (DISABLED)
+                // ==========================
                 const Text('Prioritas', style: TextStyle(fontSize: 16, color: Colors.black87)),
                 const SizedBox(height: 8),
                 _buildDropdownField(
                   value: _selectedPrioritas,
                   hint: 'Pilih prioritas...',
                   items: _prioritasList,
-                  onChanged: (newValue) {
-                    setState(() {
-                      _selectedPrioritas = newValue;
-                    });
-                  },
+                  enabled: false, // 🔒 DISABLED
+                  onChanged: (newValue) {},
                 ),
                 const SizedBox(height: 20),
 
+                // ==========================
+                // 7. PUBLIC RADIO (DISABLED)
+                // ==========================
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Radio<bool>(
                       value: true,
                       groupValue: _isLaporanPublik,
-                      onChanged: (bool? value) {
-                        setState(() {
-                          _isLaporanPublik = value!;
-                        });
-                      },
+                      // onChanged null membuat radio button disabled (abu-abu)
+                      onChanged: null, // 🔒 DISABLED
                       activeColor: primaryColor,
                       materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     ),
@@ -249,7 +299,7 @@ class _FormPengaduanPageState extends State<FormPengaduanPage> {
                             style: TextStyle(fontSize: 16, color: Colors.black87),
                           ),
                           Text(
-                            'Jika opsi Laporan Publik di centang, maka warga lain akan menerima informasi Laporan.',
+                            'Laporan ini bersifat ${_isLaporanPublik ? "Publik" : "Privat"}.',
                             style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
                           ),
                         ],
@@ -259,6 +309,7 @@ class _FormPengaduanPageState extends State<FormPengaduanPage> {
                 ),
                 const SizedBox(height: 32),
 
+                // TOMBOL UPDATE
                 Align(
                   alignment: Alignment.bottomRight,
                   child: ElevatedButton.icon(
@@ -272,10 +323,10 @@ class _FormPengaduanPageState extends State<FormPengaduanPage> {
                               strokeWidth: 2,
                             ),
                           )
-                        : const Icon(Icons.send, color: Colors.white),
-                    label: Text(
-                      isEditMode ? 'Update' : 'Kirim',
-                      style: const TextStyle(color: Colors.white)),
+                        : const Icon(Icons.save, color: Colors.white),
+                    label: const Text(
+                      'Simpan Status',
+                      style: TextStyle(color: Colors.white)),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: primaryColor,
                       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
@@ -295,20 +346,27 @@ class _FormPengaduanPageState extends State<FormPengaduanPage> {
     );
   }
 
+  // ✅ MODIFIKASI: Menambahkan parameter `enabled`
   Widget _buildTextField({
     required TextEditingController controller,
     required String hintText,
     int maxLines = 1,
+    bool enabled = true, // Default true
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        // Jika disabled, warnanya abu-abu
+        color: enabled ? Colors.white : Colors.grey.shade200,
         borderRadius: BorderRadius.circular(10),
         border: Border.all(color: Colors.grey.shade400),
       ),
       child: TextField(
         controller: controller,
         maxLines: maxLines,
+        enabled: enabled, // Mengontrol apakah bisa diketik
+        style: TextStyle(
+          color: enabled ? Colors.black87 : Colors.grey.shade700
+        ),
         decoration: InputDecoration(
           hintText: hintText,
           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -318,34 +376,63 @@ class _FormPengaduanPageState extends State<FormPengaduanPage> {
       ),
     );
   }
-
+  
+  // ✅ MODIFIKASI: Implementasi Null Safety yang lebih bersih dengan 'orElse'
   Widget _buildDropdownField({
     required String? value,
     required String hint,
     required List<String> items,
     required ValueChanged<String?> onChanged,
+    bool enabled = true, // Default true
   }) {
+    // 1. Buat daftar item untuk ditampilkan (Contoh: 'pending' -> 'Pending')
+    final displayItems = items.map((s) => s[0].toUpperCase() + s.substring(1)).toList();
+    
+    String? selectedDisplayValue;
+
+    if (value != null) {
+      const String notFoundValue = '__NOT_FOUND__'; 
+      
+      final foundItem = displayItems.firstWhere(
+        (item) => item.toLowerCase() == value.toLowerCase(),
+        orElse: () => notFoundValue, 
+      );
+      
+      selectedDisplayValue = foundItem == notFoundValue ? null : foundItem;
+    }
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        // Jika disabled, warnanya abu-abu
+        color: enabled ? Colors.white : Colors.grey.shade200,
         borderRadius: BorderRadius.circular(10),
         border: Border.all(color: Colors.grey.shade400),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
-          value: value,
+          value: selectedDisplayValue, 
           hint: Text(hint),
           isExpanded: true,
           icon: const Icon(Icons.arrow_drop_down),
-          style: const TextStyle(color: Colors.black87, fontSize: 16),
-          items: items.map<DropdownMenuItem<String>>((String item) {
+          style: TextStyle(
+            // Jika disabled, teks sedikit lebih pudar
+            color: enabled ? Colors.black87 : Colors.grey.shade700, 
+            fontSize: 16
+          ),
+          // Jika enabled false, onChanged harus null agar dropdown tidak bisa diklik
+          onChanged: enabled 
+            ? (String? newValue) {
+                // Simpan nilai ke model dalam format huruf kecil (sesuai list _statusList, dll.)
+                onChanged(newValue?.toLowerCase()); 
+              }
+            : null, 
+          items: displayItems.map<DropdownMenuItem<String>>((String item) {
             return DropdownMenuItem<String>(
               value: item,
               child: Text(item),
             );
           }).toList(),
-          onChanged: onChanged,
         ),
       ),
     );

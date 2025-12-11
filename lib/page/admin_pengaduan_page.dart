@@ -1,17 +1,18 @@
-import 'package:desa_go_aplikasi/page/pengaduan_form_page.dart';
+import 'package:desa_go_aplikasi/models/pengaduan_model.dart' as PengaduanModel;
+// ✅ PASTIKAN IMPORT INI MENGARAH KE FILE FORM ADMIN YANG KAMU BUAT
+import 'package:desa_go_aplikasi/page/admin_pengaduan_form_page.dart'; 
 import 'package:desa_go_aplikasi/viewmodel/pengaduan_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../models/pengaduan_model.dart' as PengaduanModel;
-
-class PengaduanPage extends StatelessWidget {
-  const PengaduanPage({super.key});
+class AdminPengaduanPage extends StatelessWidget {
+  const AdminPengaduanPage({super.key});
 
   Widget _buildStatusBadge(String status) {
     Color color;
     String displayText = status;
 
+    // Logika warna badge status
     if (status.toLowerCase() == 'pending') {
       color = const Color(0xFFFFC212);
       displayText = 'Pending';
@@ -100,10 +101,13 @@ class PengaduanPage extends StatelessWidget {
             ),
             trailing: _buildStatusBadge(pengaduan.status ?? 'Unknown'),
             onTap: () {
+              // ✅ PERBAIKAN DI SINI:
+              // Sebelumnya mengarah ke AdminPengaduanPage (Recursive),
+              // Sekarang mengarah ke AdminPengaduanFormPage untuk Edit.
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => FormPengaduanPage(pengaduan: pengaduan),
+                  builder: (context) => AdminPengaduanFormPage(pengaduan: pengaduan),
                 ),
               );
             },
@@ -149,69 +153,31 @@ class PengaduanPage extends StatelessWidget {
                   ),
                 ),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Padding(
-                      padding: const EdgeInsets.only(top: 16.0, bottom: 8.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          DropdownButton<String>(
-                            value: 'Milik Saya',
-                            icon: const Icon(Icons.keyboard_arrow_down, color: Colors.black87),
-                            elevation: 1,
-                            style: const TextStyle(color: Colors.black87, fontSize: 14),
-                            underline: Container(),
-                            items: <String>['Milik Saya', 'Semua Pengaduan']
-                                .map<DropdownMenuItem<String>>((String value) {
-                              return DropdownMenuItem<String>(
-                                value: value,
-                                child: Text(value),
-                              );
-                            }).toList(),
-                            onChanged: (String? newValue) {
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
+                    const SizedBox(height: 16.0),
                     Expanded(
                       child: _buildListContent(context, pengaduanList, isLoading, viewModel),
                     ),
                   ],
                 ),
               ),
-
-              Positioned(
-                bottom: 20,
-                left: 0,
-                right: 0,
-                child: Center(
-                  child: ElevatedButton.icon(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const FormPengaduanPage()),
-                      );
-                    },
-                    icon: const Icon(Icons.add, color: Colors.black87),
-                    label: const Text(
-                      'Tambah Pengaduan',
-                      style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFFFC212),
-                      padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                      elevation: 0,
-                    ),
-                  ),
-                ),
-              ),
             ],
           ),
+          // Opsional: Jika ingin admin bisa menambah pengaduan manual
+          // floatingActionButton: FloatingActionButton(
+          //   backgroundColor: const Color(0xFFFFC212),
+          //   child: const Icon(Icons.add, color: Colors.black),
+          //   onPressed: () {
+          //     Navigator.push(
+          //       context,
+          //       MaterialPageRoute(
+          //         // Buka form tanpa parameter pengaduan (Mode Create)
+          //         builder: (context) => const AdminPengaduanFormPage(),
+          //       ),
+          //     );
+          //   },
+          // ),
         );
       },
     );
