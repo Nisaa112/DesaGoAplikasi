@@ -1,10 +1,9 @@
 import 'package:desa_go_aplikasi/models/rt_model.dart' as RtModel;
+import 'package:desa_go_aplikasi/models/rw_model.dart' as RwModel;
 import 'package:desa_go_aplikasi/viewmodel/rt_viewmodel.dart';
+import 'package:desa_go_aplikasi/viewmodel/rw_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
-// Import RwViewModel (asumsi) untuk mengambil daftar RW
-// import 'package:desa_go_aplikasi/viewmodel/rw_viewmodel.dart'; 
 
 class AdminInfoRtPage extends StatefulWidget {
   const AdminInfoRtPage({super.key});
@@ -16,18 +15,12 @@ class AdminInfoRtPage extends StatefulWidget {
 class _AdminInfoRtPageState extends State<AdminInfoRtPage> {
   GlobalKey<_SlidableListItemState>? _currentlyOpenItemKey;
 
-  // Data dummy RW (digunakan di pop-up)
-  final List<Map<String, dynamic>> _listRwDummy = [
-    {'id': 1, 'nama_rw': '001'},
-    {'id': 2, 'nama_rw': '002'},
-    {'id': 3, 'nama_rw': '003'},
-  ];
-
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<RtViewModel>(context, listen: false).loadRt();
+      Provider.of<RwViewModel>(context, listen: false).loadRw();
     });
   }
 
@@ -61,8 +54,8 @@ class _AdminInfoRtPageState extends State<AdminInfoRtPage> {
                 final viewModel = Provider.of<RtViewModel>(this.context, listen: false);
                 await viewModel.createRt(newRt); 
                 _showSnackbar('RT baru berhasil ditambahkan!', const Color(0xFF5CB85C));
-                Navigator.of(dialogContext).pop(); // Tutup modal
-                Provider.of<RtViewModel>(this.context, listen: false).loadRt(); // Refresh list
+                Navigator.of(dialogContext).pop(); 
+                Provider.of<RtViewModel>(this.context, listen: false).loadRt(); 
               } catch (e) {
                 final errorMessage = e.toString().split(':').last.trim();
                 _showSnackbar('Gagal menambahkan RT: $errorMessage', Colors.red);
@@ -81,12 +74,10 @@ class _AdminInfoRtPageState extends State<AdminInfoRtPage> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
-                    // Input Nama RT
                     _buildLabel('Nama RT'),
                     _buildTextField(controller: namaRtController, hint: 'Cth: RT 001'),
                     const SizedBox(height: 16),
 
-                    // Dropdown RW
                     _buildLabel('Pilih RW'),
                     _buildDropdownRw(
                       selectedValue: selectedIdRw,
@@ -94,7 +85,6 @@ class _AdminInfoRtPageState extends State<AdminInfoRtPage> {
                     ),
                     const SizedBox(height: 20),
 
-                    // Tombol Simpan
                     ElevatedButton(
                       onPressed: isLoading ? null : tambahRt,
                       style: ElevatedButton.styleFrom(
@@ -153,8 +143,8 @@ class _AdminInfoRtPageState extends State<AdminInfoRtPage> {
                 final viewModel = Provider.of<RtViewModel>(this.context, listen: false);
                 await viewModel.updateRt(updatedRt); 
                 _showSnackbar('Data RT berhasil diperbarui!', const Color(0xFF5CB85C));
-                Navigator.of(dialogContext).pop(); // Tutup modal
-                Provider.of<RtViewModel>(this.context, listen: false).loadRt(); // Refresh list
+                Navigator.of(dialogContext).pop(); 
+                Provider.of<RtViewModel>(this.context, listen: false).loadRt(); 
               } catch (e) {
                 final errorMessage = e.toString().split(':').last.trim();
                 _showSnackbar('Gagal memperbarui RT: $errorMessage', Colors.red);
@@ -173,12 +163,10 @@ class _AdminInfoRtPageState extends State<AdminInfoRtPage> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
-                    // Input Nama RT
                     _buildLabel('Nama RT'),
                     _buildTextField(controller: namaRtController, hint: 'Cth: RT 001'),
                     const SizedBox(height: 16),
 
-                    // Dropdown RW
                     _buildLabel('Pilih RW'),
                     _buildDropdownRw(
                       selectedValue: selectedIdRw,
@@ -186,7 +174,6 @@ class _AdminInfoRtPageState extends State<AdminInfoRtPage> {
                     ),
                     const SizedBox(height: 20),
 
-                    // Tombol Simpan
                     ElevatedButton(
                       onPressed: isLoading ? null : editRt,
                       style: ElevatedButton.styleFrom(
@@ -211,8 +198,6 @@ class _AdminInfoRtPageState extends State<AdminInfoRtPage> {
     });
   }
 
-
-  // Implementasi fungsi-fungsi helper widget untuk Dialog
   Widget _buildLabel(String text) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8.0),
@@ -236,33 +221,41 @@ class _AdminInfoRtPageState extends State<AdminInfoRtPage> {
   }
 
   Widget _buildDropdownRw({required int? selectedValue, required ValueChanged<int?> onChanged}) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(10), 
-        border: Border.all(color: Colors.grey),
-      ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<int>(
-          isExpanded: true,
-          value: selectedValue,
-          hint: const Text('Pilih RW'),
-          items: _listRwDummy.map((rw) {
-            return DropdownMenuItem<int>(
-              value: rw['id'],
-              child: Text(rw['nama_rw']),
-            );
-          }).toList(),
-          onChanged: onChanged,
-        ),
-      ),
+    return Consumer<RwViewModel>( 
+      builder: (context, rwViewModel, child) {
+        final List<RwModel.Data> listRw = rwViewModel.listRw;
+        
+        if (rwViewModel.isLoading && listRw.isEmpty) {
+          return const Center(child: CircularProgressIndicator(strokeWidth: 2));
+        }
+
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(10), 
+            border: Border.all(color: Colors.grey),
+          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<int>(
+              isExpanded: true,
+              value: selectedValue,
+              hint: Text(listRw.isEmpty ? 'Data RW tidak tersedia' : 'Pilih RW'),
+              items: listRw.map((rw) {
+                if (rw.id == null || rw.namaRw == null) return null; 
+                return DropdownMenuItem<int>(
+                  value: rw.id,
+                  child: Text(rw.namaRw!),
+                );
+              }).whereType<DropdownMenuItem<int>>().toList(), 
+              onChanged: listRw.isEmpty ? null : onChanged, 
+            ),
+          ),
+        );
+      },
     );
   }
 
-  // --- Fungsi lainnya dari AdminInfoRtPage sebelumnya ---
-
   Future<bool> _confirmAndDelete(RtModel.Data rt) async {
-    // Logika penghapusan tetap sama
     final bool? confirm = await showDialog<bool>(
       context: context,
       builder: (BuildContext context) {
@@ -296,7 +289,6 @@ class _AdminInfoRtPageState extends State<AdminInfoRtPage> {
     return false;
   }
 
-  // Ganti navigasi push biasa menjadi showDialog untuk Edit
   void _navigateToEditPage(RtModel.Data rt) {
     _showEditRtDialog(context, rt);
   }
@@ -336,7 +328,6 @@ class _AdminInfoRtPageState extends State<AdminInfoRtPage> {
       floatingActionButton: SizedBox(
         width: 200, height: 50, 
         child: FloatingActionButton.extended(
-          // Panggil modal pop-up untuk Tambah RT
           onPressed: () => _showAddRtDialog(context), 
           backgroundColor: const Color(0xFFFFCC33), elevation: 0,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),

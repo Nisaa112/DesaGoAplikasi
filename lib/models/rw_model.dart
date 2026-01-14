@@ -1,15 +1,15 @@
 class RwModel {
   String? message;
-  List<Rw>? data;
+  List<Data>? data;
 
   RwModel({this.message, this.data});
 
   RwModel.fromJson(Map<String, dynamic> json) {
     message = json['message'];
     if (json['data'] != null) {
-      data = <Rw>[];
+      data = <Data>[];
       json['data'].forEach((v) {
-        data!.add(new Rw.fromJson(v));
+        data!.add(new Data.fromJson(v));
       });
     }
   }
@@ -24,15 +24,15 @@ class RwModel {
   }
 }
 
-class Rw {
+class Data {
   int? id;
   String? namaRw;
   String? createdAt;
   String? updatedAt;
 
-  Rw({this.id, this.namaRw, this.createdAt, this.updatedAt});
+  Data({this.id, this.namaRw, this.createdAt, this.updatedAt});
 
-  Rw.fromJson(Map<String, dynamic> json) {
+  Data.fromJson(Map<String, dynamic> json) {
     id = json['id'];
     namaRw = json['nama_rw'];
     createdAt = json['created_at'];

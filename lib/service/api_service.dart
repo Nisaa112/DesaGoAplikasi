@@ -3,6 +3,7 @@ import 'package:desa_go_aplikasi/models/agenda_model.dart' as AgendaModel;
 import 'package:desa_go_aplikasi/models/pengaduan_model.dart' as PengaduanModel;
 import 'package:desa_go_aplikasi/models/posyandu_model.dart' as PosyanduModel;
 import 'package:desa_go_aplikasi/models/rapat_model.dart' as RapatModel;
+import 'package:desa_go_aplikasi/models/rw_model.dart' as RwModel;
 import 'package:desa_go_aplikasi/models/warga_model.dart' as WargaModel;
 import 'package:desa_go_aplikasi/models/struktur_model.dart' as StrukturModel;
 import 'package:desa_go_aplikasi/models/rt_model.dart' as RtModel;
@@ -90,6 +91,23 @@ class ApiService {
       'tambah',
       'warga',
     );
+
+  //   if (result.statusCode == 422) {
+  //     // Ambil body respons JSON
+  //     final responseBody = jsonDecode(result.body);
+      
+  //     // Asumsi: Server mengembalikan array error untuk 'id_users'
+  //     String errorMessage = 'Gagal validasi data.';
+  //     if (responseBody.containsKey('errors') && responseBody['errors'].containsKey('id_users')) {
+  //       errorMessage = responseBody['errors']['id_users'][0];
+  //     }
+      
+  //     // Throw Exception dengan pesan yang spesifik dari server
+  //     throw Exception("Error saat tambah warga: Exception: $errorMessage");
+  // } else if (result.statusCode != 200) {
+  //     // Penanganan error HTTP lainnya
+  //     throw Exception("Gagal tambah warga. Status: ${result.statusCode}");
+  // }
     
     if (result != null) {
         return WargaModel.Data.fromJson(result);
@@ -742,6 +760,85 @@ class ApiService {
       ),
       'menghapus',
       'rt',
+    );
+  }
+  
+  // --------------------------------------------------------------------------
+  // --- RW ---
+  // --------------------------------------------------------------------------
+
+  static Future<List<RwModel.Data>> fetchRw() async {
+    final token = await TokenStorage.getToken();
+    final response = await http.get(
+      Uri.parse('$baseUrl/api/rw'),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Accept': 'application/json',
+      },
+    );
+
+    print('📥 Response status RW: ${response.statusCode}');
+    // print('📥 Response body RW: ${response.body}');
+
+    if (response.statusCode == 200) {
+      Map<String, dynamic> decodedBody = jsonDecode(response.body);
+
+      if (decodedBody['data'] is List) {
+        List<dynamic> dataList = decodedBody['data'];
+        return dataList.map((json) => RwModel.Data.fromJson(json)).toList();
+      } else {
+        return [];
+      }
+    } else {
+      throw Exception('Gagal mengambil data RW dari API');
+    }
+  }
+  
+  static Future<RwModel.Data?> createRw(RwModel.Data rw) async {
+    final token = await TokenStorage.getToken();
+    final result = await _handleApiRequest(
+      http.post(
+        Uri.parse('$baseUrl/api/rw'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: jsonEncode(rw.toJson()),
+      ),
+      'tambah',
+      'rw',
+    );
+    
+    if (result != null) {
+        return RwModel.Data.fromJson(result);
+    }
+    return null;
+  }
+
+  
+  static Future<void> updateRw(RwModel.Data rw) async {
+    final token = await TokenStorage.getToken();
+    await _handleApiRequest(
+      http.put(
+        Uri.parse('$baseUrl/api/rw/${rw.id}'),
+        headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $token'},
+        body: jsonEncode(rw.toJson()),
+      ),
+      'mengupdate',
+      'rw',
+    );
+  }
+
+  static Future<void> deleteRw(int id) async {
+    final token = await TokenStorage.getToken();
+    await _handleApiRequest(
+      http.delete(
+        Uri.parse('$baseUrl/api/rw/$id'),
+        headers: {'Authorization': 'Bearer $token', 'Accept': 'application/json'},
+      ),
+      'menghapus',
+      'rw',
     );
   }
 

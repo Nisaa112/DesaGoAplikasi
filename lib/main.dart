@@ -11,6 +11,7 @@ import 'package:desa_go_aplikasi/viewmodel/posyandu_viewmodel.dart';
 import 'package:desa_go_aplikasi/viewmodel/rapat_viewmodel.dart';
 import 'package:desa_go_aplikasi/viewmodel/ronda_viewmodel.dart';
 import 'package:desa_go_aplikasi/viewmodel/rt_viewmodel.dart';
+import 'package:desa_go_aplikasi/viewmodel/rw_viewmodel.dart';
 import 'package:desa_go_aplikasi/viewmodel/struktur_viewmodel.dart';
 import 'package:desa_go_aplikasi/viewmodel/warga_viewmodel.dart';
 import 'package:flutter/material.dart';
@@ -41,6 +42,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => PosyanduViewmodel()),
         ChangeNotifierProvider(create: (_) => PengaduanViewModel()),
         ChangeNotifierProvider(create: (_) => RtViewModel()),
+        ChangeNotifierProvider(create: (_) => RwViewModel()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,

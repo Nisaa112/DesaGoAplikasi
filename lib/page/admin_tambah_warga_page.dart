@@ -1,5 +1,8 @@
-import 'package:desa_go_aplikasi/models/warga_model.dart' as Warga; // Diperbaiki: menggunakan prefix 'Warga'
-import 'package:desa_go_aplikasi/viewmodel/warga_viewmodel.dart'; 
+import 'package:desa_go_aplikasi/models/warga_model.dart' as Warga;
+import 'package:desa_go_aplikasi/models/rt_model.dart' as RtModel;
+import 'package:desa_go_aplikasi/utils/token_storage.dart';
+import 'package:desa_go_aplikasi/viewmodel/warga_viewmodel.dart';
+import 'package:desa_go_aplikasi/viewmodel/rt_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -17,7 +20,19 @@ class _AdminTambahWargaPageState extends State<AdminTambahWargaPage> {
   final TextEditingController _alamatController = TextEditingController();
   final TextEditingController _noTelpController = TextEditingController();
 
+  int? _selectedRtId;
+  int? _currentAdminId; 
+
   bool _isSubmitting = false;
+
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() {
+      Provider.of<RtViewModel>(context, listen: false).loadRt();
+      _loadAdminId(); 
+    });
+  }
 
   @override
   void dispose() {
@@ -27,26 +42,47 @@ class _AdminTambahWargaPageState extends State<AdminTambahWargaPage> {
     _noTelpController.dispose();
     super.dispose();
   }
+  
+  Future<void> _loadAdminId() async {
+    final userId = await TokenStorage.getUserId(); 
+    
+    if (mounted) {
+      setState(() {
+        _currentAdminId = userId;
+        debugPrint('ID Admin yang login: $_currentAdminId');
+      });
+    }
+    if (_currentAdminId == null) {
+      _showSnackbar('Gagal mendapatkan ID Admin. Silakan login ulang.', Colors.orange);
+    }
+  }
 
   Future<void> _tambahWarga() async {
-    if (_namaController.text.isEmpty || _nikController.text.isEmpty || _alamatController.text.isEmpty) {
-      _showSnackbar('NIK, Nama, dan Alamat wajib diisi!', Colors.red);
+    if (_namaController.text.isEmpty || 
+        _nikController.text.isEmpty || 
+        _alamatController.text.isEmpty ||
+        _selectedRtId == null) { 
+      _showSnackbar('NIK, Nama, Alamat, dan RT wajib diisi!', Colors.red);
       return;
+    }
+    
+    if (_currentAdminId == null) {
+        _showSnackbar('ID Admin tidak ditemukan. Mohon tunggu atau coba muat ulang halaman.', Colors.red);
+        return;
     }
 
     setState(() => _isSubmitting = true);
 
-    // PERBAIKAN: Menggunakan Warga.Data
     final newWarga = Warga.Data(
       nik: _nikController.text,
       nama: _namaController.text,
       alamat: _alamatController.text,
       noTelp: _noTelpController.text,
-      // Properti lain (id_rt, id_users) mungkin perlu diisi tergantung kebutuhan backend
+      idRt: _selectedRtId, 
+      idUsers: _currentAdminId,
     );
 
     try {
-      // PERBAIKAN: Mengganti WargaViewmodel menjadi WargaViewModel dan addWarga menjadi createWarga
       final viewModel = Provider.of<WargaViewModel>(context, listen: false);
       await viewModel.createWarga(newWarga); 
       _showSnackbar('Warga baru berhasil ditambahkan!', const Color(0xFF5CB85C));
@@ -58,7 +94,8 @@ class _AdminTambahWargaPageState extends State<AdminTambahWargaPage> {
       setState(() => _isSubmitting = false);
     }
   }
-
+  
+  
   void _showSnackbar(String message, Color color) {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
@@ -121,6 +158,10 @@ class _AdminTambahWargaPageState extends State<AdminTambahWargaPage> {
                         hintText: 'Masukkan nama Warga...',
                       ),
                       const SizedBox(height: 20),
+
+                      _buildRtDropdown(),
+                      const SizedBox(height: 20),
+                      
                       _buildInputField(
                         label: 'Alamat', 
                         controller: _alamatController, 
@@ -140,14 +181,13 @@ class _AdminTambahWargaPageState extends State<AdminTambahWargaPage> {
                 ),
               ),
             ),
-            // Tombol Tambah Warga di bawah
             Container(
               padding: const EdgeInsets.all(24.0),
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: _isSubmitting ? null : _tambahWarga,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Color(0xFF2C2C2C),
+                  backgroundColor: const Color(0xFF2C2C2C),
                   padding: const EdgeInsets.symmetric(vertical: 15),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(100),
@@ -175,7 +215,68 @@ class _AdminTambahWargaPageState extends State<AdminTambahWargaPage> {
     );
   }
 
-  // Fungsi untuk membuat input field
+  Widget _buildRtDropdown() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'RT (Rukun Tetangga)',
+          style: TextStyle(color: Colors.grey.shade700.withOpacity(0.9), fontSize: 16, fontWeight: FontWeight.w600), 
+        ),
+        const SizedBox(height: 8),
+        Consumer<RtViewModel>(
+          builder: (context, rtViewModel, child) {
+            if (rtViewModel.isLoading && rtViewModel.listRt.isEmpty) {
+              return const Center(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: 10),
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+              );
+            }
+
+            final List<RtModel.Data> rts = rtViewModel.listRt;
+            
+            return Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12.0),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(10), 
+                border: Border.all(color: Colors.grey.shade400),
+              ),
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<int>(
+                  isExpanded: true,
+                  value: _selectedRtId,
+                  hint: Text(
+                    rts.isEmpty ? 'Data RT belum tersedia' : 'Pilih RT...',
+                    style: TextStyle(color: Colors.grey.shade400),
+                  ),
+                  dropdownColor: Colors.white, 
+                  iconEnabledColor: const Color(0xFF4A4E8A),
+                  items: rts.map((rt) {
+                    return DropdownMenuItem<int>(
+                      value: rt.id,
+                      child: Text(
+                        rt.namaRt ?? 'RT tidak diketahui', 
+                        style: const TextStyle(fontSize: 16, color: Colors.black87),
+                      ),
+                    );
+                  }).toList(),
+                  onChanged: rts.isEmpty ? null : (int? newValue) {
+                    setState(() {
+                      _selectedRtId = newValue;
+                    });
+                  },
+                ),
+              ),
+            );
+          },
+        ),
+      ],
+    );
+  }
+
   Widget _buildInputField({
     required String label, 
     required TextEditingController controller, 
@@ -183,7 +284,6 @@ class _AdminTambahWargaPageState extends State<AdminTambahWargaPage> {
     int maxLines = 1,
     TextInputType keyboardType = TextInputType.text,
   }) {
-    // const Color primaryColor = Color(0xFF4A4E8A); // Tidak terpakai di sini
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

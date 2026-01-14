@@ -15,6 +15,8 @@ import 'package:desa_go_aplikasi/models/rw_model.dart' as RwModel;
 import 'package:desa_go_aplikasi/models/jabatan_model.dart' as JabatanModel;
 import 'package:desa_go_aplikasi/models/user_model.dart';
 
+import 'models/rw_model.dart' as Rw;
+
 
 class DatabaseHelper {
   // Nama file database
@@ -173,6 +175,15 @@ class DatabaseHelper {
         rw TEXT
       )
     ''');
+    // ------------------- RW -------------------
+    await db.execute('''
+      CREATE TABLE rw (
+        id INTEGER PRIMARY KEY,
+        nama_rw TEXT,
+        created_at TEXT,
+        updated_at TEXT
+      )
+    ''');
   }
 
   // Logika Migrasi
@@ -188,6 +199,14 @@ class DatabaseHelper {
           user_agent TEXT, created_at TEXT, updated_at TEXT
         )
       ''');
+      await db.execute('''
+          CREATE TABLE rw(
+            id INTEGER PRIMARY KEY,
+            nama_rw TEXT,
+            created_at TEXT,
+            updated_at TEXT
+          )
+        ''');
     }
     
     if (oldVersion < 3) {
@@ -220,7 +239,8 @@ class DatabaseHelper {
       'created_at': warga.createdAt, 'updated_at': warga.updatedAt, 'rt': rtJson, 'user': userJson,
     };
     row.removeWhere((key, value) => value == null);
-
+    print('RT JSON: $rtJson');
+    print('User JSON: $userJson');
     return await db.insert('warga', row, conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
@@ -336,6 +356,62 @@ class DatabaseHelper {
   }
 
   // ==========================================================================
+  // --- CRUD RW (Rw.Data) ---
+  // ==========================================================================
+
+  Future<int> insertRw(Rw.Data rw) async {
+    final db = await database;
+
+    Map<String, dynamic> row = {
+      'id': rw.id, 
+      'nama_rw': rw.namaRw,
+      'created_at': rw.createdAt, 
+      'updated_at': rw.updatedAt
+    };
+    row.removeWhere((key, value) => value == null);
+
+    return await db.insert('rw', row, conflictAlgorithm: ConflictAlgorithm.replace);
+  }
+
+  Future<List<Rw.Data>> getAllRw() async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query('rw');
+
+    return List.generate(maps.length, (i) {
+
+      return Rw.Data(
+        id: maps[i]['id'] as int?,
+        namaRw: maps[i]['nama_rw'], 
+        updatedAt: maps[i]['updated_at'],
+        createdAt: maps[i]['created_at']
+      );
+    });
+  }
+
+  Future<int> updateRw(Rw.Data rw) async {
+    final db = await database;
+    if (rw.id == null) throw Exception("ID rw tidak boleh null untuk update.");
+
+    Map<String, dynamic> row = {
+      'nama_rw': rw.namaRw,
+      'updated_at': rw.updatedAt
+    };
+    row.removeWhere((key, value) => value == null);
+
+    return await db.update('rw', row, where: 'id = ?', whereArgs: [rw.id]);
+  }
+
+  Future<int> deleteRw(int id) async {
+    final db = await database;
+    return await db.delete('rw', where: 'id = ?', whereArgs: [id]);
+  }
+
+  Future<void> clearRwTable() async {
+    final db = await database;
+    await db.delete('rw');
+  }
+
+  // ==========================================================================
   // --- CRUD STRUKTUR (Struktur.Data) ---
   // ==========================================================================
 
@@ -371,7 +447,7 @@ class DatabaseHelper {
         idJabatan: maps[i]['id_jabatan'], nama: maps[i]['nama'], nik: maps[i]['nik'],
         noTelp: maps[i]['no_telp'], alamat: maps[i]['alamat'], foto: maps[i]['foto'],
         updatedAt: maps[i]['updated_at'], createdAt: maps[i]['created_at'],
-        rw: rwMap != null ? RwModel.Rw.fromJson(rwMap) : null,
+        rw: rwMap != null ? RwModel.Data.fromJson(rwMap) : null,
         rt: rtMap != null ? RtModel.Data.fromJson(rtMap) : null,
         jabatan: jabatanMap != null ? JabatanModel.Data.fromJson(jabatanMap) : null,
       );
