@@ -184,6 +184,16 @@ class DatabaseHelper {
         updated_at TEXT
       )
     ''');
+    // ------------------- JABATAN -------------------
+    await db.execute('''
+      CREATE TABLE jabatan (
+        id INTEGER PRIMARY KEY,
+        nama_jabatan TEXT,
+        value_jabatan TEXT,
+        created_at TEXT,
+        updated_at TEXT
+      )
+    ''');
   }
 
   // Logika Migrasi
@@ -757,6 +767,54 @@ class DatabaseHelper {
   Future<void> clearAgendaTable() async {
     final db = await database;
     await db.delete('agenda');
+  }
+
+  // ==========================================================================
+  // --- CRUD JABATAN (Jabatan.Data) ---
+  // ==========================================================================
+
+  Future<int> insertJabatan(JabatanModel.Data jabatan) async {
+    final db = await database;
+
+    Map<String, dynamic> row = {
+      'id': jabatan.id, 'nama_jabatan': jabatan.namaJabatan, 'value_jabatan': jabatan.valueJabatan, 'created_at': jabatan.createdAt, 'updated_at': jabatan.updatedAt,
+    };
+    row.removeWhere((key, value) => value == null);
+
+    return await db.insert('jabatan', row, conflictAlgorithm: ConflictAlgorithm.replace);
+  }
+
+  Future<List<JabatanModel.Data>> getAllJabatan() async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query('jabatan');
+
+    return List.generate(maps.length, (i) {
+      return JabatanModel.Data(
+        id: maps[i]['id'], namaJabatan: maps[i]['nama_jabatan'], valueJabatan: maps[i]['value_jabatan'], updatedAt: maps[i]['updated_at'], createdAt: maps[i]['created_at'],
+      );
+    });
+  }
+
+  Future<int> updateJabatan(JabatanModel.Data jabatan) async {
+    final db = await database;
+    if (jabatan.id == null) throw Exception("ID jabatan tidak boleh null untuk update.");
+
+    Map<String, dynamic> row = {
+      'nama_jabatan': jabatan.namaJabatan, 'value_jabatan': jabatan.valueJabatan, 'updated_at': jabatan.updatedAt,
+    };
+    row.removeWhere((key, value) => value == null);
+
+    return await db.update('jabatan', row, where: 'id = ?', whereArgs: [jabatan.id]);
+  }
+
+  Future<int> deleteJabatan(int id) async {
+    final db = await database;
+    return await db.delete('jabatan', where: 'id = ?', whereArgs: [id]);
+  }
+
+  Future<void> clearJabatanTable() async {
+    final db = await database;
+    await db.delete('jabatan');
   }
 
   // ==========================================================================

@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:desa_go_aplikasi/models/agenda_model.dart' as AgendaModel;
+import 'package:desa_go_aplikasi/models/jabatan_model.dart' as JabatanModel;
 import 'package:desa_go_aplikasi/models/pengaduan_model.dart' as PengaduanModel;
 import 'package:desa_go_aplikasi/models/posyandu_model.dart' as PosyanduModel;
 import 'package:desa_go_aplikasi/models/rapat_model.dart' as RapatModel;
@@ -13,7 +14,7 @@ import 'package:http/http.dart' as http;
 import '../models/ronda_model.dart' as RondaModel;
 
 class ApiService {
-  static const String baseUrl = 'https://exiguous-smilelessly-marylynn.ngrok-free.dev';
+  static const String baseUrl = 'https://cod-active-bluejay.ngrok-free.app';
 
   static Future<dynamic> _handleApiRequest(
     Future<http.Response> request, String operationType, String endpoint
@@ -839,6 +840,85 @@ class ApiService {
       ),
       'menghapus',
       'rw',
+    );
+  }
+  
+  // --------------------------------------------------------------------------
+  // --- JABATAN ---
+  // --------------------------------------------------------------------------
+
+  static Future<List<JabatanModel.Data>> fetchJabatan() async {
+    final token = await TokenStorage.getToken();
+    final response = await http.get(
+      Uri.parse('$baseUrl/api/jabatan'),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Accept': 'application/json',
+      },
+    );
+
+    print('📥 Response status jabatan: ${response.statusCode}');
+    // print('📥 Response body jabatan: ${response.body}');
+
+    if (response.statusCode == 200) {
+      Map<String, dynamic> decodedBody = jsonDecode(response.body);
+
+      if (decodedBody['data'] is List) {
+        List<dynamic> dataList = decodedBody['data'];
+        return dataList.map((json) => JabatanModel.Data.fromJson(json)).toList();
+      } else {
+        return [];
+      }
+    } else {
+      throw Exception('Gagal mengambil data jabatan dari API');
+    }
+  }
+  
+  static Future<JabatanModel.Data?> createJabatan(JabatanModel.Data jabatan) async {
+    final token = await TokenStorage.getToken();
+    final result = await _handleApiRequest(
+      http.post(
+        Uri.parse('$baseUrl/api/jabatan'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: jsonEncode(jabatan.toJson()),
+      ),
+      'tambah',
+      'jabatan',
+    );
+    
+    if (result != null) {
+        return JabatanModel.Data.fromJson(result);
+    }
+    return null;
+  }
+
+  
+  static Future<void> updateJabatan(JabatanModel.Data jabatan) async {
+    final token = await TokenStorage.getToken();
+    await _handleApiRequest(
+      http.put(
+        Uri.parse('$baseUrl/api/jabatan/${jabatan.id}'),
+        headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $token'},
+        body: jsonEncode(jabatan.toJson()),
+      ),
+      'mengupdate',
+      'jabatan',
+    );
+  }
+
+  static Future<void> deleteJabatan(int id) async {
+    final token = await TokenStorage.getToken();
+    await _handleApiRequest(
+      http.delete(
+        Uri.parse('$baseUrl/api/jabatan/$id'),
+        headers: {'Authorization': 'Bearer $token', 'Accept': 'application/json'},
+      ),
+      'menghapus',
+      'jabatan',
     );
   }
 

@@ -6,6 +6,7 @@ import 'package:desa_go_aplikasi/page/authwrapper.dart';
 import 'package:desa_go_aplikasi/page/welcome_page.dart';
 import 'package:desa_go_aplikasi/viewmodel/agenda_viewmodel.dart';
 import 'package:desa_go_aplikasi/viewmodel/auth_viewmodel.dart';
+import 'package:desa_go_aplikasi/viewmodel/jabatan_viewmodel.dart';
 import 'package:desa_go_aplikasi/viewmodel/pengaduan_viewmodel.dart';
 import 'package:desa_go_aplikasi/viewmodel/posyandu_viewmodel.dart';
 import 'package:desa_go_aplikasi/viewmodel/rapat_viewmodel.dart';
@@ -43,6 +44,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => PengaduanViewModel()),
         ChangeNotifierProvider(create: (_) => RtViewModel()),
         ChangeNotifierProvider(create: (_) => RwViewModel()),
+        ChangeNotifierProvider(create: (_) => JabatanViewModel()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
