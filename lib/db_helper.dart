@@ -194,6 +194,19 @@ class DatabaseHelper {
         updated_at TEXT
       )
     ''');
+    // ------------------- USER -------------------
+    await db.execute('''
+      CREATE TABLE users_local (
+        id INTEGER PRIMARY KEY,
+        id_rw INTEGER,
+        name TEXT,
+        serial_number TEXT,
+        email TEXT,
+        role TEXT,
+        created_at TEXT,
+        updated_at TEXT
+      )
+    ''');
   }
 
   // Logika Migrasi
@@ -885,5 +898,29 @@ class DatabaseHelper {
   Future<void> clearPengaduanTable() async {
     final db = await database;
     await db.delete('pengaduan');
+  }
+
+  // ==========================================================================
+  // --- CRUD USER (User.Data) ---
+  // ==========================================================================
+  Future<int> insertUser(UserDetail user) async {
+    final db = await database;
+    return await db.insert('users_local', user.toJson(), conflictAlgorithm: ConflictAlgorithm.replace);
+  }
+
+  Future<List<UserDetail>> getAllUsers() async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query('users_local');
+    return List.generate(maps.length, (i) => UserDetail.fromJson(maps[i]));
+  }
+
+  Future<void> clearUserTable() async {
+    final db = await database;
+    await db.delete('users_local');
+  }
+
+  Future<int> deleteUser(int id) async {
+    final db = await database;
+    return await db.delete('users_local', where: 'id = ?', whereArgs: [id]);
   }
 }

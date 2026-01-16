@@ -5,6 +5,7 @@ import 'package:desa_go_aplikasi/models/pengaduan_model.dart' as PengaduanModel;
 import 'package:desa_go_aplikasi/models/posyandu_model.dart' as PosyanduModel;
 import 'package:desa_go_aplikasi/models/rapat_model.dart' as RapatModel;
 import 'package:desa_go_aplikasi/models/rw_model.dart' as RwModel;
+import 'package:desa_go_aplikasi/models/user_model.dart';
 import 'package:desa_go_aplikasi/models/warga_model.dart' as WargaModel;
 import 'package:desa_go_aplikasi/models/struktur_model.dart' as StrukturModel;
 import 'package:desa_go_aplikasi/models/rt_model.dart' as RtModel;
@@ -922,4 +923,61 @@ class ApiService {
     );
   }
 
+  // --------------------------------------------------------------------------
+  // --- USER ---
+  // --------------------------------------------------------------------------
+
+  static Future<List<UserDetail>> fetchUsers() async {
+    final token = await TokenStorage.getToken();
+    final response = await http.get(
+      Uri.parse('$baseUrl/api/users'),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Accept': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return (data['data'] as List).map((json) => UserDetail.fromJson(json)).toList();
+    } else {
+      throw Exception('Gagal mengambil data user dari server');
+    }
+  }
+
+  static Future<UserDetail?> createUser(Map<String, dynamic> data) async {
+    final token = await TokenStorage.getToken();
+    final response = await http.post(
+      Uri.parse('$baseUrl/api/users'),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: jsonEncode(data),
+    );
+
+    print("Response Status: ${response.statusCode}");
+    print("Response Body: ${response.body}"); 
+
+    if (response.statusCode == 201) {
+      final body = jsonDecode(response.body);
+      return UserDetail.fromJson(body['data']);
+    } else {
+      final body = jsonDecode(response.body);
+      throw Exception(body['message'] ?? 'Gagal membuat user baru');
+    }
+  }
+  
+  static Future<void> deleteUser(int id) async {
+    final token = await TokenStorage.getToken();
+    await _handleApiRequest(
+      http.delete(
+        Uri.parse('$baseUrl/api/users/$id'),
+        headers: {'Authorization': 'Bearer $token', 'Accept': 'application/json'},
+      ),
+      'menghapus',
+      'user',
+    );
+  }
 }

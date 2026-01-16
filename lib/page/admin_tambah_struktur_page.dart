@@ -241,6 +241,7 @@ class _AdminTambahStrukturPageState extends State<AdminTambahStrukturPage> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      backgroundColor: Colors.white,
       shape: const  RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(25))),
       builder: (context) {
         return StatefulBuilder( // Agar search field bisa update list secara real-time
@@ -392,6 +393,7 @@ class _AdminTambahStrukturPageState extends State<AdminTambahStrukturPage> {
               ),
               child: DropdownButtonHideUnderline(
                 child: DropdownButton<int>(
+                  dropdownColor: Colors.white,
                   isExpanded: true,
                   value: _selectedJabatanId,
                   hint: const Text('Pilih Jabatan...'),

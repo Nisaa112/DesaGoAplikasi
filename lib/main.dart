@@ -14,6 +14,7 @@ import 'package:desa_go_aplikasi/viewmodel/ronda_viewmodel.dart';
 import 'package:desa_go_aplikasi/viewmodel/rt_viewmodel.dart';
 import 'package:desa_go_aplikasi/viewmodel/rw_viewmodel.dart';
 import 'package:desa_go_aplikasi/viewmodel/struktur_viewmodel.dart';
+import 'package:desa_go_aplikasi/viewmodel/user_viewmodel.dart';
 import 'package:desa_go_aplikasi/viewmodel/warga_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -45,6 +46,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => RtViewModel()),
         ChangeNotifierProvider(create: (_) => RwViewModel()),
         ChangeNotifierProvider(create: (_) => JabatanViewModel()),
+        ChangeNotifierProvider(create: (_) => UserViewModel()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,

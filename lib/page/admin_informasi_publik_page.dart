@@ -1,6 +1,7 @@
 import 'package:desa_go_aplikasi/page/admin_home_page.dart';
 import 'package:desa_go_aplikasi/page/admin_info_rt_page.dart';
 import 'package:desa_go_aplikasi/page/admin_info_warga_page.dart';
+import 'package:desa_go_aplikasi/page/admin_manage_user_page.dart';
 import 'package:desa_go_aplikasi/page/admin_struktur_page.dart';
 import 'package:desa_go_aplikasi/page/info_warga_page.dart';
 import 'package:desa_go_aplikasi/page/struktur_page.dart';
@@ -76,7 +77,7 @@ class AdminInformasiPublikPage extends StatelessWidget {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const AdminStrukturPage()),
+                    MaterialPageRoute(builder: (context) => const AdminManageUserPage()),
                   );
                 },
               ),

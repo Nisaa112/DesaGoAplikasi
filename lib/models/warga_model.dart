@@ -27,68 +27,67 @@ class WargaModel {
 }
 
 class Data {
- int? idRt;
- int? idUsers;
- String? nama;
- String? nik;
- String? noTelp;
- String? alamat;
- String? foto;
- String? updatedAt;
- String? createdAt;
- int? id;
- Rt? rt;
- UserDetail? user;
+  int? idRt;
+  int? idUsers; // Sesuai penamaan di Dart
+  String? nama;
+  String? nik;
+  String? noTelp;
+  String? alamat;
+  String? foto;
+  String? updatedAt;
+  String? createdAt;
+  int? id;
+  Rt? rt;
+  UserDetail? user;
 
- Data(
-   {this.idRt,
-   this.idUsers,
-   this.nama,
-   this.nik,
-   this.noTelp,
-   this.alamat,
-   this.foto,
-   this.updatedAt,
-   this.createdAt,
-   this.id,
-   this.rt,
-   this.user});
+  Data({
+    this.idRt,
+    this.idUsers,
+    this.nama,
+    this.nik,
+    this.noTelp,
+    this.alamat,
+    this.foto,
+    this.updatedAt,
+    this.createdAt,
+    this.id,
+    this.rt,
+    this.user,
+  });
 
- Data.fromJson(Map<String, dynamic> json) {
-  idRt = json['id_rt'];
-  idUsers = json['id_users'];
-  nama = json['nama'];
-  nik = json['nik'];
-  noTelp = json['no_telp'];
-  alamat = json['alamat'];
-  foto = json['foto'];
-  updatedAt = json['updated_at'];
-  createdAt = json['created_at'];
-  id = json['id'];
-  rt = json['rt'] != null ? new Rt.fromJson(json['rt']) : null;
-  user = json['user'] != null ? new UserDetail.fromJson(json['user']) : null; 
- }
-
- Map<String, dynamic> toJson() {
-  final Map<String, dynamic> data = new Map<String, dynamic>();
-  data['id_rt'] = this.idRt;
-  data['id_users'] = this.idUsers;
-  data['nama'] = this.nama;
-  data['nik'] = this.nik;
-  data['no_telp'] = this.noTelp;
-  data['alamat'] = this.alamat;
-  data['foto'] = this.foto;
-  data['updated_at'] = this.updatedAt;
-  data['created_at'] = this.createdAt;
-  data['id'] = this.id;
-  if (this.rt != null) {
-   data['rt'] = this.rt!.toJson();
+  Data.fromJson(Map<String, dynamic> json) {
+    idRt = json['id_rt'];
+    // PERBAIKAN: Ambil dari key 'id_users' milik MySQL
+    idUsers = json['id_users']; 
+    nama = json['nama'];
+    nik = json['nik'];
+    noTelp = json['no_telp'];
+    alamat = json['alamat'];
+    foto = json['foto'];
+    updatedAt = json['updated_at'];
+    createdAt = json['created_at'];
+    id = json['id'];
+    rt = json['rt'] != null ? Rt.fromJson(json['rt']) : null;
+    user = json['user'] != null ? UserDetail.fromJson(json['user']) : null; 
   }
-  if (this.user != null) { 
-      data['user'] = this.user!.toJson();
-    }
-  return data;
- }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['id_rt'] = idRt;
+    // PERBAIKAN: Kembalikan ke key 'id_users' untuk dikirim ke API
+    data['id_users'] = idUsers; 
+    data['nama'] = nama;
+    data['nik'] = nik;
+    data['no_telp'] = noTelp;
+    data['alamat'] = alamat;
+    data['foto'] = foto;
+    data['updated_at'] = updatedAt;
+    data['created_at'] = createdAt;
+    data['id'] = id;
+    if (rt != null) data['rt'] = rt!.toJson();
+    if (user != null) data['user'] = user!.toJson();
+    return data;
+  }
 }
 
 class Rt {

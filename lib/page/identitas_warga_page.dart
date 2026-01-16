@@ -8,10 +8,14 @@ class IdentitasWargaPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Mengambil data dari variabel warga
     final String nik = warga.nik ?? '-';
     final String nama = warga.nama ?? '-';
     final String alamat = warga.alamat ?? '-';
     final String noTelp = warga.noTelp ?? '-';
+    
+    // CARA MENGAMBIL RT: masuk ke objek rt lalu ambil namaRt
+    final String namaRt = warga.rt?.namaRt ?? '-';
 
     return Scaffold(
       backgroundColor: const Color(0xFF4A4E8A),
@@ -43,27 +47,38 @@ class IdentitasWargaPage extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start, 
               children: [
-                // _buildInfoField(
-                //   label: 'NIK', 
-                //   value: nik, 
-                //   maxLines: 1 
-                // ),
-                // const SizedBox(height: 20),
                 _buildInfoField(
-                  label: 'Nama', 
+                  label: 'Nama Lengkap', 
                   value: nama, 
                   maxLines: 1
                 ),
                 const SizedBox(height: 20),
+                
+                // --- FIELD RT BARU ---
+                _buildInfoField(
+                  label: 'RT (Rukun Tetangga)', 
+                  value: namaRt, 
+                  maxLines: 1
+                ),
+                const SizedBox(height: 20),
+
                 _buildInfoField(
                   label: 'Alamat', 
                   value: alamat, 
                   maxLines: 3 
                 ),
                 const SizedBox(height: 20),
+
                 _buildInfoField(
-                  label: 'No.Telp', 
+                  label: 'No. Telepon', 
                   value: noTelp, 
+                  maxLines: 1 
+                ),
+                const SizedBox(height: 20),
+
+                _buildInfoField(
+                  label: 'NIK', 
+                  value: nik, 
                   maxLines: 1 
                 ),
                 const SizedBox(height: 40), 
@@ -90,13 +105,12 @@ class IdentitasWargaPage extends StatelessWidget {
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(10), 
-            border: Border.all(color: Colors.grey.shade400),
+            border: Border.all(color: Colors.black),
           ),
           child: Text(
             value,
             maxLines: maxLines,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(fontSize: 16, color: Colors.black87),
+            style: const TextStyle(fontSize: 16, color: Colors.grey),
           ),
         ),
       ],
