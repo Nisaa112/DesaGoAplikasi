@@ -19,7 +19,7 @@ class AdminInformasiPublikPage extends StatelessWidget {
         automaticallyImplyLeading: false, 
         centerTitle: true,
         title: const Text(
-          'Informasi Publik',
+          'Informasi',
           style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
       ),

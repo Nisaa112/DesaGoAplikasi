@@ -58,17 +58,12 @@ class _AdminTambahWargaPageState extends State<AdminTambahWargaPage> {
   }
 
   Future<void> _tambahWarga() async {
-    if (_namaController.text.isEmpty || 
+      if (_namaController.text.isEmpty || 
         _nikController.text.isEmpty || 
         _alamatController.text.isEmpty ||
         _selectedRtId == null) { 
       _showSnackbar('NIK, Nama, Alamat, dan RT wajib diisi!', Colors.red);
       return;
-    }
-    
-    if (_currentAdminId == null) {
-        _showSnackbar('ID Admin tidak ditemukan. Mohon tunggu atau coba muat ulang halaman.', Colors.red);
-        return;
     }
 
     setState(() => _isSubmitting = true);
@@ -79,7 +74,7 @@ class _AdminTambahWargaPageState extends State<AdminTambahWargaPage> {
       alamat: _alamatController.text,
       noTelp: _noTelpController.text,
       idRt: _selectedRtId, 
-      idUsers: _currentAdminId,
+      idUsers: null, // UBAH KE NULL
     );
 
     try {

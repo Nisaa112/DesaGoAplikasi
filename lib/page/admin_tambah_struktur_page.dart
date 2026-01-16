@@ -1,5 +1,6 @@
 import 'package:desa_go_aplikasi/models/struktur_model.dart' as StrukturModel;
 import 'package:desa_go_aplikasi/models/warga_model.dart' as WargaModel;
+import 'package:desa_go_aplikasi/viewmodel/auth_viewmodel.dart';
 import 'package:desa_go_aplikasi/viewmodel/struktur_viewmodel.dart';
 import 'package:desa_go_aplikasi/viewmodel/jabatan_viewmodel.dart';
 import 'package:desa_go_aplikasi/viewmodel/rw_viewmodel.dart';
@@ -35,7 +36,16 @@ class _AdminTambahStrukturPageState extends State<AdminTambahStrukturPage> {
   @override
   void initState() {
     super.initState();
-    Future.microtask(() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // 1. Ambil ID RW dari AuthViewModel
+      final authVM = Provider.of<AuthViewModel>(context, listen: false);
+      if (authVM.idRw != null) {
+        setState(() {
+          _selectedRwId = authVM.idRw;
+        });
+      }
+
+      // 2. Load data pendukung
       Provider.of<RwViewModel>(context, listen: false).loadRw();
       Provider.of<JabatanViewModel>(context, listen: false).fetchJabatan();
       Provider.of<WargaViewModel>(context, listen: false).loadWarga(); 
@@ -84,8 +94,13 @@ class _AdminTambahStrukturPageState extends State<AdminTambahStrukturPage> {
   }
 
   void _showSnackbar(String message, Color color) {
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), backgroundColor: color, behavior: SnackBarBehavior.floating),
+      SnackBar(
+        content: Text(message),
+        backgroundColor: color,
+        duration: const Duration(seconds: 2),
+      ),
     );
   }
 
@@ -139,13 +154,18 @@ class _AdminTambahStrukturPageState extends State<AdminTambahStrukturPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Wilayah RW', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+        const Text('Wilayah RW', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16,)),
         const SizedBox(height: 8),
         Consumer<RwViewModel>(
           builder: (context, vm, _) {
+            // Ambil data user untuk pengecekan role/akses
+            final authVM = Provider.of<AuthViewModel>(context, listen: false);
+            bool isRestricted = authVM.idRw != null;
+
             return Container(
               padding: const EdgeInsets.symmetric(horizontal: 12),
               decoration: BoxDecoration(
+                color: isRestricted ? Colors.grey.shade100 : Colors.white, // Beri warna beda jika terkunci
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(color: Colors.grey.shade400),
               ),
@@ -154,27 +174,42 @@ class _AdminTambahStrukturPageState extends State<AdminTambahStrukturPage> {
                   isExpanded: true,
                   value: _selectedRwId,
                   hint: const Text('Pilih RW...'),
-                  items: vm.listRw.map((rw) {
-                    return DropdownMenuItem<int>(value: rw.id, child: Text(rw.namaRw ?? ''));
-                  }).toList(),
-                  onChanged: (val) {
+                  // Jika isRestricted (punya id_rw), maka onChanged diset null (disabled)
+                  onChanged: isRestricted ? null : (val) {
                     setState(() {
                       _selectedRwId = val;
-                      _selectedWarga = null; // Reset pilihan warga jika RW ganti
+                      _selectedWarga = null;
                       _namaSearchController.clear();
-                      _nikController.clear();
-                      _noTelpController.clear();
-                      _alamatController.clear();
                     });
                   },
+                  items: vm.listRw.map((rw) {
+                    return DropdownMenuItem<int>(
+                      value: rw.id, 
+                      child: Text(
+                        rw.namaRw ?? '',
+                        style: TextStyle(color: isRestricted ? Colors.black : Colors.black),
+                      )
+                    );
+                  }).toList(),
+                  // Tambahkan style untuk disabled agar tetap terlihat jelas
+                  disabledHint: vm.listRw.isEmpty 
+                      ? const Text("Memuat...") 
+                      : Text(vm.listRw.firstWhere((e) => e.id == _selectedRwId, 
+                        orElse: () => vm.listRw[0]).namaRw ?? ''),
                 ),
               ),
             );
           },
         ),
+        if (Provider.of<AuthViewModel>(context, listen: false).idRw != null)
+          const Padding(
+            padding: EdgeInsets.only(top: 4, left: 4),
+            child: Text("*Wilayah dikunci sesuai profil Anda", style: TextStyle(fontSize: 11, color: const Color(0xFFFFCC33), fontStyle: FontStyle.italic)),
+          ),
       ],
     );
   }
+
 
   Widget _buildWargaSearch(Color primaryColor) {
     return Column(

@@ -11,6 +11,7 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
   final _nikController = TextEditingController();
+  final _rwController = TextEditingController(); // Controller untuk RW
   final _namaController = TextEditingController();
   final _alamatController = TextEditingController();
   final _telpController = TextEditingController();
@@ -22,9 +23,16 @@ class _ProfilePageState extends State<ProfilePage> {
     Future.microtask(() {
       final authViewModel = Provider.of<AuthViewModel>(context, listen: false);
 
-      _nikController.text = authViewModel.userEmail ?? 'N/A (Serial/Email)'; 
+      _nikController.text = authViewModel.userEmail ?? 'N/A'; 
       _namaController.text = authViewModel.userName ?? 'N/A';
+      
+      // Mengambil data RW dari AuthViewModel
+      // Jika idRw tersedia, tampilkan format "RW 0X", jika tidak "N/A"
+      _rwController.text = authViewModel.idRw != null 
+          ? 'RW ${authViewModel.idRw.toString().padLeft(2, '0')}' 
+          : 'N/A';
 
+      // Data dummy (bisa disesuaikan nanti jika sudah ada di backend)
       _alamatController.text = 'Gg. Bidan Tati Jambudipa Rt04/Rw03 Warungkondang, Cianjur, 43261'; 
       _telpController.text = '08123455678';
     });
@@ -33,6 +41,7 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   void dispose() {
     _nikController.dispose();
+    _rwController.dispose();
     _namaController.dispose();
     _alamatController.dispose();
     _telpController.dispose();
@@ -49,8 +58,7 @@ class _ProfilePageState extends State<ProfilePage> {
             backgroundColor: const Color(0xFF4A4E8A),
             elevation: 0,
             title: const Text('Profil Pengguna',
-                style:
-                    TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+                style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
             leading: IconButton(
               icon: const Icon(Icons.arrow_back, color: Colors.white),
               onPressed: () => Navigator.pop(context),
@@ -67,22 +75,33 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
             ),
             child: SingleChildScrollView(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
+              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
               child: Column(
                 children: [
                   _buildProfilePicture(),
                   const SizedBox(height: 32),
+                  
                   // NIK (Read-Only)
                   _buildTextField(
                       label: 'NIK (Serial Number)',
                       controller: _nikController,
                       isReadOnly: true),
                   const SizedBox(height: 20),
+                  
+                  // // RW (Read-Only) - Diambil dari identitas RW user
+                  // _buildTextField(
+                  //     label: 'Wilayah RW',
+                  //     controller: _rwController, // Menggunakan rwController yang benar
+                  //     isReadOnly: true),
+                  // const SizedBox(height: 20),
+                  
                   // Nama (Editable)
                   _buildTextField(
-                      label: 'Nama', controller: _namaController, isReadOnly: false),
+                      label: 'Nama', 
+                      controller: _namaController, 
+                      isReadOnly: false),
                   const SizedBox(height: 20),
+                  
                   // Alamat (Read-Only)
                   _buildTextField(
                       label: 'Alamat',
@@ -90,14 +109,16 @@ class _ProfilePageState extends State<ProfilePage> {
                       maxLines: 3,
                       isReadOnly: true),
                   const SizedBox(height: 20),
+                  
                   // No.Telp (Read-Only)
                   _buildTextField(
                       label: 'No.Telp',
                       controller: _telpController,
                       isReadOnly: true),
                   const SizedBox(height: 40),
+                  
                   _buildSaveButton(),
-                  const SizedBox(height: 20), // Jarak untuk tombol Logout
+                  const SizedBox(height: 20),
                   _buildLogoutButton(authViewModel),
                 ],
               ),
@@ -113,26 +134,9 @@ class _ProfilePageState extends State<ProfilePage> {
       children: [
         CircleAvatar(
           radius: 60,
-          // Menggunakan Icon sebagai fallback jika tidak ada aset gambar
-          child: Icon(Icons.person, size: 60, color: Colors.white.withOpacity(0.7)),
           backgroundColor: const Color(0xFF4A4E8A).withOpacity(0.8),
-          //backgroundImage: const AssetImage('assets/profile_picture.png'),
+          child: const Icon(Icons.person, size: 60, color: Colors.white),
         ),
-        Positioned(
-          bottom: 0,
-          right: 0,
-          child: Container(
-            decoration: BoxDecoration(
-              color: const Color(0xFF4A4E8A),
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.white, width: 2),
-            ),
-            child: const Padding(
-              padding: EdgeInsets.all(6.0),
-              child: Icon(Icons.edit, color: Colors.white, size: 18),
-            ),
-          ),
-        )
       ],
     );
   }
@@ -150,15 +154,14 @@ class _ProfilePageState extends State<ProfilePage> {
         const SizedBox(height: 8),
         TextField(
           controller: controller,
-          readOnly: isReadOnly, // Control read-only status
+          readOnly: isReadOnly,
           maxLines: maxLines,
           style: TextStyle(
             color: isReadOnly ? Colors.grey.shade600 : Colors.black,
             fontWeight: isReadOnly ? FontWeight.normal : FontWeight.bold,
           ),
           decoration: InputDecoration(
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
             filled: true,
             fillColor: isReadOnly ? Colors.grey.shade200 : Colors.grey.shade100, 
             border: OutlineInputBorder(
@@ -185,7 +188,10 @@ class _ProfilePageState extends State<ProfilePage> {
       width: double.infinity,
       child: ElevatedButton(
         onPressed: () {
-          print('Nama yang diperbarui: ${_namaController.text}');
+          // Implementasi update nama ke API jika diperlukan
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Perubahan nama berhasil disimpan secara lokal')),
+          );
         },
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFF2C2C2C),
@@ -216,7 +222,6 @@ class _ProfilePageState extends State<ProfilePage> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(30),
           ),
-          overlayColor: Colors.red.withOpacity(0.1), 
         ),
         child: Text(
           'Logout',

@@ -2,6 +2,7 @@ import 'package:desa_go_aplikasi/models/warga_model.dart' as Warga;
 import 'package:desa_go_aplikasi/page/admin_tambah_warga_page.dart';
 import 'package:desa_go_aplikasi/page/admin_identitas_warga_page.dart';
 import 'package:desa_go_aplikasi/viewmodel/warga_viewmodel.dart';
+import 'package:desa_go_aplikasi/viewmodel/auth_viewmodel.dart'; // Import AuthViewModel
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -96,10 +97,14 @@ class _AdminInfoWargaPageState extends State<AdminInfoWargaPage> {
     _currentlyOpenItemKey = null;
   }
 
-
   @override
   Widget build(BuildContext context) {
     final wargaViewModel = Provider.of<WargaViewModel>(context);
+    
+    // AMBIL DATA RW DARI AUTH VIEWMODEL
+    final authViewModel = Provider.of<AuthViewModel>(context);
+    final int? userRwId = authViewModel.idRw;
+
     const Color primaryColor = Color(0xFF4A4E8A);
 
     return Scaffold(
@@ -164,13 +169,14 @@ class _AdminInfoWargaPageState extends State<AdminInfoWargaPage> {
             topLeft: Radius.circular(30),
             topRight: Radius.circular(30),
           ),
-          child: _buildBody(wargaViewModel),
+          // KIRIM ID RW KE BODY
+          child: _buildBody(wargaViewModel, userRwId),
         ),
       ),
     );
   }
 
-  Widget _buildBody(WargaViewModel viewModel) {
+  Widget _buildBody(WargaViewModel viewModel, int? userRwId) {
     if (viewModel.isLoading) {
       return const Center(child: CircularProgressIndicator());
     } else if (viewModel.errorMessage != null && viewModel.errorMessage!.isNotEmpty) {
@@ -192,6 +198,27 @@ class _AdminInfoWargaPageState extends State<AdminInfoWargaPage> {
     } else if (viewModel.listWarga.isEmpty) {
       return const Center(child: Text('Tidak ada data Warga.'));
     } else {
+
+      // --- LOGIKA FILTER BERDASARKAN RW ---
+      List<Warga.Data> filteredWarga = viewModel.listWarga;
+
+      if (userRwId != null) {
+        filteredWarga = viewModel.listWarga.where((warga) {
+          // Relasi: Warga -> RT -> idRw
+          return warga.rt?.idRw == userRwId;
+        }).toList();
+      }
+
+      if (filteredWarga.isEmpty) {
+        return const Center(
+          child: Padding(
+            padding: EdgeInsets.all(20.0),
+            child: Text('Tidak ada data warga di wilayah RW Anda.', textAlign: TextAlign.center),
+          ),
+        );
+      }
+      // --- END LOGIKA FILTER ---
+
       return RefreshIndicator(
         color: const Color(0xFFFFC212),
         backgroundColor: Colors.white,
@@ -205,9 +232,9 @@ class _AdminInfoWargaPageState extends State<AdminInfoWargaPage> {
           ),
           child: ListView.separated(
             padding: const EdgeInsets.only(top: 20.0, left: 16.0, right: 16.0, bottom: 80.0),
-            itemCount: viewModel.listWarga.length,
+            itemCount: filteredWarga.length, // Gunakan list yang sudah difilter
             itemBuilder: (context, index) {
-              final Warga.Data warga = viewModel.listWarga[index];
+              final Warga.Data warga = filteredWarga[index]; // Gunakan list yang sudah difilter
               
               final itemKey = GlobalKey<_SlidableListItemState>(); 
               
@@ -215,7 +242,6 @@ class _AdminInfoWargaPageState extends State<AdminInfoWargaPage> {
                 key: itemKey,
                 warga: warga,
                 onEdit: _navigateToEditPage,
-                
                 onDelete: (w) async {
                   final result = await _confirmAndDelete(w);
                   if (result) {
@@ -225,7 +251,6 @@ class _AdminInfoWargaPageState extends State<AdminInfoWargaPage> {
                   }
                   return result; 
                 },
-
                 onItemOpen: _handleItemOpen,
                 onItemClose: _handleItemClose,
               );
@@ -348,8 +373,8 @@ class _SlidableListItemState extends State<_SlidableListItem> with SingleTickerP
                     widget.onEdit(widget.warga);
                   },
                   child: Container(
-                    width: _actionExtent / 2, // 70px
-                    color: const Color(0xFF4A4E8A), // Biru
+                    width: _actionExtent / 2, 
+                    color: const Color(0xFF4A4E8A), 
                     alignment: Alignment.center,
                     child: const Icon(Icons.edit, color: Colors.white),
                   ),

@@ -25,6 +25,9 @@ class AuthViewModel extends ChangeNotifier {
 
   int? _userId;
   int? get userId => _userId;
+
+  int? _idRw; 
+  int? get idRw => _idRw;
   
   String? _token;
   String? get token => _token;
@@ -49,6 +52,7 @@ class AuthViewModel extends ChangeNotifier {
         _userName = await TokenStorage.getUserName();
         _userEmail = await TokenStorage.getUserEmail();
         _userRole = await TokenStorage.getUserRole();
+        _idRw = await TokenStorage.getUserIdRw();
         _isLoggedIn = true;
         print('✅ Sesi ditemukan & valid untuk user: $_userName (ID: $_userId) (Role: $_userRole)');
       } else {
@@ -66,48 +70,48 @@ class AuthViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-
   Future<bool> login(String serial, String password) async { 
     _isLoading = true;
-    _errorMessage = null;
     notifyListeners();
 
     try {
-      final loginData = await _authService.login(serial, password);
+      // Sekarang mengembalikan UserModel
+      final userModel = await _authService.login(serial, password);
       
-      final user = loginData.user;
-      final accessToken = loginData.accessToken;
+      final user = userModel.user; // Ini adalah UserDetail
+      final accessToken = userModel.accessToken;
 
-      final userRole = user?.role; 
-      
-      if (user == null || user.id == null || accessToken == null || userRole == null) {
-        throw Exception("Data user atau token tidak valid dari server.");
+      // GARIS MERAH AKAN HILANG SEKARANG
+      final int? fetchedIdRw = user?.idRw; 
+      final String? userRole = user?.role; 
+
+      if (user == null || accessToken == null) {
+        throw Exception("Data tidak valid");
       }
 
       await TokenStorage.saveUserSession(
         token: accessToken,
         id: user.id!,
-        name: user.name ?? 'No Name',
-        email: user.serialNumber ?? 'No Serial', 
-        role: userRole,
+        name: user.name ?? '',
+        email: user.serialNumber ?? '', 
+        role: userRole ?? '',
+        idRw: fetchedIdRw, 
       ); 
 
+      // Update state local
       _isLoggedIn = true;
       _token = accessToken;
       _userId = user.id;
       _userName = user.name;
       _userEmail = user.serialNumber; 
       _userRole = userRole; 
-
+      _idRw = fetchedIdRw; 
 
       _isLoading = false;
       notifyListeners();
       return true; 
-
     } catch (e) {
-      _errorMessage = e.toString().replaceAll("Exception: ", "");
       _isLoading = false;
-      _isLoggedIn = false;
       notifyListeners();
       return false;
     }

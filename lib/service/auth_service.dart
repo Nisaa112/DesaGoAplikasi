@@ -1,7 +1,6 @@
-// File: lib/service/auth_service.dart
-
 import 'dart:convert';
 import 'package:desa_go_aplikasi/models/login_model.dart';
+import 'package:desa_go_aplikasi/models/user_model.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -38,7 +37,8 @@ class AuthService {
     }
   }
 
-  Future<LoginModel> login(String serial, String password) async { 
+  // Ubah Return Type menjadi Future<UserModel>
+  Future<UserModel> login(String serial, String password) async { 
     final url = Uri.parse('$_baseUrl/auth/login');
 
     try {
@@ -54,36 +54,35 @@ class AuthService {
         }),
       ).timeout(const Duration(seconds: 30));
 
-      print('DEBUG LOGIN Status: ${response.statusCode}');
-
       final responseBody = jsonDecode(response.body);
 
       if (response.statusCode == 200) {
-        final loginData = LoginModel.fromJson(responseBody);
-        return loginData;
+        // Gunakan UserModel saja
+        return UserModel.fromJson(responseBody);
       } else {
-        String errorMessage = responseBody['message'] ?? 'Terjadi kesalahan saat login.';
-        throw Exception(errorMessage);
+        throw Exception(responseBody['message'] ?? 'Gagal login');
       }
     } catch (e) {
-      print('❌ Error saat login (Catch All): $e');
-      throw Exception('Terjadi kesalahan yang tidak terduga saat login. Pastikan server aktif. $e');
+      rethrow;
     }
   }
 
   Future<void> logout() async {
-    final token = await getToken();
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString(_tokenKey);
+    
     if (token != null) {
       try {
-        // Panggil API logout untuk invalidate token di server
         await http.post(
           Uri.parse('$_baseUrl/auth/logout'),
           headers: {'Authorization': 'Bearer $token'},
         );
       } catch (e) {
-        print('Warning: Gagal memanggil API logout. Sesi lokal akan tetap dihapus.');
+        print('Warning: Gagal memanggil API logout ke server.');
       }
     }
+    // Hapus semua data lokal
+    await prefs.clear();
   }
 
   Future<String?> getToken() async {

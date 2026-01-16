@@ -40,7 +40,7 @@ class _InfoWargaPageState extends State<InfoWargaPage> {
           onPressed: () {
             if (Navigator.canPop(context)) {
               Navigator.pop(context);
-            }
+             }
           },
         ),
       ),
