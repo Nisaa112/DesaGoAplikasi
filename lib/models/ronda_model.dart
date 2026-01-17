@@ -1,7 +1,7 @@
 class RondaModel {
-  bool? success;
+  bool? success; // Diubah dari status ke success sesuai JSON
   String? message;
-  List<Data>? data;
+  List<RondaData>? data;
 
   RondaModel({this.success, this.message, this.data});
 
@@ -9,17 +9,17 @@ class RondaModel {
     success = json['success'];
     message = json['message'];
     if (json['data'] != null) {
-      data = <Data>[];
+      data = <RondaData>[];
       json['data'].forEach((v) {
-        data!.add(new Data.fromJson(v));
+        data!.add(RondaData.fromJson(v));
       });
     }
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['success'] = this.success;
-    data['message'] = this.message;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['success'] = success;
+    data['message'] = message;
     if (this.data != null) {
       data['data'] = this.data!.map((v) => v.toJson()).toList();
     }
@@ -27,51 +27,119 @@ class RondaModel {
   }
 }
 
-class Data {
+class RondaData {
   int? id;
+  int? idKas;
+  int? anggaran;
   String? tanggal;
   String? lokasi;
   String? detail;
+  String? hasil;
   String? createdAt;
   String? updatedAt;
+  int? penanggungJawab;
+  Kas? kas; // Relasi ke Kas
   List<DetailRondas>? detailRondas;
 
-  Data(
-      {this.id,
-      this.tanggal,
-      this.lokasi,
-      this.detail,
-      this.createdAt,
-      this.updatedAt,
-      this.detailRondas});
+  RondaData({
+    this.id,
+    this.idKas,
+    this.anggaran,
+    this.tanggal,
+    this.lokasi,
+    this.detail,
+    this.hasil,
+    this.createdAt,
+    this.updatedAt,
+    this.penanggungJawab,
+    this.kas,
+    this.detailRondas,
+  });
 
-  Data.fromJson(Map<String, dynamic> json) {
+  RondaData.fromJson(Map<String, dynamic> json) {
     id = json['id'];
+    idKas = json['id_kas'];
+    anggaran = json['anggaran'];
     tanggal = json['tanggal'];
     lokasi = json['lokasi'];
     detail = json['detail'];
+    hasil = json['hasil'];
     createdAt = json['created_at'];
     updatedAt = json['updated_at'];
-    if (json['detail_rondas'] != null) {
+    penanggungJawab = json['penanggung_jawab'];
+    kas = json['kas'] != null ? Kas.fromJson(json['kas']) : null;
+    if (json['details'] != null) {
       detailRondas = <DetailRondas>[];
-      json['detail_rondas'].forEach((v) {
-        detailRondas!.add(new DetailRondas.fromJson(v));
+      json['details'].forEach((v) {
+        detailRondas!.add(DetailRondas.fromJson(v));
       });
     }
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['id'] = this.id;
-    data['tanggal'] = this.tanggal;
-    data['lokasi'] = this.lokasi;
-    data['detail'] = this.detail;
-    data['created_at'] = this.createdAt;
-    data['updated_at'] = this.updatedAt;
-    if (this.detailRondas != null) {
-      data['detail_rondas'] =
-          this.detailRondas!.map((v) => v.toJson()).toList();
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['id'] = id;
+    data['id_kas'] = idKas;
+    data['anggaran'] = anggaran;
+    data['tanggal'] = tanggal;
+    data['lokasi'] = lokasi;
+    data['detail'] = detail;
+    data['hasil'] = hasil;
+    data['created_at'] = createdAt;
+    data['updated_at'] = updatedAt;
+    data['penanggung_jawab'] = penanggungJawab;
+    if (kas != null) {
+      data['kas'] = kas!.toJson();
     }
+    if (detailRondas != null) {
+      data['details'] = detailRondas!.map((v) => v.toJson()).toList();
+    }
+    return data;
+  }
+}
+
+class Kas {
+  int? id;
+  String? namaPengguna;
+  String? email;
+  String? peran;
+  String? saldo;
+  String? createdAt;
+  String? updatedAt;
+  String? deletedAt;
+
+  Kas({
+    this.id,
+    this.namaPengguna,
+    this.email,
+    this.peran,
+    this.saldo,
+    this.createdAt,
+    this.updatedAt,
+    this.deletedAt,
+  });
+
+  Kas.fromJson(Map<String, dynamic> json) {
+    id = json['id'];
+    namaPengguna = json['nama_pengguna'];
+    email = json['email'];
+    peran = json['peran'];
+    saldo = json['saldo'];
+    createdAt = json['created_at'];
+    updatedAt = json['updated_at'];
+    deletedAt = json['deleted_at'];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['id'] = id;
+    data['nama_pengguna'] = namaPengguna;
+    data['email'] = email;
+    data['peran'] = peran;
+    data['saldo'] = saldo;
+    data['created_at'] = createdAt;
+    data['updated_at'] = updatedAt;
+    data['deleted_at'] = deletedAt;
     return data;
   }
 }
@@ -86,19 +154,20 @@ class DetailRondas {
   int? hadir;
   String? createdAt;
   String? updatedAt;
-  Warga? warga;
+  WargaRonda? warga;
 
-  DetailRondas(
-      {this.id,
-      this.idRonda,
-      this.idWarga,
-      this.jamMulai,
-      this.jamSelesai,
-      this.areaPatroli,
-      this.hadir,
-      this.createdAt,
-      this.updatedAt,
-      this.warga});
+  DetailRondas({
+    this.id,
+    this.idRonda,
+    this.idWarga,
+    this.jamMulai,
+    this.jamSelesai,
+    this.areaPatroli,
+    this.hadir,
+    this.createdAt,
+    this.updatedAt,
+    this.warga,
+  });
 
   DetailRondas.fromJson(Map<String, dynamic> json) {
     id = json['id'];
@@ -110,80 +179,51 @@ class DetailRondas {
     hadir = json['hadir'];
     createdAt = json['created_at'];
     updatedAt = json['updated_at'];
-    warga = json['warga'] != null ? new Warga.fromJson(json['warga']) : null;
+    warga = json['warga'] != null ? WargaRonda.fromJson(json['warga']) : null;
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['id'] = this.id;
-    data['id_ronda'] = this.idRonda;
-    data['id_warga'] = this.idWarga;
-    data['jam_mulai'] = this.jamMulai;
-    data['jam_selesai'] = this.jamSelesai;
-    data['area_patroli'] = this.areaPatroli;
-    data['hadir'] = this.hadir;
-    data['created_at'] = this.createdAt;
-    data['updated_at'] = this.updatedAt;
-    if (this.warga != null) {
-      data['warga'] = this.warga!.toJson();
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['id'] = id;
+    data['id_ronda'] = idRonda;
+    data['id_warga'] = idWarga;
+    data['jam_mulai'] = jamMulai;
+    data['jam_selesai'] = jamSelesai;
+    data['area_patroli'] = areaPatroli;
+    data['hadir'] = hadir;
+    data['created_at'] = createdAt;
+    data['updated_at'] = updatedAt;
+    if (warga != null) {
+      data['warga'] = warga!.toJson();
     }
     return data;
   }
 }
 
-class Warga {
+class WargaRonda {
   int? id;
-  int? idRt;
-  int? idUsers;
   String? nama;
   String? nik;
-  String? noTelp;
   String? alamat;
-  Null? foto;
-  String? createdAt;
-  String? updatedAt;
-  Null? deletedAt;
+  String? foto;
 
-  Warga(
-      {this.id,
-      this.idRt,
-      this.idUsers,
-      this.nama,
-      this.nik,
-      this.noTelp,
-      this.alamat,
-      this.foto,
-      this.createdAt,
-      this.updatedAt,
-      this.deletedAt});
+  WargaRonda({this.id, this.nama, this.nik, this.alamat, this.foto});
 
-  Warga.fromJson(Map<String, dynamic> json) {
+  WargaRonda.fromJson(Map<String, dynamic> json) {
     id = json['id'];
-    idRt = json['id_rt'];
-    idUsers = json['id_users'];
     nama = json['nama'];
     nik = json['nik'];
-    noTelp = json['no_telp'];
     alamat = json['alamat'];
     foto = json['foto'];
-    createdAt = json['created_at'];
-    updatedAt = json['updated_at'];
-    deletedAt = json['deleted_at'];
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['id'] = this.id;
-    data['id_rt'] = this.idRt;
-    data['id_users'] = this.idUsers;
-    data['nama'] = this.nama;
-    data['nik'] = this.nik;
-    data['no_telp'] = this.noTelp;
-    data['alamat'] = this.alamat;
-    data['foto'] = this.foto;
-    data['created_at'] = this.createdAt;
-    data['updated_at'] = this.updatedAt;
-    data['deleted_at'] = this.deletedAt;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['id'] = id;
+    data['nama'] = nama;
+    data['nik'] = nik;
+    data['alamat'] = alamat;
+    data['foto'] = foto;
     return data;
   }
 }

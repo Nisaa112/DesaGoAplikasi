@@ -4,52 +4,102 @@ import 'package:desa_go_aplikasi/service/api_service.dart';
 import 'package:flutter/material.dart';
 
 class AgendaViewmodel extends ChangeNotifier {
+  final dbHelper = DatabaseHelper.instance;
+
   List<Data> _agendaList = [];
   bool _isLoading = false;
-  String _errorMessage = '';
+  String? _errorMessage;
 
   List<Data> get agendaList => _agendaList;
   bool get isLoading => _isLoading;
-  String get errorMessage => _errorMessage;
+  String? get errorMessage => _errorMessage;
 
-  final dbHelper =  DatabaseHelper.instance;
-  
+  /// Load data (Offline First)
   Future<void> fetchAgenda() async {
     _isLoading = true;
-    _errorMessage = '';
+    _errorMessage = null;
     notifyListeners();
 
     try {
-    final fromApi = await ApiService.fetchAgenda();
-    _agendaList = fromApi;
+      // 1️⃣ Load data lokal dulu
+      _agendaList = await dbHelper.getAllAgenda();
+      notifyListeners();
 
-    await dbHelper.clearAgendaTable();
-
-    for (var agendaData in fromApi) {
-      await dbHelper.insertAgenda(agendaData);
-    }
-    print('✅ Data Agenda berhasil diambil dari API dan disimpan ke DB');
-
+      // 2️⃣ Sync dengan API
+      await synchronizeAgenda();
     } catch (e) {
-    _errorMessage = e.toString();
-    print('❌ Gagal mengambil data dari API: $e. Mencoba memuat dari DB...');
-    
-    await loadAgendaFromDb();
-
+      _errorMessage = e.toString();
     } finally {
-    _isLoading = false;
-    notifyListeners();
+      _isLoading = false;
+      notifyListeners();
     }
   }
 
-  Future<void> loadAgendaFromDb() async {
+  /// Sinkronisasi API → DB
+  Future<void> synchronizeAgenda() async {
+    try {
+      final apiData = await ApiService.fetchAgenda();
+
+      for (var item in apiData) {
+        await dbHelper.insertAgenda(item);
+      }
+
+      _agendaList = await dbHelper.getAllAgenda();
+      notifyListeners();
+    } catch (e) {
+      print('Sync Agenda Gagal: $e');
+    }
+  }
+
+  /// Create Agenda
+  Future<void> createAgenda(Data data) async {
     _isLoading = true;
     notifyListeners();
-    
-    _agendaList = await dbHelper.getAllAgenda();
-    print('📦 Data Agenda berhasil dimuat dari database lokal. Jumlah: ${_agendaList.length}');
-    
-    _isLoading = false;
+
+    try {
+      final res = await ApiService.createAgenda(data);
+      if (res != null) {
+        await dbHelper.insertAgenda(res);
+        _agendaList.insert(0, res);
+      }
+    } catch (e) {
+      rethrow;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  /// Update Agenda
+  Future<void> updateAgenda(Data data) async {
+    _isLoading = true;
     notifyListeners();
+
+    try {
+      await ApiService.updateAgenda(data);
+      await dbHelper.updateAgenda(data);
+
+      final index = _agendaList.indexWhere((e) => e.id == data.id);
+      if (index != -1) {
+        _agendaList[index] = data;
+      }
+    } catch (e) {
+      rethrow;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  /// Delete Agenda
+  Future<void> deleteAgenda(int id) async {
+    try {
+      await ApiService.deleteAgenda(id);
+      await dbHelper.deleteAgenda(id);
+      _agendaList.removeWhere((e) => e.id == id);
+      notifyListeners();
+    } catch (e) {
+      rethrow;
+    }
   }
 }

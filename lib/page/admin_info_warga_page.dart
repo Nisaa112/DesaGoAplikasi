@@ -112,6 +112,7 @@ class _AdminInfoWargaPageState extends State<AdminInfoWargaPage> {
       appBar: AppBar(
         backgroundColor: primaryColor,
         elevation: 0,
+        centerTitle: true,
         title: const Text(
           'Warga Desa',
           style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),

@@ -12,7 +12,7 @@ class RapatViewmodel extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String get errorMessage => _errorMessage;
 
-  final dbHelper =  DatabaseHelper.instance;
+  final dbHelper = DatabaseHelper.instance;
   
   Future<void> fetchRapat() async {
     _isLoading = true;
@@ -20,35 +20,30 @@ class RapatViewmodel extends ChangeNotifier {
     notifyListeners();
 
     try {
-    final fromApi = await ApiService.fetchRapat();
-    _rapatList = fromApi;
-
-    await dbHelper.clearRapatTable();
-
-    for (var rapatData in fromApi) {
-      await dbHelper.insertRapat(rapatData);
-    }
-    print('✅ Data rapat berhasil diambil dari API dan disimpan ke DB');
+      final fromApi = await ApiService.fetchRapat();
+      
+      // Update DB lokal
+      for (var rapatData in fromApi) {
+        await dbHelper.insertRapat(rapatData);
+      }
+      
+      _rapatList = fromApi;
+      print('✅ Data rapat berhasil disinkronkan');
 
     } catch (e) {
-    _errorMessage = e.toString();
-    print('❌ Gagal mengambil data dari API: $e. Mencoba memuat dari DB...');
-    
-    await loadRapatFromDb();
-
+      _errorMessage = e.toString();
+      print('❌ Gagal API Rapat: $e. Memuat data offline...');
+      _rapatList = await dbHelper.getAllRapat();
     } finally {
-    _isLoading = false;
-    notifyListeners();
+      _isLoading = false;
+      notifyListeners();
     }
   }
 
   Future<void> loadRapatFromDb() async {
     _isLoading = true;
     notifyListeners();
-    
     _rapatList = await dbHelper.getAllRapat();
-    print('📦 Data Rapat berhasil dimuat dari database lokal. Jumlah: ${_rapatList.length}');
-    
     _isLoading = false;
     notifyListeners();
   }

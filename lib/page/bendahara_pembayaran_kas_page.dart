@@ -1,8 +1,8 @@
 import 'package:desa_go_aplikasi/page/status_pembayaran_kas_page.dart';
 import 'package:flutter/material.dart';
 
-class PembayaranKasPage extends StatelessWidget {
-  const PembayaranKasPage({super.key});
+class BendaharaPembayaranKasPage extends StatelessWidget {
+  const BendaharaPembayaranKasPage({super.key});
 
   // Warna yang sesuai dengan base desain
   static const Color primaryColor = Color(0xFF4A4E8A);
@@ -77,7 +77,7 @@ class PembayaranKasPage extends StatelessWidget {
             borderRadius: BorderRadius.circular(30), 
           ),
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-          elevation: 4, 
+          elevation: 0, 
         ),
         child: const Row(
           mainAxisSize: MainAxisSize.min, 
@@ -158,6 +158,28 @@ class PembayaranKasPage extends StatelessWidget {
               TextField(
                 decoration: InputDecoration(
                   hintText: 'Nama Kas',
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 15, vertical: 15),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: Colors.grey),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: primaryColor, width: 2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 15),
+              const Text(
+                'Saldo Awal (Rp)',
+                style: TextStyle(
+                    fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87),
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                decoration: InputDecoration(
+                  hintText: 'Cth: 500000',
                   contentPadding:
                       const EdgeInsets.symmetric(horizontal: 15, vertical: 15),
                   border: OutlineInputBorder(

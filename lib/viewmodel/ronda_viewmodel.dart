@@ -1,113 +1,105 @@
-import 'dart:convert';
 import 'package:desa_go_aplikasi/db_helper.dart';
+import 'package:desa_go_aplikasi/models/ronda_model.dart';
 import 'package:desa_go_aplikasi/service/api_service.dart';
-import 'package:flutter/foundation.dart';
-import 'package:desa_go_aplikasi/models/ronda_model.dart' as Ronda;
+import 'package:flutter/material.dart';
 
 class RondaViewModel extends ChangeNotifier {
-    final DatabaseHelper _dbHelper = DatabaseHelper.instance;
+  final DatabaseHelper _dbHelper = DatabaseHelper.instance;
 
-    List<Ronda.Data> _listRonda = [];
-    bool _isLoading = false;
-    String _errorMessage = '';
+  List<RondaData> _listRonda = [];
+  List<RondaData> get listRonda => _listRonda;
 
-    List<Ronda.Data> get listRonda => _listRonda;
-    bool get isLoading => _isLoading;
-    String get errorMessage => _errorMessage;
+  bool _isLoading = false;
+  bool get isLoading => _isLoading;
 
-    RondaViewModel() {
-        loadRondaData(fetchFromApi: true);
+  String? _errorMessage;
+  String? get errorMessage => _errorMessage;
+
+  Future<void> loadRondaData() async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+    try {
+      // Offline first
+      _listRonda = await _dbHelper.getAllRonda();
+      _listRonda.sort((a, b) => (b.id ?? 0).compareTo(a.id ?? 0));
+      notifyListeners();
+      
+      // Sinkronkan
+      await synchronizeRonda();
+    } catch (e) {
+      _errorMessage = 'Gagal memuat data: $e';
+    } finally {
+      _isLoading = false;
+      notifyListeners();
     }
+  }
 
-    // ------------------------------------------------------------------
-    // --- Load Data Dari Database Lokal ---
-    // ------------------------------------------------------------------
-
-    Future<void> loadDataFromDb() async {
-        try {
-            _listRonda = await _dbHelper.getAllRonda();
-            
-            await _attachDetailsToRondaList(_listRonda);
-
-            _errorMessage = '';
-        } catch (e) {
-            _errorMessage = 'Gagal memuat data lokal: ${e.toString()}';
-            debugPrint('Error loading Ronda data from DB: $e');
-        }
+  Future<void> synchronizeRonda() async {
+    try {
+      final apiData = await ApiService.fetchRonda();
+      
+      for (var item in apiData) {
+        await _dbHelper.insertRonda(item);
+      }
+      
+      _listRonda = await _dbHelper.getAllRonda();
+      _listRonda.sort((a, b) => (b.id ?? 0).compareTo(a.id ?? 0));
+      notifyListeners();
+    } catch (e) {
+      print('Sinkronisasi ronda gagal: $e');
     }
+  }
 
-
-    // ------------------------------------------------------------------
-    // --- Fungsi Utama: Load dan Sinkronisasi Data ---
-    // ------------------------------------------------------------------
-
-    Future<void> loadRondaData({bool fetchFromApi = false}) async {
-        _isLoading = true;
-        notifyListeners(); 
-
-        await loadDataFromDb();
-        notifyListeners();
-
-        if (!fetchFromApi) {
-            _isLoading = false;
-            notifyListeners();
-            return;
-        }
-
-        try {
-            final apiRondaList = await ApiService.fetchRonda();
-
-            if (apiRondaList.isNotEmpty) {
-                await _dbHelper.clearRondaTable();
-                for (var ronda in apiRondaList) {
-                    await _dbHelper.insertRonda(ronda);
-                }
-
-                final apiDetailRondaList = await ApiService.fetchRondaDetail();
-                await _dbHelper.clearDetailRondaTable();
-                for (var detailRonda in apiDetailRondaList) {
-                    await _dbHelper.insertDetailRonda(detailRonda);
-                }
-                
-                await loadDataFromDb();
-
-                _errorMessage = '';
-            } else if (_listRonda.isEmpty) {
-                 _errorMessage = 'Tidak dapat mengambil data baru dari server dan data lokal kosong.';
-            }
-
-        } catch (e) {
-            _errorMessage = 'Gagal melakukan sinkronisasi dengan server: ${e.toString()}';
-            debugPrint('Error loading Ronda data from API: $e');
-        } finally {
-            _isLoading = false;
-            notifyListeners(); 
-        }
+  Future<void> createRonda(RondaData ronda) async {
+    _isLoading = true;
+    notifyListeners();
+    try {
+      final newRonda = await ApiService.createRonda(ronda);
+      if (newRonda != null) {
+        await _dbHelper.insertRonda(newRonda);
+        _listRonda.insert(0, newRonda);
+      }
+    } catch (e) {
+      rethrow;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
     }
+  }
 
-    // ------------------------------------------------------------------
-    // --- Fungsi Helper: Menggabungkan Detail ke Data Utama ---
-    // ------------------------------------------------------------------
-    
-    Future<void> _attachDetailsToRondaList(List<Ronda.Data> list) async {
-        final allDetails = await _dbHelper.getAllDetailRonda();
-        
-        Map<int, List<Ronda.DetailRondas>> detailsMap = {};
-        for (var detail in allDetails) {
-            if (detail.idRonda != null) {
-                if (!detailsMap.containsKey(detail.idRonda)) {
-                    detailsMap[detail.idRonda!] = [];
-                }
-                detailsMap[detail.idRonda!]!.add(detail);
-            }
-        }
+  Future<void> updateRonda(RondaData ronda) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
 
-        for (var ronda in list) {
-            if (ronda.id != null && detailsMap.containsKey(ronda.id)) {
-                ronda.detailRondas = detailsMap[ronda.id]; 
-            } else {
-                 ronda.detailRondas = [];
-            }
+    try {
+      final updatedRonda = await ApiService.updateRonda(ronda);
+      
+      if (updatedRonda != null) {
+        await _dbHelper.updateRonda(updatedRonda);
+        int index = _listRonda.indexWhere((element) => element.id == updatedRonda.id);
+        if (index != -1) {
+          _listRonda[index] = updatedRonda;
         }
+      }
+    } catch (e) {
+      _errorMessage = 'Gagal mengupdate: $e';
+      rethrow;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
     }
+  }
+
+  Future<void> deleteRonda(int id) async {
+    try {
+      await ApiService.deleteRonda(id);
+      await _dbHelper.deleteRonda(id);
+      _listRonda.removeWhere((item) => item.id == id);
+      notifyListeners();
+    } catch (e) {
+      rethrow;
+    }
+  }
 }

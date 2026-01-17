@@ -77,4 +77,27 @@ class UserViewModel extends ChangeNotifier {
       notifyListeners();
     }
   }
+
+  Future<void> deleteUser(int id) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      await ApiService.deleteUser(id);
+
+      await _dbHelper.deleteUser(id);
+
+      _users.removeWhere((element) => element.id == id);
+      
+      notifyListeners();
+    } catch (e) {
+      _errorMessage = 'Gagal menghapus User: $e';
+      print('❌ Error saat deleteUser: $e');
+      rethrow;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
 }

@@ -14,6 +14,8 @@ class AdminStrukturPage extends StatefulWidget {
 }
 
 class _AdminStrukturPageState extends State<AdminStrukturPage> {
+  GlobalKey<_SlidableListItemState>? _currentlyOpenItemKey;
+
   @override
   void initState() {
     super.initState();
@@ -22,22 +24,48 @@ class _AdminStrukturPageState extends State<AdminStrukturPage> {
     });
   }
 
+  void _handleItemOpen(GlobalKey<_SlidableListItemState> key) {
+    if (_currentlyOpenItemKey != null && _currentlyOpenItemKey != key) {
+      _currentlyOpenItemKey?.currentState?.closeItem();
+    }
+    _currentlyOpenItemKey = key;
+  }
+
+  void _handleItemClose() => _currentlyOpenItemKey = null;
+
+  Future<void> _deleteMember(StrukturModel.Data member) async {
+    final bool? confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Hapus Struktur'),
+        content: Text('Yakin ingin menghapus ${member.nama} dari struktur?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Batal')),
+          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Hapus', style: TextStyle(color: Colors.red))),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      try {
+        await Provider.of<StrukturViewModel>(context, listen: false).deleteStruktur(member.id!);
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Berhasil dihapus'), backgroundColor: Colors.green));
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Gagal: $e'), backgroundColor: Colors.red));
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final authViewModel = Provider.of<AuthViewModel>(context);
-    
     final int? adminRwId = authViewModel.idRw;
 
     return Consumer<StrukturViewModel>(
       builder: (context, viewModel, child) {
-        
         final filteredList = viewModel.strukturList.where((member) {
-          
           if (adminRwId == null) return false;
-
-          final int? wargaRwId = member.rt?.idRw; 
-          
-          return wargaRwId == adminRwId;
+          return member.idRw == adminRwId;
         }).toList();
 
         return Scaffold(
@@ -45,10 +73,8 @@ class _AdminStrukturPageState extends State<AdminStrukturPage> {
           appBar: AppBar(
             backgroundColor: const Color(0xFF4A4E8A),
             elevation: 0,
-            title: Text(
-              'Struktur RW ${adminRwId ?? ""}', // Menampilkan info RW di title
-              style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
-            ),
+            centerTitle: true,
+            title: Text('Struktur RW ${adminRwId ?? ""}', style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
             leading: IconButton(
               icon: const Icon(Icons.arrow_back, color: Colors.white),
               onPressed: () => Navigator.maybePop(context),
@@ -58,12 +84,9 @@ class _AdminStrukturPageState extends State<AdminStrukturPage> {
             width: double.infinity,
             decoration: const BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(30),
-                topRight: Radius.circular(30),
-              ),
+              borderRadius: BorderRadius.only(topLeft: Radius.circular(30), topRight: Radius.circular(30)),
             ),
-            child: _buildBody(viewModel, filteredList, adminRwId),
+            child: _buildBody(viewModel, filteredList),
           ),
           floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
           floatingActionButton: _buildFAB(context),
@@ -72,62 +95,37 @@ class _AdminStrukturPageState extends State<AdminStrukturPage> {
     );
   }
 
-  Widget _buildBody(StrukturViewModel viewModel, List<StrukturModel.Data> filteredList, int? adminRwId) {
+  Widget _buildBody(StrukturViewModel viewModel, List<StrukturModel.Data> filteredList) {
     if (viewModel.isLoading && viewModel.strukturList.isEmpty) {
       return const Center(child: CircularProgressIndicator(color: Color(0xFF4A4E8A)));
     }
 
-    if (adminRwId == null) {
-      return const Center(child: Text("Sesi admin tidak ditemukan. Silahkan login ulang."));
-    }
-
     if (filteredList.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons. people_outline, size: 64, color: Colors.grey.shade300),
-            const SizedBox(height: 16),
-            Text(
-              'Tidak ada data warga di RW $adminRwId',
-              style: const TextStyle(color: Colors.grey, fontSize: 16),
-            ),
-          ],
-        ),
-      );
+      return const Center(child: Text('Tidak ada data keanggotaan.', style: TextStyle(color: Colors.grey)));
     }
 
     return RefreshIndicator(
       color: const Color(0xFFFFC212),
       onRefresh: () async => await viewModel.synchronizeStruktur(),
       child: ListView.separated(
-        padding: const EdgeInsets.only(top: 20.0, left: 16.0, right: 16.0, bottom: 80.0),
+        padding: const EdgeInsets.only(top: 25.0, left: 16.0, right: 16.0, bottom: 80.0),
         itemCount: filteredList.length,
         separatorBuilder: (context, index) => const Divider(height: 1),
         itemBuilder: (context, index) {
           final member = filteredList[index];
-          return ListTile(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4),
-            leading: CircleAvatar(
-              radius: 26,
-              backgroundImage: (member.foto != null && member.foto!.isNotEmpty)
-                  ? NetworkImage(member.foto!)
-                  : null,
-              child: (member.foto == null || member.foto!.isEmpty)
-                  ? const Icon(Icons.person)
-                  : null,
-            ),
-            title: Text(member.nama ?? 'Tanpa Nama', style: const TextStyle(fontWeight: FontWeight.bold)),
-            subtitle: Text(member.jabatan?.namaJabatan ?? 'Warga'),
-            trailing: const Icon(Icons.chevron_right),
+          final itemKey = GlobalKey<_SlidableListItemState>();
+
+          return _SlidableListItem(
+            key: itemKey,
+            title: member.nama ?? '-',
+            subtitle: member.jabatan?.namaJabatan ?? 'Warga',
+            foto: member.foto,
+            onDelete: () => _deleteMember(member),
             onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => AdminIdentitasPejabatPage(dataPejabat: member),
-                ),
-              );
+               Navigator.push(context, MaterialPageRoute(builder: (context) => AdminIdentitasPejabatPage(dataPejabat: member)));
             },
+            onItemOpen: _handleItemOpen,
+            onItemClose: _handleItemClose,
           );
         },
       ),
@@ -136,19 +134,133 @@ class _AdminStrukturPageState extends State<AdminStrukturPage> {
 
   Widget _buildFAB(BuildContext context) {
     return SizedBox(
-      width: 200,
-      height: 50,
+      width: 200, height: 50,
       child: FloatingActionButton.extended(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const AdminTambahStrukturPage()),
-          ).then((_) => Provider.of<StrukturViewModel>(context, listen: false).loadStruktur());
-        },
+        onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const AdminTambahStrukturPage())),
         backgroundColor: const Color(0xFFFFCC33),
         elevation: 0,
         icon: const Icon(Icons.add, color: Colors.black),
         label: const Text('Tambah Jabatan', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+      ),
+    );
+  }
+}
+
+// ==========================================================
+// WIDGET SLIDABLE LIST ITEM (Hanya Hapus)
+// ==========================================================
+class _SlidableListItem extends StatefulWidget {
+  final String title;
+  final String subtitle;
+  final String? foto;
+  final VoidCallback onDelete;
+  final VoidCallback onTap;
+  final void Function(GlobalKey<_SlidableListItemState>) onItemOpen;
+  final void Function() onItemClose;
+
+  const _SlidableListItem({
+    required super.key,
+    required this.title,
+    required this.subtitle,
+    this.foto,
+    required this.onDelete,
+    required this.onTap,
+    required this.onItemOpen,
+    required this.onItemClose,
+  });
+
+  @override
+  State<_SlidableListItem> createState() => _SlidableListItemState();
+}
+
+class _SlidableListItemState extends State<_SlidableListItem> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _slideAnimation;
+  static const double _actionExtent = 80.0; 
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 200));
+    _slideAnimation = Tween(begin: 0.0, end: 0.0).animate(_controller);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void closeItem() {
+    if (mounted) {
+      _slideAnimation = Tween(begin: _slideAnimation.value, end: 0.0).animate(_controller);
+      _controller.forward(from: 0.0).then((_) {
+        if (mounted) widget.onItemClose();
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => _controller.value.abs() > 0 ? closeItem() : widget.onTap(),
+      onHorizontalDragUpdate: (details) {
+        setState(() {
+          double newOffset = _slideAnimation.value + details.primaryDelta!;
+          newOffset = newOffset.clamp(-_actionExtent, 0.0);
+          _slideAnimation = Tween(begin: newOffset, end: newOffset).animate(_controller);
+        });
+      },
+      onHorizontalDragEnd: (details) {
+        if (_slideAnimation.value.abs() > _actionExtent / 2) {
+          _slideAnimation = Tween(begin: _slideAnimation.value, end: -_actionExtent).animate(_controller);
+          _controller.forward(from: 0.0).then((_) {
+            widget.onItemOpen(widget.key as GlobalKey<_SlidableListItemState>);
+          });
+        } else {
+          closeItem();
+        }
+      },
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                InkWell(
+                  onTap: () {
+                    closeItem();
+                    widget.onDelete();
+                  },
+                  child: Container(
+                    width: _actionExtent,
+                    color: Colors.red,
+                    alignment: Alignment.center,
+                    child: const Icon(Icons.delete, color: Colors.white),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          AnimatedBuilder(
+            animation: _controller,
+            builder: (context, child) => Transform.translate(offset: Offset(_slideAnimation.value, 0), child: child),
+            child: Container(
+              color: Colors.white,
+              child: ListTile(
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4),
+                leading: CircleAvatar(
+                  backgroundColor: const Color(0xFF4A4E8A).withOpacity(0.1),
+                  backgroundImage: (widget.foto != null && widget.foto!.isNotEmpty) ? NetworkImage(widget.foto!) : null,
+                  child: (widget.foto == null || widget.foto!.isEmpty) ? const Icon(Icons.person, color: Color(0xFF4A4E8A)) : null,
+                ),
+                title: Text(widget.title, style: const TextStyle(fontWeight: FontWeight.bold)),
+                subtitle: Text(widget.subtitle),
+                trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

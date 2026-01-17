@@ -1,5 +1,5 @@
 import 'package:desa_go_aplikasi/page/info_warga_page.dart';
-import 'package:desa_go_aplikasi/page/pembayaran_kas_page.dart';
+import 'package:desa_go_aplikasi/page/bendahara_pembayaran_kas_page.dart';
 import 'package:desa_go_aplikasi/page/struktur_page.dart';
 import 'package:flutter/material.dart';
 
@@ -51,7 +51,7 @@ class BendaharaInformasiPublikPage extends StatelessWidget {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const PembayaranKasPage()),
+                    MaterialPageRoute(builder: (context) => const BendaharaPembayaranKasPage()),
                   );
                 },
               ),

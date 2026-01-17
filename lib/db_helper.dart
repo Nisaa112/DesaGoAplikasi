@@ -85,8 +85,13 @@ class DatabaseHelper {
     await db.execute('''
       CREATE TABLE rapat (
         id INTEGER PRIMARY KEY,
+        id_kas INTEGER,
+        anggaran INTEGER,
         judul_rapat TEXT,
         lokasi TEXT,
+        penanggung_jawab TEXT,
+        jam_mulai TEXT,
+        status TEXT,
         tujuan TEXT,
         kesimpulan TEXT,
         created_at TEXT,
@@ -97,10 +102,20 @@ class DatabaseHelper {
     await db.execute('''
       CREATE TABLE posyandu (
         id INTEGER PRIMARY KEY,
+        id_kas INTEGER,
+        anggaran INTEGER,
         judul_posyandu TEXT,
         penanggung_jawab TEXT,
         tanggal TEXT,
+        keterangan TEXT,
         lokasi TEXT,
+        jam_mulai TEXT,
+        status TEXT,
+        total_diperiksa INTEGER,
+        total_sehat INTEGER,
+        total_perlu_tindak_lanjut INTEGER,
+        total_diimunisasi INTEGER,
+        ringkasan_hasil TEXT,
         created_at TEXT,
         updated_at TEXT
       )
@@ -109,9 +124,14 @@ class DatabaseHelper {
     await db.execute('''
       CREATE TABLE ronda (
         id INTEGER PRIMARY KEY,
+        id_kas INTEGER,
+        anggaran INTEGER,
         tanggal TEXT,
         lokasi TEXT,
         detail TEXT,
+        hasil TEXT,
+        penanggung_jawab INTEGER,
+        details_json TEXT, 
         created_at TEXT,
         updated_at TEXT
       )
@@ -136,9 +156,15 @@ class DatabaseHelper {
     await db.execute('''
       CREATE TABLE agenda (
         id INTEGER PRIMARY KEY,
+        id_kas INTEGER,
+        anggaran INTEGER,
         nama_agenda TEXT,
         tanggal TEXT,
         lokasi TEXT,
+        penanggung_jawab TEXT,
+        jam_mulai TEXT,
+        status TEXT,
+        keterangan TEXT,
         created_at TEXT,
         updated_at TEXT
       )
@@ -507,47 +533,25 @@ class DatabaseHelper {
   }
 
   // ==========================================================================
-  // --- CRUD RAPAT (Rapat.Data) ---
+  // --- CRUD RAPAT ---
   // ==========================================================================
 
   Future<int> insertRapat(Rapat.Data rapat) async {
     final db = await database;
-
-    Map<String, dynamic> row = {
-      'id': rapat.id, 'judul_rapat': rapat.judulRapat, 'lokasi': rapat.lokasi,
-      'tujuan': rapat.tujuan, 'kesimpulan': rapat.kesimpulan,
-      'created_at': rapat.createdAt, 'updated_at': rapat.updatedAt,
-    };
+    Map<String, dynamic> row = rapat.toJson();
     row.removeWhere((key, value) => value == null);
-
     return await db.insert('rapat', row, conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
   Future<List<Rapat.Data>> getAllRapat() async {
     final db = await database;
     final List<Map<String, dynamic>> maps = await db.query('rapat');
-
-    return List.generate(maps.length, (i) {
-      return Rapat.Data(
-        id: maps[i]['id'], judulRapat: maps[i]['judul_rapat'], lokasi: maps[i]['lokasi'],
-        tujuan: maps[i]['tujuan'], kesimpulan: maps[i]['kesimpulan'],
-        updatedAt: maps[i]['updated_at'], createdAt: maps[i]['created_at'],
-      );
-    });
+    return List.generate(maps.length, (i) => Rapat.Data.fromJson(maps[i]));
   }
 
   Future<int> updateRapat(Rapat.Data rapat) async {
     final db = await database;
-    if (rapat.id == null) throw Exception("ID Rapat tidak boleh null untuk update.");
-
-    Map<String, dynamic> row = {
-      'judul_rapat': rapat.judulRapat, 'lokasi': rapat.lokasi,
-      'tujuan': rapat.tujuan, 'kesimpulan': rapat.kesimpulan,
-      'updated_at': rapat.updatedAt,
-    };
-    row.removeWhere((key, value) => value == null);
-
-    return await db.update('rapat', row, where: 'id = ?', whereArgs: [rapat.id]);
+    return await db.update('rapat', rapat.toJson(), where: 'id = ?', whereArgs: [rapat.id]);
   }
 
   Future<int> deleteRapat(int id) async {
@@ -555,54 +559,26 @@ class DatabaseHelper {
     return await db.delete('rapat', where: 'id = ?', whereArgs: [id]);
   }
 
-  Future<void> clearRapatTable() async {
-    final db = await database;
-    await db.delete('rapat');
-  }
-
   // ==========================================================================
-  // --- CRUD POSYANDU (Posyandu.Data) ---
+  // --- CRUD POSYANDU ---
   // ==========================================================================
 
   Future<int> insertPosyandu(Posyandu.Data posyandu) async {
     final db = await database;
-
-    Map<String, dynamic> row = {
-      'id': posyandu.id, 'judul_posyandu': posyandu.judulPosyandu, 
-      'penanggung_jawab': posyandu.penanggungJawab, 'tanggal': posyandu.tanggal, 
-      'lokasi': posyandu.lokasi, 'created_at': posyandu.createdAt, 
-      'updated_at': posyandu.updatedAt,
-    };
+    Map<String, dynamic> row = posyandu.toJson();
     row.removeWhere((key, value) => value == null);
-
     return await db.insert('posyandu', row, conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
   Future<List<Posyandu.Data>> getAllPosyandu() async {
     final db = await database;
     final List<Map<String, dynamic>> maps = await db.query('posyandu');
-
-    return List.generate(maps.length, (i) {
-      return Posyandu.Data(
-        id: maps[i]['id'], judulPosyandu: maps[i]['judul_posyandu'], 
-        penanggungJawab: maps[i]['penanggung_jawab'], tanggal: maps[i]['tanggal'], 
-        lokasi: maps[i]['lokasi'], updatedAt: maps[i]['updated_at'], 
-        createdAt: maps[i]['created_at'],
-      );
-    });
+    return List.generate(maps.length, (i) => Posyandu.Data.fromJson(maps[i]));
   }
 
   Future<int> updatePosyandu(Posyandu.Data posyandu) async {
     final db = await database;
-    if (posyandu.id == null) throw Exception("ID Posyandu tidak boleh null untuk update.");
-
-    Map<String, dynamic> row = {
-      'judul_posyandu': posyandu.judulPosyandu, 'penanggung_jawab': posyandu.penanggungJawab,
-      'tanggal': posyandu.tanggal, 'lokasi': posyandu.lokasi, 'updated_at': posyandu.updatedAt,
-    };
-    row.removeWhere((key, value) => value == null);
-
-    return await db.update('posyandu', row, where: 'id = ?', whereArgs: [posyandu.id]);
+    return await db.update('posyandu', posyandu.toJson(), where: 'id = ?', whereArgs: [posyandu.id]);
   }
 
   Future<int> deletePosyandu(int id) async {
@@ -610,49 +586,44 @@ class DatabaseHelper {
     return await db.delete('posyandu', where: 'id = ?', whereArgs: [id]);
   }
 
-  Future<void> clearPosyanduTable() async {
-    final db = await database;
-    await db.delete('posyandu');
-  }
-
   // ==========================================================================
-  // --- CRUD RONDA (Ronda.Data) ---
+  // --- CRUD RONDA ---
   // ==========================================================================
 
-  Future<int> insertRonda(Ronda.Data ronda) async {
+  Future<int> insertRonda(Ronda.RondaData ronda) async {
     final db = await database;
-
-    Map<String, dynamic> row = {
-      'id': ronda.id, 'tanggal': ronda.tanggal, 'lokasi': ronda.lokasi,
-      'detail': ronda.detail, 'created_at': ronda.createdAt, 'updated_at': ronda.updatedAt,
-    };
+    Map<String, dynamic> row = ronda.toJson();
+    
+    // Serialisasi list detail petugas ke JSON String
+    if (ronda.detailRondas != null) {
+      row['details_json'] = jsonEncode(ronda.detailRondas!.map((v) => v.toJson()).toList());
+    }
+    row.remove('details'); // Hapus key asli agar tidak konflik dengan kolom DB
     row.removeWhere((key, value) => value == null);
-
+    
     return await db.insert('ronda', row, conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
-  Future<List<Ronda.Data>> getAllRonda() async {
+  Future<List<Ronda.RondaData>> getAllRonda() async {
     final db = await database;
     final List<Map<String, dynamic>> maps = await db.query('ronda');
 
     return List.generate(maps.length, (i) {
-      return Ronda.Data(
-        id: maps[i]['id'], tanggal: maps[i]['tanggal'], lokasi: maps[i]['lokasi'],
-        detail: maps[i]['detail'], updatedAt: maps[i]['updated_at'], createdAt: maps[i]['created_at'],
-      );
+      Map<String, dynamic> item = Map<String, dynamic>.from(maps[i]);
+      if (item['details_json'] != null) {
+        item['details'] = jsonDecode(item['details_json']);
+      }
+      return Ronda.RondaData.fromJson(item);
     });
   }
 
-  Future<int> updateRonda(Ronda.Data ronda) async {
+  Future<int> updateRonda(Ronda.RondaData ronda) async {
     final db = await database;
-    if (ronda.id == null) throw Exception("ID Ronda tidak boleh null untuk update.");
-
-    Map<String, dynamic> row = {
-      'tanggal': ronda.tanggal, 'lokasi': ronda.lokasi, 'detail': ronda.detail,
-      'updated_at': ronda.updatedAt,
-    };
-    row.removeWhere((key, value) => value == null);
-
+    Map<String, dynamic> row = ronda.toJson();
+    if (ronda.detailRondas != null) {
+      row['details_json'] = jsonEncode(ronda.detailRondas!.map((v) => v.toJson()).toList());
+    }
+    row.remove('details');
     return await db.update('ronda', row, where: 'id = ?', whereArgs: [ronda.id]);
   }
 
@@ -661,115 +632,26 @@ class DatabaseHelper {
     return await db.delete('ronda', where: 'id = ?', whereArgs: [id]);
   }
 
-  Future<void> clearRondaTable() async {
-    final db = await database;
-    await db.delete('ronda');
-  }
-
   // ==========================================================================
-  // --- CRUD DETAIL RONDA (Ronda.DetailRondas) ---
-  // ==========================================================================
-
-  Future<int> insertDetailRonda(Ronda.DetailRondas detailRonda) async {
-    final db = await database;
-
-    final wargaJson = detailRonda.warga != null ? jsonEncode(detailRonda.warga!.toJson()) : null;
-
-    Map<String, dynamic> row = {
-      'id': detailRonda.id, 'id_ronda': detailRonda.idRonda, 'id_warga': detailRonda.idWarga,
-      'jam_mulai': detailRonda.jamMulai, 'jam_selesai': detailRonda.jamSelesai, 
-      'area_patroli': detailRonda.areaPatroli, 'hadir': detailRonda.hadir,
-      'created_at': detailRonda.createdAt, 'updated_at': detailRonda.updatedAt,
-      'warga': wargaJson,
-    };
-    row.removeWhere((key, value) => value == null);
-
-    return await db.insert('detail_ronda', row, conflictAlgorithm: ConflictAlgorithm.replace);
-  }
-
-  Future<List<Ronda.DetailRondas>> getAllDetailRonda() async {
-    final db = await database;
-    final List<Map<String, dynamic>> maps = await db.query('detail_ronda');
-
-    return List.generate(maps.length, (i) {
-      final wargaMap = maps[i]['warga'] != null ? jsonDecode(maps[i]['warga']) : null;
-
-      return Ronda.DetailRondas(
-        id: maps[i]['id'], idRonda: maps[i]['id_ronda'], idWarga: maps[i]['id_warga'],
-        jamMulai: maps[i]['jam_mulai'], jamSelesai: maps[i]['jam_selesai'],
-        areaPatroli: maps[i]['area_patroli'], hadir: maps[i]['hadir'],
-        updatedAt: maps[i]['updated_at'], createdAt: maps[i]['created_at'],
-        warga: wargaMap != null ? Ronda.Warga.fromJson(wargaMap) : null,
-      );
-    });
-  }
-
-  Future<int> updateDetailRonda(Ronda.DetailRondas detailRonda) async {
-    final db = await database;
-    if (detailRonda.id == null) throw Exception("ID Detail Ronda tidak boleh null untuk update.");
-
-    final wargaJson = detailRonda.warga != null ? jsonEncode(detailRonda.warga!.toJson()) : null;
-
-    Map<String, dynamic> row = {
-      'id_ronda': detailRonda.idRonda, 'id_warga': detailRonda.idWarga,
-      'jam_mulai': detailRonda.jamMulai, 'jam_selesai': detailRonda.jamSelesai,
-      'area_patroli': detailRonda.areaPatroli, 'hadir': detailRonda.hadir,
-      'updated_at': detailRonda.updatedAt, 'warga': wargaJson,
-    };
-    row.removeWhere((key, value) => value == null);
-
-    return await db.update('detail_ronda', row, where: 'id = ?', whereArgs: [detailRonda.id]);
-  }
-
-  Future<int> deleteDetailRonda(int id) async {
-    final db = await database;
-    return await db.delete('detail_ronda', where: 'id = ?', whereArgs: [id]);
-  }
-
-  Future<void> clearDetailRondaTable() async {
-    final db = await database;
-    await db.delete('detail_ronda');
-  }
-
-  // ==========================================================================
-  // --- CRUD AGENDA (Agenda.Data) ---
+  // --- CRUD AGENDA ---
   // ==========================================================================
 
   Future<int> insertAgenda(Agenda.Data agenda) async {
     final db = await database;
-
-    Map<String, dynamic> row = {
-      'id': agenda.id, 'nama_agenda': agenda.namaAgenda, 'tanggal': agenda.tanggal,
-      'lokasi': agenda.lokasi, 'created_at': agenda.createdAt, 'updated_at': agenda.updatedAt,
-    };
+    Map<String, dynamic> row = agenda.toJson();
     row.removeWhere((key, value) => value == null);
-
     return await db.insert('agenda', row, conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
   Future<List<Agenda.Data>> getAllAgenda() async {
     final db = await database;
     final List<Map<String, dynamic>> maps = await db.query('agenda');
-
-    return List.generate(maps.length, (i) {
-      return Agenda.Data(
-        id: maps[i]['id'], namaAgenda: maps[i]['nama_agenda'], tanggal: maps[i]['tanggal'],
-        lokasi: maps[i]['lokasi'], updatedAt: maps[i]['updated_at'], createdAt: maps[i]['created_at'],
-      );
-    });
+    return List.generate(maps.length, (i) => Agenda.Data.fromJson(maps[i]));
   }
 
   Future<int> updateAgenda(Agenda.Data agenda) async {
     final db = await database;
-    if (agenda.id == null) throw Exception("ID Agenda tidak boleh null untuk update.");
-
-    Map<String, dynamic> row = {
-      'nama_agenda': agenda.namaAgenda, 'tanggal': agenda.tanggal,
-      'lokasi': agenda.lokasi, 'updated_at': agenda.updatedAt,
-    };
-    row.removeWhere((key, value) => value == null);
-
-    return await db.update('agenda', row, where: 'id = ?', whereArgs: [agenda.id]);
+    return await db.update('agenda', agenda.toJson(), where: 'id = ?', whereArgs: [agenda.id]);
   }
 
   Future<int> deleteAgenda(int id) async {
@@ -777,8 +659,12 @@ class DatabaseHelper {
     return await db.delete('agenda', where: 'id = ?', whereArgs: [id]);
   }
 
-  Future<void> clearAgendaTable() async {
+  // --- Utility ---
+  Future<void> clearAllTables() async {
     final db = await database;
+    await db.delete('rapat');
+    await db.delete('posyandu');
+    await db.delete('ronda');
     await db.delete('agenda');
   }
 

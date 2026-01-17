@@ -1,7 +1,5 @@
 import 'package:desa_go_aplikasi/models/struktur_model.dart' as StrukturModel;
-import 'package:desa_go_aplikasi/viewmodel/struktur_viewmodel.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
 class AdminIdentitasPejabatPage extends StatefulWidget {
   final StrukturModel.Data dataPejabat;
@@ -13,18 +11,14 @@ class AdminIdentitasPejabatPage extends StatefulWidget {
 }
 
 class _AdminIdentitasPejabatPageState extends State<AdminIdentitasPejabatPage> {
-  // Controllers untuk field identitas pejabat
+  // Controllers (Semua diset Read-Only untuk tampilan Identitas)
   final TextEditingController _namaController = TextEditingController();
   final TextEditingController _nikController = TextEditingController();
   final TextEditingController _noTelpController = TextEditingController();
   final TextEditingController _alamatController = TextEditingController();
-  
-  // Controller Read-only untuk info organisasi
   final TextEditingController _jabatanController = TextEditingController();
   final TextEditingController _rwController = TextEditingController();
   final TextEditingController _rtController = TextEditingController();
-
-  bool _isSubmitting = false;
 
   @override
   void initState() {
@@ -34,8 +28,6 @@ class _AdminIdentitasPejabatPageState extends State<AdminIdentitasPejabatPage> {
     _nikController.text = widget.dataPejabat.nik ?? '';
     _noTelpController.text = widget.dataPejabat.noTelp ?? '';
     _alamatController.text = widget.dataPejabat.alamat ?? '';
-    
-    // Data Pendukung (Read Only / Info)
     _jabatanController.text = widget.dataPejabat.jabatan?.namaJabatan ?? '-';
     _rwController.text = widget.dataPejabat.rw?.namaRw ?? '-';
     _rtController.text = widget.dataPejabat.rt?.namaRt ?? '-';
@@ -51,43 +43,6 @@ class _AdminIdentitasPejabatPageState extends State<AdminIdentitasPejabatPage> {
     _rwController.dispose();
     _rtController.dispose();
     super.dispose();
-  }
-
-  Future<void> _simpanPerubahan() async {
-    if (_namaController.text.trim().isEmpty) {
-      _showSnackbar('Nama tidak boleh kosong!', Colors.red);
-      return;
-    }
-
-    setState(() => _isSubmitting = true);
-
-    try {
-      // Simulasi proses API
-      await Future.delayed(const Duration(seconds: 1));
-      
-      _showSnackbar('Data pejabat berhasil diperbarui!', const Color(0xFF5CB85C));
-      
-      if (mounted) {
-        // Refresh list melalui ViewModel
-        Provider.of<StrukturViewModel>(context, listen: false).loadStruktur();
-        Navigator.pop(context);
-      }
-    } catch (e) {
-      _showSnackbar('Gagal menyimpan: ${e.toString()}', Colors.red);
-    } finally {
-      if (mounted) setState(() => _isSubmitting = false);
-    }
-  }
-
-  void _showSnackbar(String message, Color color) {
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: color,
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
   }
 
   @override
@@ -111,6 +66,7 @@ class _AdminIdentitasPejabatPageState extends State<AdminIdentitasPejabatPage> {
       ),
       body: Container(
         width: double.infinity,
+        height: double.infinity,
         decoration: const BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.only(
@@ -118,141 +74,75 @@ class _AdminIdentitasPejabatPageState extends State<AdminIdentitasPejabatPage> {
             topRight: Radius.circular(30),
           ),
         ),
-        child: Column(
-          children: [
-            Expanded(
-              child: SingleChildScrollView(
-                physics: const BouncingScrollPhysics(),
-                child: Padding(
-                  padding: const EdgeInsets.all(24.0),
-                  child: Column(
-                    children: [
-                      // Header Foto Profil
-                      Center(
-                        child: Stack(
-                          children: [
-                            CircleAvatar(
-                              radius: 50,
-                              backgroundColor: Colors.grey.shade200,
-                              backgroundImage: (widget.dataPejabat.foto != null && widget.dataPejabat.foto!.isNotEmpty)
-                                  ? NetworkImage(widget.dataPejabat.foto!)
-                                  : null,
-                              child: (widget.dataPejabat.foto == null || widget.dataPejabat.foto!.isEmpty)
-                                  ? const Icon(Icons.person, size: 50, color: Colors.grey)
-                                  : null,
-                            ),
-                            Positioned(
-                              bottom: 0,
-                              right: 0,
-                              child: Container(
-                                padding: const EdgeInsets.all(4),
-                                decoration: const BoxDecoration(
-                                  color: primaryColor,
-                                  shape: BoxShape.circle,
-                                ),
-                                child: const Icon(Icons.camera_alt, color: Colors.white, size: 20),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 32),
-                      
-                      // Identitas Form
-                      _buildInfoField(
-                        label: 'Nama Lengkap',
-                        controller: _namaController,
-                        isEditable: true,
-                        icon: Icons.person_outline,
-                        primaryColor: primaryColor,
-                      ),
-                      const SizedBox(height: 20),
-                      _buildInfoField(
-                        label: 'NIK',
-                        controller: _nikController,
-                        isEditable: true,
-                        icon: Icons.badge_outlined,
-                        keyboardType: TextInputType.number,
-                        primaryColor: primaryColor,
-                      ),
-                      const SizedBox(height: 20),
-                      _buildInfoField(
-                        label: 'Jabatan',
-                        controller: _jabatanController,
-                        isEditable: false,
-                        icon: Icons.work_outline,
-                        primaryColor: primaryColor,
-                      ),
-                      const SizedBox(height: 20),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _buildInfoField(
-                              label: 'RW',
-                              controller: _rwController,
-                              isEditable: false,
-                              primaryColor: primaryColor,
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: _buildInfoField(
-                              label: 'RT',
-                              controller: _rtController,
-                              isEditable: false,
-                              primaryColor: primaryColor,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 20),
-                      _buildInfoField(
-                        label: 'Nomor Telepon',
-                        controller: _noTelpController,
-                        isEditable: true,
-                        icon: Icons.phone_outlined,
-                        keyboardType: TextInputType.phone,
-                        primaryColor: primaryColor,
-                      ),
-                      const SizedBox(height: 20),
-                      _buildInfoField(
-                        label: 'Alamat',
-                        controller: _alamatController,
-                        isEditable: true,
-                        icon: Icons.location_city,
-                        maxLines: 3,
-                        primaryColor: primaryColor,
-                      ),
-                      const SizedBox(height: 30),
-                    ],
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Header Foto Profil (Tanpa ikon kamera)
+                Center(
+                  child: CircleAvatar(
+                    radius: 50,
+                    backgroundColor: Colors.grey.shade200,
+                    backgroundImage: (widget.dataPejabat.foto != null && widget.dataPejabat.foto!.isNotEmpty)
+                        ? NetworkImage(widget.dataPejabat.foto!)
+                        : null,
+                    child: (widget.dataPejabat.foto == null || widget.dataPejabat.foto!.isEmpty)
+                        ? const Icon(Icons.person, size: 50, color: Colors.grey)
+                        : null,
                   ),
                 ),
-              ),
-            ),
-            
-            Container(
-              padding: const EdgeInsets.all(24.0),
-              child: SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _isSubmitting ? null : _simpanPerubahan,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF2C2C2C),
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                const SizedBox(height: 32),
+                
+                _buildInfoField(
+                  label: 'Nama Lengkap',
+                  controller: _namaController,
+                ),
+                const SizedBox(height: 20),
+                _buildInfoField(
+                  label: 'NIK',
+                  controller: _nikController,
+                ),
+                const SizedBox(height: 20),
+                _buildInfoField(
+                  label: 'Jabatan',
+                  controller: _jabatanController,
+                ),
+                const SizedBox(height: 20),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildInfoField(
+                        label: 'RW',
+                        controller: _rwController,
+                      ),
                     ),
-                  ),
-                  child: _isSubmitting
-                      ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                      : const Text(
-                          'Simpan Perubahan',
-                          style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
-                        ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: _buildInfoField(
+                        label: 'RT',
+                        controller: _rtController,
+                      ),
+                    ),
+                  ],
                 ),
-              ),
+                const SizedBox(height: 20),
+                _buildInfoField(
+                  label: 'Nomor Telepon',
+                  controller: _noTelpController,
+                ),
+                const SizedBox(height: 20),
+                _buildInfoField(
+                  label: 'Alamat',
+                  controller: _alamatController,
+                  maxLines: 3,
+                ),
+                const SizedBox(height: 40),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
@@ -261,10 +151,6 @@ class _AdminIdentitasPejabatPageState extends State<AdminIdentitasPejabatPage> {
   Widget _buildInfoField({
     required String label,
     required TextEditingController controller,
-    required Color primaryColor,
-    bool isEditable = false,
-    IconData? icon,
-    TextInputType keyboardType = TextInputType.text,
     int maxLines = 1,
   }) {
     return Column(
@@ -273,31 +159,27 @@ class _AdminIdentitasPejabatPageState extends State<AdminIdentitasPejabatPage> {
         Text(
           label,
           style: TextStyle(
-            color: Colors.grey.shade700,
-            fontSize: 13,
-            fontWeight: FontWeight.bold,
+            color: Colors.grey.shade700.withOpacity(0.9),
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
           ),
         ),
         const SizedBox(height: 8),
         Container(
           decoration: BoxDecoration(
-            color: isEditable ? Colors.white : Colors.grey.shade100,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.grey.shade300),
+            color: Colors.grey.shade100, // Background abu-abu karena read-only
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: Colors.grey.shade400),
           ),
           child: TextField(
             controller: controller,
-            readOnly: !isEditable,
-            keyboardType: keyboardType,
+            readOnly: true, // Tidak bisa diedit
             maxLines: maxLines,
-            style: TextStyle(
-              fontSize: 15,
-              color: isEditable ? Colors.black87 : Colors.grey.shade600,
-            ),
-            decoration: InputDecoration(
-              prefixIcon: icon != null ? Icon(icon, size: 20, color: primaryColor.withOpacity(0.7)) : null,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            style: const TextStyle(fontSize: 16, color: Colors.black87),
+            decoration: const InputDecoration(
+              contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
               border: InputBorder.none,
+              isDense: true,
             ),
           ),
         ),

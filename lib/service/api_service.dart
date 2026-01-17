@@ -456,155 +456,75 @@ class ApiService {
   // --- RONDA ---
   // --------------------------------------------------------------------------
 
-  static Future<List<RondaModel.Data>> fetchRonda() async {
+  static Future<List<RondaModel.RondaData>> fetchRonda() async {
     final token = await TokenStorage.getToken();
     final response = await http.get(
-      Uri.parse('$baseUrl/api/ronda'), 
+      Uri.parse('$baseUrl/api/ronda'),
       headers: {
         'Authorization': 'Bearer $token',
         'Accept': 'application/json',
       },
     );
 
-    print('📥 Response status ronda: ${response.statusCode}');
-
     if (response.statusCode == 200) {
       Map<String, dynamic> decodedBody = jsonDecode(response.body);
-
-      if (decodedBody['data'] is List) {
-        List<dynamic> dataList = decodedBody['data'];
-        return dataList.map((json) => RondaModel.Data.fromJson(json)).toList();
-      } else {
-        return [];
-      }
+      List<dynamic> dataList = decodedBody['data'];
+      // Gunakan RondaData (dari model yang kita buat sebelumnya)
+      return dataList.map((json) => RondaModel.RondaData.fromJson(json)).toList();
     } else {
-      throw Exception('Gagal mengambil data ronda dari API');
+      throw Exception('Gagal mengambil data ronda dari server');
     }
   }
-    
-  static Future<RondaModel.Data?> createRonda(RondaModel.Data ronda) async {
+
+  static Future<RondaModel.RondaData?> createRonda(RondaModel.RondaData ronda) async {
     final token = await TokenStorage.getToken();
-    final result = await _handleApiRequest(
-      http.post(
-        Uri.parse('$baseUrl/api/ronda'),
-        headers: {
-          'Authorization': 'Bearer $token',
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        body: jsonEncode(ronda.toJson()),
-      ),
-      'tambah',
-      'ronda',
+    final response = await http.post(
+      Uri.parse('$baseUrl/api/ronda'),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: jsonEncode(ronda.toJson()),
     );
 
-    if (result != null) {
-      return RondaModel.Data.fromJson(result);
+    if (response.statusCode == 201 || response.statusCode == 200) {
+      final body = jsonDecode(response.body);
+      return RondaModel.RondaData.fromJson(body['data']);
     }
     return null;
   }
 
-  static Future<void> updateRonda(RondaModel.Data ronda) async {
+  static Future<RondaModel.RondaData?> updateRonda(RondaModel.RondaData ronda) async {
     final token = await TokenStorage.getToken();
-    await _handleApiRequest(
-      http.put(
-        Uri.parse('$baseUrl/api/ronda/${ronda.id}'),
-        headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $token'},
-        body: jsonEncode(ronda.toJson()),
-      ),
-      'mengupdate',
-      'ronda',
+    final response = await http.put(
+      Uri.parse('$baseUrl/api/ronda/${ronda.id}'),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: jsonEncode(ronda.toJson()),
     );
+
+    if (response.statusCode == 200) {
+      final body = jsonDecode(response.body);
+      return RondaModel.RondaData.fromJson(body['data']);
+    } else {
+      final body = jsonDecode(response.body);
+      throw Exception(body['message'] ?? 'Gagal mengupdate data ronda');
+    }
   }
 
   static Future<void> deleteRonda(int id) async {
     final token = await TokenStorage.getToken();
-    await _handleApiRequest(
-      http.delete(
-        Uri.parse('$baseUrl/api/ronda/$id'),
-        headers: {'Authorization': 'Bearer $token', 'Accept': 'application/json'},
-      ),
-      'menghapus',
-      'ronda',
+    final response = await http.delete(
+      Uri.parse('$baseUrl/api/ronda/$id'),
+      headers: {'Authorization': 'Bearer $token'},
     );
-  }
-
-  // --------------------------------------------------------------------------
-  // --- DETAIL RONDA ---
-  // --------------------------------------------------------------------------
-
-  static Future<List<RondaModel.DetailRondas>> fetchRondaDetail() async {
-    final token = await TokenStorage.getToken();
-    final response = await http.get(
-      Uri.parse('$baseUrl/api/detail-ronda'), 
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Accept': 'application/json',
-      },
-    );
-
-    print('📥 Response status detail ronda: ${response.statusCode}');
-
-    if (response.statusCode == 200) {
-      Map<String, dynamic> decodedBody = jsonDecode(response.body);
-
-      if (decodedBody['data'] is List) {
-        List<dynamic> dataList = decodedBody['data'];
-        
-        return dataList.map((json) => RondaModel.DetailRondas.fromJson(json)).toList();
-      } else {
-        return [];
-      }
-    } else {
-      throw Exception('Gagal mengambil data detail ronda dari API'); 
+    if (response.statusCode != 200 && response.statusCode != 204) {
+      throw Exception('Gagal menghapus data di server');
     }
-  }
-    
-  static Future<RondaModel.DetailRondas?> createRondaDetail(RondaModel.DetailRondas detailRonda) async {
-    final token = await TokenStorage.getToken();
-    final result = await _handleApiRequest(
-      http.post(
-        Uri.parse('$baseUrl/api/detail-ronda'),
-        headers: {
-          'Authorization': 'Bearer $token',
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        body: jsonEncode(detailRonda.toJson()),
-      ),
-      'tambah',
-      'detail ronda',
-    );
-
-    if (result != null) {
-      return RondaModel.DetailRondas.fromJson(result);
-    }
-    return null;
-  }
-
-  static Future<void> updateRondaDetail(RondaModel.DetailRondas detailRonda) async {
-    final token = await TokenStorage.getToken();
-    await _handleApiRequest(
-      http.put(
-        Uri.parse('$baseUrl/api/detail-ronda/${detailRonda.id}'),
-        headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $token'},
-        body: jsonEncode(detailRonda.toJson()),
-      ),
-      'mengupdate',
-      'detail ronda',
-    );
-  }
-
-  static Future<void> deleteRondaDetail(int id) async {
-    final token = await TokenStorage.getToken();
-    await _handleApiRequest(
-      http.delete(
-        Uri.parse('$baseUrl/api/detail-ronda/$id'),
-        headers: {'Authorization': 'Bearer $token', 'Accept': 'application/json'},
-      ),
-      'menghapus',
-      'detail ronda',
-    );
   }
 
   // --------------------------------------------------------------------------
