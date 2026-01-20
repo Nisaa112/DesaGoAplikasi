@@ -1,26 +1,30 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import '../models/laporan_ronda_model.dart'; // Pastikan path model benar
 
 class DetailLaporanRondaPage extends StatelessWidget {
-  final String reportTitle;
+  final LaporanRondaModel ronda; // Terima Objek Model
 
-  const DetailLaporanRondaPage({super.key, required this.reportTitle});
+  const DetailLaporanRondaPage({super.key, required this.ronda});
 
   @override
   Widget build(BuildContext context) {
+    // Format Tanggal Cantik (opsional, biar tidak kaku yyyy-mm-dd)
+    String formattedDate = ronda.tanggal ?? '-';
+    try {
+      formattedDate = DateFormat('EEEE, d MMMM yyyy', 'id_ID').format(DateTime.parse(ronda.tanggal!));
+    } catch (_) {}
+
     return Scaffold(
       backgroundColor: const Color(0xFF4A4E8A),
       appBar: AppBar(
+        title: const Text(
+          'Detail Ronda',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
         backgroundColor: const Color(0xFF4A4E8A),
+        foregroundColor: Colors.white,
         elevation: 0,
-        centerTitle: true,
-        title: Text(
-          reportTitle,
-          style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
-        ),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
       ),
       body: Container(
         width: double.infinity,
@@ -33,142 +37,157 @@ class DetailLaporanRondaPage extends StatelessWidget {
           ),
         ),
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
+          padding: const EdgeInsets.all(24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // 1. JUDUL & TANGGAL
               Text(
-                'Laporan Kegiatan : $reportTitle',
-                style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                ronda.lokasi ?? 'Lokasi Tidak Diketahui',
+                style: const TextStyle(
+                  fontSize: 22, 
+                  fontWeight: FontWeight.bold, 
+                  color: Colors.black87
+                ),
               ),
+              const SizedBox(height: 6),
+              Row(
+                children: [
+                  const Icon(Icons.calendar_today, size: 14, color: Colors.grey),
+                  const SizedBox(width: 6),
+                  Text(formattedDate, style: const TextStyle(fontSize: 14, color: Colors.grey)),
+                ],
+              ),
+              
               const SizedBox(height: 24),
-              
-              _buildInfoRow(Icons.calendar_today_outlined, 'Sabtu, 18 Okt 2025'),
-              const SizedBox(height: 12),
-              _buildInfoRow(Icons.access_time, '22:00 - 04:00'),
-              const SizedBox(height: 12),
-              _buildInfoRow(Icons.person_outline, 'Koordinator Tim Ronda RT 01'),
-              const SizedBox(height: 32),
 
-              const Text('Petugas Ronda', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 12),
-              _buildPetugasList(),
-              const SizedBox(height: 32),
-              
-              _buildSectionTitle(Icons.info_outline, 'Temuan & Kejadian'),
-              const SizedBox(height: 12),
-              _buildTemuanItem('Situasi Aman Dan Kondusif'),
-              _buildTemuanItem('Lampu jalan di jalan Melati mati, sudah dilaporkan'),
-              _buildTemuanItem('Beberapa warga masih terjaga dan diberikan imbauan keamaan'),
-              _buildTemuanItem('Tidak ada kejadian mencurigakan'),
-              const SizedBox(height: 32),
-
-              _buildSectionTitle(Icons.edit_note_outlined, 'Deskripsi & Hasil'),
-              const SizedBox(height: 12),
-              Text(
-                'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.',
-                style: TextStyle(color: Colors.grey.shade700, height: 1.5, fontSize: 15),
+              // 2. CATATAN KEGIATAN
+              const Text(
+                "Catatan Kegiatan", 
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF4A4E8A))
               ),
-              const SizedBox(height: 40),
+              const SizedBox(height: 8),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: Colors.grey[50],
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.grey[200]!)
+                ),
+                child: Text(
+                  ronda.detail ?? '-', 
+                  style: TextStyle(color: Colors.grey[800], height: 1.5)
+                ),
+              ),
 
-              _buildExportButton(),
+              const SizedBox(height: 24),
+
+              // 3. LAPORAN INSIDEN (Hanya muncul jika ada insiden)
+              if (ronda.insiden != null && ronda.insiden!.isNotEmpty) ...[
+                const Text(
+                  "🚨 Laporan Insiden", 
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.red)
+                ),
+                const SizedBox(height: 8),
+                ...ronda.insiden!.map((insiden) => Container(
+                  width: double.infinity,
+                  margin: const EdgeInsets.only(bottom: 10),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.red[50],
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: Colors.red[100]!)
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        insiden.judul ?? 'Insiden', 
+                        style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.red)
+                      ),
+                      const SizedBox(height: 4),
+                      Text(insiden.deskripsi ?? '', style: const TextStyle(fontSize: 13)),
+                    ],
+                  ),
+                )),
+                const SizedBox(height: 24),
+              ],
+
+              // 4. DAFTAR PETUGAS
+              const Text(
+                "Daftar Petugas & Kehadiran", 
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF4A4E8A))
+              ),
+              const SizedBox(height: 12),
+              
+              if (ronda.petugas != null && ronda.petugas!.isNotEmpty)
+                ...ronda.petugas!.map((p) {
+                  // Cek hadir bisa berupa int (1) atau bool (true) tergantung API
+                  bool isHadir = p.hadir == 1 || p.hadir == true;
+                  
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 10),
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.grey[200]!),
+                      boxShadow: [
+                        BoxShadow(color: Colors.grey.withOpacity(0.05), blurRadius: 5, offset: const Offset(0, 2))
+                      ]
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            CircleAvatar(
+                              radius: 18,
+                              backgroundColor: isHadir ? const Color(0xFF46467A).withOpacity(0.1) : Colors.grey[100],
+                              child: Icon(
+                                Icons.person, 
+                                size: 18, 
+                                color: isHadir ? const Color(0xFF46467A) : Colors.grey
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Text(
+                              p.namaWarga ?? 'Tanpa Nama', 
+                              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)
+                            ),
+                          ],
+                        ),
+                        // Badge Status
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: isHadir ? Colors.green[50] : Colors.red[50],
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(color: isHadir ? Colors.green[100]! : Colors.red[100]!)
+                          ),
+                          child: Text(
+                            isHadir ? 'Hadir' : 'Absen',
+                            style: TextStyle(
+                              fontSize: 11, 
+                              fontWeight: FontWeight.bold, 
+                              color: isHadir ? Colors.green : Colors.red
+                            ),
+                          ),
+                        )
+                      ],
+                    ),
+                  );
+                })
+              else 
+                const Text(
+                  "Tidak ada data petugas.", 
+                  style: TextStyle(color: Colors.grey, fontStyle: FontStyle.italic)
+                ),
+                
+              const SizedBox(height: 30),
             ],
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildInfoRow(IconData icon, String text) {
-    return Row(
-      children: [
-        Icon(icon, color: Colors.grey.shade600, size: 20),
-        const SizedBox(width: 12),
-        Text(text, style: TextStyle(color: Colors.grey.shade700, fontSize: 16)),
-      ],
-    );
-  }
-  
-  Widget _buildPetugasList() {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildBulletedText('Pak Jaka'),
-              _buildBulletedText('Pak Umin'),
-              _buildBulletedText('Pak Jisung'),
-            ],
-          ),
-        ),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildBulletedText('Pak Bangchan'),
-              _buildBulletedText('Pak Yunho'),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildBulletedText(String text) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8.0),
-      child: Row(
-        children: [
-          const Icon(Icons.circle, size: 8, color: Colors.black54),
-          const SizedBox(width: 8),
-          Text(text, style: const TextStyle(fontSize: 15)),
-        ],
-      ),
-    );
-  }
-  
-  Widget _buildSectionTitle(IconData icon, String title) {
-    return Row(
-      children: [
-        Icon(icon, color: Colors.black87, size: 24),
-        const SizedBox(width: 8),
-        Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-      ],
-    );
-  }
-
-  Widget _buildTemuanItem(String text) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8.0),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(top: 4.0),
-            child: Icon(Icons.circle, size: 6, color: Colors.grey.shade600),
-          ),
-          const SizedBox(width: 10),
-          Expanded(child: Text(text, style: TextStyle(color: Colors.grey.shade700, fontSize: 14))),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildExportButton() {
-    return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton(
-        onPressed: () {},
-        style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFFFFC94D),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
-          padding: const EdgeInsets.symmetric(vertical: 16),
-        ),
-        child: const Text(
-          'Export Data',
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 16),
         ),
       ),
     );

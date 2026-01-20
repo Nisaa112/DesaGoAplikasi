@@ -1,12 +1,35 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import '../models/laporan_posyandu_model.dart'; // Import Model Posyandu
 
 class DetailLaporanPosyanduPage extends StatelessWidget {
-  final String reportTitle;
+  final LaporanPosyanduModel posyandu; // Data dari API
 
-  const DetailLaporanPosyanduPage({super.key, required this.reportTitle});
+  const DetailLaporanPosyanduPage({super.key, required this.posyandu});
 
   @override
   Widget build(BuildContext context) {
+    // 1. Ambil Data Laporan (Jika ada)
+    String deskripsi = 'Belum ada deskripsi kegiatan.';
+    int balita = 0;
+    int bumil = 0;
+    int lansia = 0;
+
+    if (posyandu.laporans != null && posyandu.laporans!.isNotEmpty) {
+      final laporan = posyandu.laporans![0];
+      deskripsi = laporan.deskripsiKegiatan ?? '-';
+      balita = laporan.jmlBalita ?? 0;
+      bumil = laporan.jmlIbuHamil ?? 0;
+      lansia = laporan.jmlLansia ?? 0;
+    }
+    int total = balita + bumil + lansia;
+
+    // 2. Format Tanggal
+    String formattedDate = posyandu.tanggal ?? '-';
+    try {
+      formattedDate = DateFormat('EEEE, d MMMM yyyy', 'id').format(DateTime.parse(posyandu.tanggal!));
+    } catch (_) {}
+
     return Scaffold(
       backgroundColor: const Color(0xFF4A4E8A),
       appBar: AppBar(
@@ -14,7 +37,7 @@ class DetailLaporanPosyanduPage extends StatelessWidget {
         elevation: 0,
         centerTitle: true,
         title: Text(
-          reportTitle,
+          posyandu.judulPosyandu ?? 'Detail Laporan',
           style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
         leading: IconButton(
@@ -38,36 +61,45 @@ class DetailLaporanPosyanduPage extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Laporan Kegiatan : $reportTitle',
-                style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                'Laporan Kegiatan : ${posyandu.judulPosyandu}',
+                style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 24),
               
-              _buildInfoRow(Icons.calendar_today_outlined, 'Sabtu, 18 Okt 2025'),
+              _buildInfoRow(Icons.calendar_today_outlined, formattedDate),
               const SizedBox(height: 12),
-              _buildInfoRow(Icons.access_time, '22:00 - 04:00'),
+              _buildInfoRow(Icons.access_time, '08:00 - 12:00'),
               const SizedBox(height: 12),
-              _buildInfoRow(Icons.person_outline, 'Koordinator Tim Ronda RT 01'),
+              _buildInfoRow(Icons.location_on_outlined, posyandu.lokasi ?? '-'),
+              const SizedBox(height: 12),
+              _buildInfoRow(Icons.person_outline, 'PJ: ${posyandu.penanggungJawab ?? '-'}'),
+              
               const SizedBox(height: 32),
 
-              const Text('Petugas Ronda', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              // Bagian ini tadinya List Petugas, saya ubah jadi Statistik Pasien
+              // Tapi TAMPILANNYA TETAP SAMA (Dua Kolom)
+              const Text('Statistik Pasien', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               const SizedBox(height: 12),
-              _buildPetugasList(),
+              _buildStatistikList(balita, bumil, lansia, total),
+              
               const SizedBox(height: 32),
               
-              _buildSectionTitle(Icons.info_outline, 'Temuan & Kejadian'),
+              _buildSectionTitle(Icons.info_outline, 'Rincian Kegiatan'),
               const SizedBox(height: 12),
-              _buildTemuanItem('Situasi Aman Dan Kondusif'),
-              _buildTemuanItem('Lampu jalan di jalan Melati mati, sudah dilaporkan'),
-              _buildTemuanItem('Beberapa warga masih terjaga dan diberikan imbauan keamaan'),
-              _buildTemuanItem('Tidak ada kejadian mencurigakan'),
+              // List Bullet Point (Sama seperti UI asli)
+              _buildTemuanItem('Pemeriksaan kesehatan rutin'),
+              _buildTemuanItem('Pemberian makanan tambahan (PMT)'),
+              _buildTemuanItem('Penyuluhan kesehatan ibu & anak'),
+              _buildTemuanItem('Total partisipan mencapai $total orang'),
+              
               const SizedBox(height: 32),
 
               _buildSectionTitle(Icons.edit_note_outlined, 'Deskripsi & Hasil'),
               const SizedBox(height: 12),
               Text(
-                'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.',
+                deskripsi,
                 style: TextStyle(color: Colors.grey.shade700, height: 1.5, fontSize: 15),
+                textAlign: TextAlign.justify,
               ),
               const SizedBox(height: 40),
 
@@ -84,12 +116,19 @@ class DetailLaporanPosyanduPage extends StatelessWidget {
       children: [
         Icon(icon, color: Colors.grey.shade600, size: 20),
         const SizedBox(width: 12),
-        Text(text, style: TextStyle(color: Colors.grey.shade700, fontSize: 16)),
+        Expanded(
+          child: Text(
+            text, 
+            style: TextStyle(color: Colors.grey.shade700, fontSize: 16),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
       ],
     );
   }
   
-  Widget _buildPetugasList() {
+  // Widget ini dimodifikasi isinya, tapi struktur layoutnya SAMA PERSIS dengan _buildPetugasList
+  Widget _buildStatistikList(int balita, int bumil, int lansia, int total) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -97,9 +136,8 @@ class DetailLaporanPosyanduPage extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildBulletedText('Pak Jaka'),
-              _buildBulletedText('Pak Umin'),
-              _buildBulletedText('Pak Jisung'),
+              _buildBulletedText('Balita: $balita Anak'),
+              _buildBulletedText('Ibu Hamil: $bumil Orang'),
             ],
           ),
         ),
@@ -107,8 +145,8 @@ class DetailLaporanPosyanduPage extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildBulletedText('Pak Bangchan'),
-              _buildBulletedText('Pak Yunho'),
+              _buildBulletedText('Lansia: $lansia Orang'),
+              _buildBulletedText('Total: $total Orang', isBold: true),
             ],
           ),
         ),
@@ -116,14 +154,21 @@ class DetailLaporanPosyanduPage extends StatelessWidget {
     );
   }
 
-  Widget _buildBulletedText(String text) {
+  Widget _buildBulletedText(String text, {bool isBold = false}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8.0),
       child: Row(
         children: [
-          const Icon(Icons.circle, size: 8, color: Colors.black54),
+          Icon(Icons.circle, size: 8, color: isBold ? const Color(0xFF4A4E8A) : Colors.black54),
           const SizedBox(width: 8),
-          Text(text, style: const TextStyle(fontSize: 15)),
+          Text(
+            text, 
+            style: TextStyle(
+              fontSize: 15, 
+              fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+              color: isBold ? const Color(0xFF4A4E8A) : Colors.black87
+            )
+          ),
         ],
       ),
     );

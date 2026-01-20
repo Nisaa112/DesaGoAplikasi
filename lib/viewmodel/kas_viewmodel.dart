@@ -17,10 +17,14 @@ class KasViewModel extends ChangeNotifier {
     _errorMessage = null;
     notifyListeners();
     try {
+      print("DEBUG: Mengambil data dari SQLite...");
       _listKas = await _dbHelper.getAllKas();
+      print("DEBUG: Berhasil ambil dari SQLite. Jumlah: ${_listKas.length}");
       notifyListeners();
+      
       await synchronizeKas();
     } catch (e) {
+      print("DEBUG ERROR loadKas: $e");
       _errorMessage = 'Gagal memuat data Kas: $e';
     } finally {
       _isLoading = false;
@@ -30,16 +34,14 @@ class KasViewModel extends ChangeNotifier {
 
   Future<void> synchronizeKas() async {
     try {
-      final List<dynamic> apiKasRaw = await ApiService.fetchKas();
-      
-      // Mapping dari List<dynamic> ke List<KasModel.Data>
-      final List<KasModel.Data> apiKas = apiKasRaw.map((e) => KasModel.Data.fromJson(e)).toList();
+      print("DEBUG: Sinkronisasi data dari API...");
+      final apiKas = await ApiService.fetchKas();
+      print("DEBUG: API Berhasil. Jumlah data dari API: ${apiKas.length}");
       
       await _dbHelper.clearKasTable();
       for (var item in apiKas) { 
         await _dbHelper.insertKas(item); 
       }
-      
       _listKas = apiKas;
       notifyListeners();
     } catch (e) {
@@ -48,56 +50,35 @@ class KasViewModel extends ChangeNotifier {
   }
 
   Future<void> createKas(KasModel.Data data) async {
-    _isLoading = true; 
-    notifyListeners();
+    _isLoading = true; notifyListeners();
     try {
-      // Kirim dalam bentuk JSON (Map)
-      final Map<String, dynamic> responseData = await ApiService.createKas(data.toJson());
-      
-      // Konversi hasil API kembali ke Object
-      final newData = KasModel.Data.fromJson(responseData);
-      
-      await _dbHelper.insertKas(newData);
-      _listKas.add(newData);
-    } catch (e) { 
-      _errorMessage = e.toString(); 
-      rethrow; 
-    } finally { 
-      _isLoading = false; 
-      notifyListeners(); 
-    }
+      final newData = await ApiService.createKas(data);
+      if (newData != null) {
+        await _dbHelper.insertKas(newData);
+        _listKas.add(newData);
+      }
+    } catch (e) { _errorMessage = e.toString(); rethrow; }
+    finally { _isLoading = false; notifyListeners(); }
   }
 
   Future<void> updateKas(KasModel.Data data) async {
-    _isLoading = true; 
-    notifyListeners();
+    _isLoading = true; notifyListeners();
     try {
-      await ApiService.updateKas(data.toJson());
+      await ApiService.updateKas(data);
       await _dbHelper.updateKas(data);
       final index = _listKas.indexWhere((e) => e.id == data.id);
       if (index != -1) { _listKas[index] = data; }
-    } catch (e) { 
-      _errorMessage = e.toString(); 
-      rethrow; 
-    } finally { 
-      _isLoading = false; 
-      notifyListeners(); 
-    }
+    } catch (e) { _errorMessage = e.toString(); rethrow; }
+    finally { _isLoading = false; notifyListeners(); }
   }
 
   Future<void> deleteKas(int id) async {
-    _isLoading = true; 
-    notifyListeners();
+    _isLoading = true; notifyListeners();
     try {
       await ApiService.deleteKas(id);
       await _dbHelper.deleteKas(id);
       _listKas.removeWhere((e) => e.id == id);
-    } catch (e) { 
-      _errorMessage = e.toString(); 
-      rethrow; 
-    } finally { 
-      _isLoading = false; 
-      notifyListeners(); 
-    }
+    } catch (e) { _errorMessage = e.toString(); rethrow; }
+    finally { _isLoading = false; notifyListeners(); }
   }
 }

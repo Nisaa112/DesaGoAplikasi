@@ -1,12 +1,29 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import '../models/laporan_rapat_model.dart'; // Import Model yang benar
 
 class DetailLaporanRapatPage extends StatelessWidget {
-  final String reportTitle;
+  final LaporanRapatModel rapat; // Terima data dari halaman sebelumnya
 
-  const DetailLaporanRapatPage({super.key, required this.reportTitle});
+  const DetailLaporanRapatPage({super.key, required this.rapat});
 
   @override
   Widget build(BuildContext context) {
+    // 1. Ambil Data Hasil Laporan (Jika ada)
+    String hasilKeputusan = 'Belum ada notulensi rapat.';
+    int jumlahHadir = 0;
+
+    if (rapat.laporans != null && rapat.laporans!.isNotEmpty) {
+      hasilKeputusan = rapat.laporans![0].hasilKeputusan ?? '-';
+      jumlahHadir = rapat.laporans![0].jumlahHadir ?? 0;
+    }
+
+    // 2. Format Tanggal
+    String formattedDate = rapat.tanggalDibuat ?? '-';
+    try {
+      formattedDate = DateFormat('EEEE, d MMMM yyyy', 'id').format(DateTime.parse(rapat.tanggalDibuat!));
+    } catch (_) {}
+
     return Scaffold(
       backgroundColor: const Color(0xFF4A4E8A),
       appBar: AppBar(
@@ -14,7 +31,7 @@ class DetailLaporanRapatPage extends StatelessWidget {
         elevation: 0,
         centerTitle: true,
         title: Text(
-          reportTitle,
+          rapat.judulRapat ?? 'Detail Rapat',
           style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
         leading: IconButton(
@@ -38,37 +55,60 @@ class DetailLaporanRapatPage extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Laporan Kegiatan : $reportTitle',
+                'Laporan Kegiatan : ${rapat.judulRapat}',
                 style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 24),
               
-              _buildInfoRow(Icons.calendar_today_outlined, 'Sabtu, 18 Okt 2025'),
+              _buildInfoRow(Icons.calendar_today_outlined, formattedDate),
               const SizedBox(height: 12),
-              _buildInfoRow(Icons.access_time, '22:00 - 04:00'),
+              _buildInfoRow(Icons.location_on_outlined, rapat.lokasi ?? 'Lokasi tidak ada'),
               const SizedBox(height: 12),
-              _buildInfoRow(Icons.person_outline, 'Koordinator Tim Ronda RT 01'),
+              _buildInfoRow(Icons.groups_2_outlined, 'Jumlah Hadir: $jumlahHadir Orang'),
               const SizedBox(height: 32),
 
-              const Text('Petugas Ronda', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 12),
-              _buildPetugasList(),
-              const SizedBox(height: 32),
-              
-              _buildSectionTitle(Icons.info_outline, 'Temuan & Kejadian'),
-              const SizedBox(height: 12),
-              _buildTemuanItem('Situasi Aman Dan Kondusif'),
-              _buildTemuanItem('Lampu jalan di jalan Melati mati, sudah dilaporkan'),
-              _buildTemuanItem('Beberapa warga masih terjaga dan diberikan imbauan keamaan'),
-              _buildTemuanItem('Tidak ada kejadian mencurigakan'),
-              const SizedBox(height: 32),
-
-              _buildSectionTitle(Icons.edit_note_outlined, 'Deskripsi & Hasil'),
+              // Bagian Tujuan Rapat
+              _buildSectionTitle(Icons.flag_outlined, 'Tujuan Rapat'),
               const SizedBox(height: 12),
               Text(
-                'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.',
+                rapat.tujuan ?? 'Tidak ada tujuan khusus.',
                 style: TextStyle(color: Colors.grey.shade700, height: 1.5, fontSize: 15),
               ),
+              const SizedBox(height: 32),
+              
+              // Bagian Hasil / Notulensi
+              _buildSectionTitle(Icons.assignment_turned_in_outlined, 'Hasil Keputusan & Notulensi'),
+              const SizedBox(height: 12),
+              
+              // Menampilkan hasil dalam Container agar rapi (sesuai style UI referensi)
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade100,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.grey.shade300),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                     // Jika teks panjang, kita split jadi paragraf atau list item sederhana
+                     // Di sini saya tampilkan sebagai teks biasa agar fleksibel
+                     Text(
+                        hasilKeputusan,
+                        style: TextStyle(
+                          color: rapat.laporans != null && rapat.laporans!.isNotEmpty 
+                              ? Colors.black87 
+                              : Colors.grey,
+                          height: 1.5,
+                          fontSize: 15,
+                        ),
+                        textAlign: TextAlign.justify,
+                      ),
+                  ],
+                ),
+              ),
+              
               const SizedBox(height: 40),
 
               _buildExportButton(),
@@ -84,51 +124,18 @@ class DetailLaporanRapatPage extends StatelessWidget {
       children: [
         Icon(icon, color: Colors.grey.shade600, size: 20),
         const SizedBox(width: 12),
-        Text(text, style: TextStyle(color: Colors.grey.shade700, fontSize: 16)),
-      ],
-    );
-  }
-  
-  Widget _buildPetugasList() {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
         Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildBulletedText('Pak Jaka'),
-              _buildBulletedText('Pak Umin'),
-              _buildBulletedText('Pak Jisung'),
-            ],
-          ),
-        ),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildBulletedText('Pak Bangchan'),
-              _buildBulletedText('Pak Yunho'),
-            ],
+          child: Text(
+            text, 
+            style: TextStyle(color: Colors.grey.shade700, fontSize: 16),
+            overflow: TextOverflow.ellipsis,
           ),
         ),
       ],
     );
   }
-
-  Widget _buildBulletedText(String text) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8.0),
-      child: Row(
-        children: [
-          const Icon(Icons.circle, size: 8, color: Colors.black54),
-          const SizedBox(width: 8),
-          Text(text, style: const TextStyle(fontSize: 15)),
-        ],
-      ),
-    );
-  }
   
+  // Widget Title Section (Sama persis)
   Widget _buildSectionTitle(IconData icon, String title) {
     return Row(
       children: [
@@ -139,28 +146,14 @@ class DetailLaporanRapatPage extends StatelessWidget {
     );
   }
 
-  Widget _buildTemuanItem(String text) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8.0),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(top: 4.0),
-            child: Icon(Icons.circle, size: 6, color: Colors.grey.shade600),
-          ),
-          const SizedBox(width: 10),
-          Expanded(child: Text(text, style: TextStyle(color: Colors.grey.shade700, fontSize: 14))),
-        ],
-      ),
-    );
-  }
-
+  // Widget Button Export (Sama persis)
   Widget _buildExportButton() {
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton(
-        onPressed: () {},
+        onPressed: () {
+          // Logika Export PDF bisa ditambahkan nanti
+        },
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFFFFC94D),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),

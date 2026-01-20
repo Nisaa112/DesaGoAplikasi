@@ -44,7 +44,7 @@ class InfoLaporanPage extends StatelessWidget {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const LaporanKeuanganPage()),
+                    MaterialPageRoute(builder: (context) => LaporanKeuanganPage()),
                   );
                 },
               ),

@@ -18,9 +18,16 @@ import 'package:desa_go_aplikasi/viewmodel/struktur_viewmodel.dart';
 import 'package:desa_go_aplikasi/viewmodel/transaksi_kas_viewmodel.dart';
 import 'package:desa_go_aplikasi/viewmodel/user_viewmodel.dart';
 import 'package:desa_go_aplikasi/viewmodel/warga_viewmodel.dart';
+import 'package:desa_go_aplikasi/viewmodel/laporan_ronda_viewmodel.dart';
+import 'package:desa_go_aplikasi/viewmodel/laporan_agenda_viewmodel.dart';
+import 'package:desa_go_aplikasi/viewmodel/laporan_posyandu_viewmodel.dart';
+import 'package:desa_go_aplikasi/viewmodel/laporan_rapat_viewmodel.dart';
+import 'package:desa_go_aplikasi/viewmodel/laporan_keuangan_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import 'package:intl/date_symbol_data_local.dart';
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -51,6 +58,11 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => UserViewModel()),
         ChangeNotifierProvider(create: (_) => KasViewModel()),
         ChangeNotifierProvider(create: (_) => TransaksiViewModel()),
+        ChangeNotifierProvider(create: (_) => LaporanRondaViewModel()),
+        ChangeNotifierProvider(create: (_) => LaporanAgendaViewModel()),
+        ChangeNotifierProvider(create: (_) => LaporanPosyanduViewModel()),
+        ChangeNotifierProvider(create: (_) => LaporanRapatViewModel()),
+        ChangeNotifierProvider(create: (_) => LaporanKeuanganViewModel()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
