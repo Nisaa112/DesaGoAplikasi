@@ -1,8 +1,9 @@
-import 'package:desa_go_aplikasi/page/detail_laporan_kegiatan_page.dart';
+import 'package:desa_go_aplikasi/page/detail_laporan_agenda_page.dart';
+import 'package:desa_go_aplikasi/page/detail_laporan_posyandu_page.dart';
 import 'package:flutter/material.dart';
 
-class LaporanKegiatanPage extends StatelessWidget {
-  const LaporanKegiatanPage({super.key});
+class LaporanPosyanduPage extends StatelessWidget {
+  const LaporanPosyanduPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +22,7 @@ class LaporanKegiatanPage extends StatelessWidget {
         elevation: 0,
         centerTitle: true,
         title: const Text(
-          'Laporan Kegiatan',
+          'Laporan Posyandu',
           style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
         leading: IconButton(
@@ -64,7 +65,7 @@ class LaporanKegiatanPage extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => DetailLaporanKegiatanPage(reportTitle: laporanTitle),
+                      builder: (context) => DetailLaporanPosyanduPage(reportTitle: laporanTitle),
                     ),
                   );
                 },

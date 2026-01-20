@@ -1,7 +1,9 @@
 import 'package:desa_go_aplikasi/page/info_warga_page.dart';
-import 'package:desa_go_aplikasi/page/laporan_kegiatan_page.dart';
+import 'package:desa_go_aplikasi/page/laporan_agenda_page.dart';
 import 'package:desa_go_aplikasi/page/laporan_keuangan_page.dart';
+import 'package:desa_go_aplikasi/page/laporan_posyandu_page.dart';
 import 'package:desa_go_aplikasi/page/laporan_rapat_page.dart';
+import 'package:desa_go_aplikasi/page/laporan_ronda_page.dart';
 import 'package:desa_go_aplikasi/page/struktur_page.dart';
 import 'package:flutter/material.dart';
 
@@ -49,11 +51,33 @@ class InfoLaporanPage extends StatelessWidget {
               const SizedBox(height: 16),
               _buildNavigationButton(
                 context: context,
-                label: 'Laporan Kegiatan',
+                label: 'Laporan Agenda',
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const LaporanKegiatanPage()),
+                    MaterialPageRoute(builder: (context) => const LaporanAgendaPage()),
+                  );
+                },
+              ),
+              const SizedBox(height: 16),
+              _buildNavigationButton(
+                context: context,
+                label: 'Laporan Ronda',
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const LaporanRondaPage()),
+                  );
+                },
+              ),
+              const SizedBox(height: 16),
+              _buildNavigationButton(
+                context: context,
+                label: 'Laporan Posyandu',
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const LaporanPosyanduPage()),
                   );
                 },
               ),

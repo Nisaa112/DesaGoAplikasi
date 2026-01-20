@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
-class DetailLaporanKegiatanPage extends StatelessWidget {
+class DetailLaporanPosyanduPage extends StatelessWidget {
   final String reportTitle;
 
-  const DetailLaporanKegiatanPage({super.key, required this.reportTitle});
+  const DetailLaporanPosyanduPage({super.key, required this.reportTitle});
 
   @override
   Widget build(BuildContext context) {

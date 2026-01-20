@@ -7,6 +7,7 @@ import 'package:desa_go_aplikasi/page/welcome_page.dart';
 import 'package:desa_go_aplikasi/viewmodel/agenda_viewmodel.dart';
 import 'package:desa_go_aplikasi/viewmodel/auth_viewmodel.dart';
 import 'package:desa_go_aplikasi/viewmodel/jabatan_viewmodel.dart';
+import 'package:desa_go_aplikasi/viewmodel/kas_viewmodel.dart';
 import 'package:desa_go_aplikasi/viewmodel/pengaduan_viewmodel.dart';
 import 'package:desa_go_aplikasi/viewmodel/posyandu_viewmodel.dart';
 import 'package:desa_go_aplikasi/viewmodel/rapat_viewmodel.dart';
@@ -14,6 +15,7 @@ import 'package:desa_go_aplikasi/viewmodel/ronda_viewmodel.dart';
 import 'package:desa_go_aplikasi/viewmodel/rt_viewmodel.dart';
 import 'package:desa_go_aplikasi/viewmodel/rw_viewmodel.dart';
 import 'package:desa_go_aplikasi/viewmodel/struktur_viewmodel.dart';
+import 'package:desa_go_aplikasi/viewmodel/transaksi_kas_viewmodel.dart';
 import 'package:desa_go_aplikasi/viewmodel/user_viewmodel.dart';
 import 'package:desa_go_aplikasi/viewmodel/warga_viewmodel.dart';
 import 'package:flutter/material.dart';
@@ -47,6 +49,8 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => RwViewModel()),
         ChangeNotifierProvider(create: (_) => JabatanViewModel()),
         ChangeNotifierProvider(create: (_) => UserViewModel()),
+        ChangeNotifierProvider(create: (_) => KasViewModel()),
+        ChangeNotifierProvider(create: (_) => TransaksiViewModel()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,

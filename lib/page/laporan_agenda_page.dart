@@ -1,23 +1,22 @@
 import 'package:desa_go_aplikasi/page/detail_laporan_agenda_page.dart';
-import 'package:desa_go_aplikasi/page/detail_laporan_rapat_page.dart';
-import 'package:desa_go_aplikasi/viewmodel/rapat_viewmodel.dart'; // Import ViewModel
-import 'package:desa_go_aplikasi/models/rapat_model.dart' as RapatModel; // Import Model
+import 'package:desa_go_aplikasi/viewmodel/agenda_viewmodel.dart';
+import 'package:desa_go_aplikasi/models/agenda_model.dart' as AgendaModel;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-class LaporanRapatPage extends StatefulWidget {
-  const LaporanRapatPage({super.key});
+class LaporanAgendaPage extends StatefulWidget {
+  const LaporanAgendaPage({super.key});
 
   @override
-  State<LaporanRapatPage> createState() => _LaporanRapatPageState();
+  State<LaporanAgendaPage> createState() => _LaporanAgendaPageState();
 }
 
-class _LaporanRapatPageState extends State<LaporanRapatPage> {
+class _LaporanAgendaPageState extends State<LaporanAgendaPage> {
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<RapatViewmodel>(context, listen: false).fetchRapat();
+      Provider.of<AgendaViewmodel>(context, listen: false).fetchAgenda();
     });
   }
 
@@ -30,7 +29,7 @@ class _LaporanRapatPageState extends State<LaporanRapatPage> {
         elevation: 0,
         centerTitle: true,
         title: const Text(
-          'Laporan Rapat',
+          'Laporan Agenda',
           style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
         leading: IconButton(
@@ -53,40 +52,23 @@ class _LaporanRapatPageState extends State<LaporanRapatPage> {
             topLeft: Radius.circular(30),
             topRight: Radius.circular(30),
           ),
-          child: Consumer<RapatViewmodel>(
+          child: Consumer<AgendaViewmodel>(
             builder: (context, viewModel, child) {
-              if (viewModel.isLoading && viewModel.rapatList.isEmpty) {
+              if (viewModel.isLoading && viewModel.agendaList.isEmpty) {
                 return const Center(child: CircularProgressIndicator());
               }
 
-              if (viewModel.errorMessage != null && viewModel.rapatList.isEmpty) {
-                return Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text('Gagal memuat data: ${viewModel.errorMessage}'),
-                      const SizedBox(height: 10),
-                      ElevatedButton(
-                        onPressed: () => viewModel.fetchRapat(),
-                        child: const Text('Coba Lagi'),
-                      )
-                    ],
-                  ),
-                );
-              }
-
-              if (viewModel.rapatList.isEmpty) {
-                return const Center(child: Text('Belum ada laporan rapat.'));
+              if (viewModel.agendaList.isEmpty) {
+                return const Center(child: Text('Belum ada data laporan agenda.'));
               }
 
               return RefreshIndicator(
-                onRefresh: () => viewModel.fetchRapat(),
+                onRefresh: () => viewModel.synchronizeAgenda(),
                 child: ListView.separated(
                   padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 16.0),
-                  itemCount: viewModel.rapatList.length,
+                  itemCount: viewModel.agendaList.length,
                   itemBuilder: (context, index) {
-                    final RapatModel.Data rapat = viewModel.rapatList[index];
-                    
+                    final AgendaModel.Data agenda = viewModel.agendaList[index];
                     return ListTile(
                       contentPadding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
                       leading: Container(
@@ -95,28 +77,23 @@ class _LaporanRapatPageState extends State<LaporanRapatPage> {
                           color: const Color(0xFF4A4E8A).withOpacity(0.1),
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(Icons.description, color: Color(0xFF4A4E8A)),
+                        child: const Icon(Icons.event_note, color: Color(0xFF4A4E8A)),
                       ),
                       title: Text(
-                        rapat.judulRapat ?? 'Tanpa Judul',
+                        agenda.namaAgenda ?? '-',
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           color: Colors.black87,
                           fontSize: 16,
                         ),
                       ),
-                      subtitle: Text(
-                        rapat.tanggal ?? rapat.createdAt?.split('T').first ?? '-',
-                        style: const TextStyle(color: Colors.grey),
-                      ),
+                      subtitle: Text(agenda.tanggal ?? '-'),
                       trailing: const Icon(Icons.chevron_right, color: Colors.grey),
                       onTap: () {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => DetailLaporanRapatPage(
-                              reportTitle: rapat.judulRapat ?? 'Detail Rapat',
-                            ),
+                            builder: (context) => DetailLaporanAgendaPage(agenda: agenda),
                           ),
                         );
                       },

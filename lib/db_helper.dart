@@ -1,11 +1,13 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:desa_go_aplikasi/models/agenda_model.dart' as Agenda;
+import 'package:desa_go_aplikasi/models/kas_model.dart' as KasModel show Data;
 import 'package:desa_go_aplikasi/models/pengaduan_model.dart' as Pengaduan;
 import 'package:desa_go_aplikasi/models/posyandu_model.dart' as Posyandu;
 import 'package:desa_go_aplikasi/models/rapat_model.dart' as Rapat;
 import 'package:desa_go_aplikasi/models/ronda_model.dart' as Ronda;
 import 'package:desa_go_aplikasi/models/rt_model.dart' as Rt;
+import 'package:desa_go_aplikasi/models/transaksi_model.dart' as TransaksiModel show Data;
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'package:desa_go_aplikasi/models/warga_model.dart' as Warga;
@@ -22,7 +24,7 @@ class DatabaseHelper {
   // Nama file database
   static final _databaseName = "DesaGo.db";
   // Versi database saat ini.
-  static final _databaseVersion = 3; 
+  static final _databaseVersion = 4; 
 
   DatabaseHelper._privateConstructor();
   static final DatabaseHelper instance = DatabaseHelper._privateConstructor();
@@ -89,6 +91,7 @@ class DatabaseHelper {
         anggaran INTEGER,
         judul_rapat TEXT,
         lokasi TEXT,
+        tanggal TEXT,
         penanggung_jawab TEXT,
         jam_mulai TEXT,
         status TEXT,
@@ -131,6 +134,7 @@ class DatabaseHelper {
         detail TEXT,
         hasil TEXT,
         penanggung_jawab INTEGER,
+        kas_json TEXT,
         details_json TEXT, 
         created_at TEXT,
         updated_at TEXT
@@ -233,7 +237,34 @@ class DatabaseHelper {
         updated_at TEXT
       )
     ''');
-  }
+    // ------------------- KAS -------------------
+    await db.execute('''
+      CREATE TABLE kas_local (
+        id INTEGER PRIMARY KEY,
+        nama_pengguna TEXT,
+        email TEXT,
+        peran TEXT,
+        saldo TEXT,
+        created_at TEXT,
+        updated_at TEXT,
+        deleted_at TEXT
+      )
+    ''');
+    // ------------------- TRANSAKSI -------------------
+    await db.execute('''
+      CREATE TABLE transaksi_local (
+        id INTEGER PRIMARY KEY,
+        kas_id INTEGER,
+        kode TEXT,
+        tanggal TEXT,
+        jenis TEXT,
+        jumlah INTEGER,
+        keterangan TEXT,
+        created_at TEXT,
+        updated_at TEXT
+      )
+    ''');
+    }
 
   // Logika Migrasi
   Future _onUpgrade(Database db, int oldVersion, int newVersion) async {
@@ -592,15 +623,29 @@ class DatabaseHelper {
 
   Future<int> insertRonda(Ronda.RondaData ronda) async {
     final db = await database;
-    Map<String, dynamic> row = ronda.toJson();
     
-    // Serialisasi list detail petugas ke JSON String
-    if (ronda.detailRondas != null) {
-      row['details_json'] = jsonEncode(ronda.detailRondas!.map((v) => v.toJson()).toList());
-    }
-    row.remove('details'); // Hapus key asli agar tidak konflik dengan kolom DB
+    // PENTING: Ubah Objek/List menjadi JSON String agar SQLite tidak marah
+    final kasJson = ronda.kas != null ? jsonEncode(ronda.kas!.toJson()) : null;
+    final detailsJson = ronda.detailRondas != null 
+        ? jsonEncode(ronda.detailRondas!.map((v) => v.toJson()).toList()) 
+        : null;
+
+    Map<String, dynamic> row = {
+      'id': ronda.id,
+      'id_kas': ronda.idKas,
+      'anggaran': ronda.anggaran,
+      'tanggal': ronda.tanggal,
+      'lokasi': ronda.lokasi,
+      'detail': ronda.detail,
+      'hasil': ronda.hasil,
+      'penanggung_jawab': ronda.penanggungJawab,
+      'created_at': ronda.createdAt,
+      'updated_at': ronda.updatedAt,
+      'kas_json': kasJson,       // Simpan sebagai Teks
+      'details_json': detailsJson, // Simpan sebagai Teks
+    };
+    
     row.removeWhere((key, value) => value == null);
-    
     return await db.insert('ronda', row, conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
@@ -610,20 +655,40 @@ class DatabaseHelper {
 
     return List.generate(maps.length, (i) {
       Map<String, dynamic> item = Map<String, dynamic>.from(maps[i]);
+
+      // Kembalikan Teks JSON menjadi Objek/List agar bisa dibaca Model
       if (item['details_json'] != null) {
         item['details'] = jsonDecode(item['details_json']);
       }
+      if (item['kas_json'] != null) {
+        item['kas'] = jsonDecode(item['kas_json']);
+      }
+      
       return Ronda.RondaData.fromJson(item);
     });
   }
 
   Future<int> updateRonda(Ronda.RondaData ronda) async {
     final db = await database;
-    Map<String, dynamic> row = ronda.toJson();
-    if (ronda.detailRondas != null) {
-      row['details_json'] = jsonEncode(ronda.detailRondas!.map((v) => v.toJson()).toList());
-    }
-    row.remove('details');
+    
+    final kasJson = ronda.kas != null ? jsonEncode(ronda.kas!.toJson()) : null;
+    final detailsJson = ronda.detailRondas != null 
+        ? jsonEncode(ronda.detailRondas!.map((v) => v.toJson()).toList()) 
+        : null;
+
+    Map<String, dynamic> row = {
+      'id_kas': ronda.idKas,
+      'anggaran': ronda.anggaran,
+      'tanggal': ronda.tanggal,
+      'lokasi': ronda.lokasi,
+      'detail': ronda.detail,
+      'hasil': ronda.hasil,
+      'penanggung_jawab': ronda.penanggungJawab,
+      'updated_at': DateTime.now().toIso8601String(),
+      'kas_json': kasJson,
+      'details_json': detailsJson,
+    };
+
     return await db.update('ronda', row, where: 'id = ?', whereArgs: [ronda.id]);
   }
 
@@ -808,5 +873,72 @@ class DatabaseHelper {
   Future<int> deleteUser(int id) async {
     final db = await database;
     return await db.delete('users_local', where: 'id = ?', whereArgs: [id]);
+  }
+
+  // ==========================================================================
+  // --- CRUD KAS (KasModel.Data) ---
+  // ==========================================================================
+
+  Future<int> insertKas(KasModel.Data kas) async {
+    final db = await database;
+    Map<String, dynamic> row = kas.toJson();
+    row.removeWhere((key, value) => value == null);
+    print("DEBUG DB: Menghubungi SQLite untuk simpan saldo: ${row['saldo']}");
+    return await db.insert('kas_local', row, conflictAlgorithm: ConflictAlgorithm.replace);
+  }
+
+  Future<List<KasModel.Data>> getAllKas() async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query('kas_local');
+    return List.generate(maps.length, (i) => KasModel.Data.fromJson(maps[i]));
+  }
+
+  Future<int> updateKas(KasModel.Data kas) async {
+    final db = await database;
+    if (kas.id == null) throw Exception("ID Kas tidak boleh null untuk update.");
+    return await db.update('kas_local', kas.toJson(), where: 'id = ?', whereArgs: [kas.id]);
+  }
+
+  Future<int> deleteKas(int id) async {
+    final db = await database;
+    return await db.delete('kas_local', where: 'id = ?', whereArgs: [id]);
+  }
+
+  Future<void> clearKasTable() async {
+    final db = await database;
+    await db.delete('kas_local');
+  }
+
+  // ==========================================================================
+  // --- CRUD TRANSAKSI (TransaksiModel.Data) ---
+  // ==========================================================================
+
+  Future<int> insertTransaksi(TransaksiModel.Data trx) async {
+    final db = await database;
+    Map<String, dynamic> row = trx.toJson();
+    row.removeWhere((key, value) => value == null);
+    return await db.insert('transaksi_local', row, conflictAlgorithm: ConflictAlgorithm.replace);
+  }
+
+  Future<List<TransaksiModel.Data>> getAllTransaksi() async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query('transaksi_local');
+    return List.generate(maps.length, (i) => TransaksiModel.Data.fromJson(maps[i]));
+  }
+
+  Future<int> updateTransaksi(TransaksiModel.Data trx) async {
+    final db = await database;
+    if (trx.id == null) throw Exception("ID Transaksi tidak boleh null untuk update.");
+    return await db.update('transaksi_local', trx.toJson(), where: 'id = ?', whereArgs: [trx.id]);
+  }
+
+  Future<int> deleteTransaksi(int id) async {
+    final db = await database;
+    return await db.delete('transaksi_local', where: 'id = ?', whereArgs: [id]);
+  }
+
+  Future<void> clearTransaksiTable() async {
+    final db = await database;
+    await db.delete('transaksi_local');
   }
 }

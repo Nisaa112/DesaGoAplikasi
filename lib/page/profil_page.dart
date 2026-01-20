@@ -1,6 +1,6 @@
+import 'package:desa_go_aplikasi/viewmodel/auth_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:desa_go_aplikasi/viewmodel/auth_viewmodel.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -10,31 +10,36 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  final _nikController = TextEditingController();
-  final _rwController = TextEditingController(); // Controller untuk RW
-  final _namaController = TextEditingController();
-  final _alamatController = TextEditingController();
-  final _telpController = TextEditingController();
+  late TextEditingController _nikController;
+  late TextEditingController _rwController;
+  late TextEditingController _namaController;
+  late TextEditingController _alamatController;
+  late TextEditingController _telpController;
 
   @override
   void initState() {
     super.initState();
-    
-    Future.microtask(() {
+    _nikController = TextEditingController();
+    _rwController = TextEditingController();
+    _namaController = TextEditingController();
+    _alamatController = TextEditingController();
+    _telpController = TextEditingController();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // Pastikan AuthViewModel memiliki properti yang sesuai
       final authViewModel = Provider.of<AuthViewModel>(context, listen: false);
 
-      _nikController.text = authViewModel.userEmail ?? 'N/A'; 
-      _namaController.text = authViewModel.userName ?? 'N/A';
-      
-      // Mengambil data RW dari AuthViewModel
-      // Jika idRw tersedia, tampilkan format "RW 0X", jika tidak "N/A"
-      _rwController.text = authViewModel.idRw != null 
-          ? 'RW ${authViewModel.idRw.toString().padLeft(2, '0')}' 
-          : 'N/A';
+      setState(() {
+        _nikController.text = authViewModel.userEmail ?? 'N/A';
+        _namaController.text = authViewModel.userName ?? 'N/A';
 
-      // Data dummy (bisa disesuaikan nanti jika sudah ada di backend)
-      _alamatController.text = 'Gg. Bidan Tati Jambudipa Rt04/Rw03 Warungkondang, Cianjur, 43261'; 
-      _telpController.text = '08123455678';
+        _rwController.text = authViewModel.idRw != null
+            ? 'RW ${authViewModel.idRw.toString().padLeft(2, '0')}'
+            : 'N/A';
+
+        _alamatController.text = 'Gg. Bidan Tati Jambudipa Rt04/Rw03 Warungkondang, Cianjur, 43261';
+        _telpController.text = '08123455678';
+      });
     });
   }
 
@@ -50,15 +55,20 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
+    const Color primaryColor = Color(0xFF4A4E8A);
+
     return Consumer<AuthViewModel>(
       builder: (context, authViewModel, child) {
         return Scaffold(
-          backgroundColor: const Color(0xFF4A4E8A),
+          backgroundColor: primaryColor,
           appBar: AppBar(
-            backgroundColor: const Color(0xFF4A4E8A),
+            backgroundColor: primaryColor,
             elevation: 0,
-            title: const Text('Profil Pengguna',
-                style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+            centerTitle: true,
+            title: const Text(
+              'Profil Pengguna',
+              style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+            ),
             leading: IconButton(
               icon: const Icon(Icons.arrow_back, color: Colors.white),
               onPressed: () => Navigator.pop(context),
@@ -74,54 +84,44 @@ class _ProfilePageState extends State<ProfilePage> {
                 topRight: Radius.circular(30),
               ),
             ),
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
-              child: Column(
-                children: [
-                  _buildProfilePicture(),
-                  const SizedBox(height: 32),
-                  
-                  // NIK (Read-Only)
-                  _buildTextField(
-                      label: 'NIK (Serial Number)',
-                      controller: _nikController,
-                      isReadOnly: true),
-                  const SizedBox(height: 20),
-                  
-                  // // RW (Read-Only) - Diambil dari identitas RW user
-                  // _buildTextField(
-                  //     label: 'Wilayah RW',
-                  //     controller: _rwController, // Menggunakan rwController yang benar
-                  //     isReadOnly: true),
-                  // const SizedBox(height: 20),
-                  
-                  // Nama (Editable)
-                  _buildTextField(
-                      label: 'Nama', 
-                      controller: _namaController, 
-                      isReadOnly: false),
-                  const SizedBox(height: 20),
-                  
-                  // Alamat (Read-Only)
-                  _buildTextField(
-                      label: 'Alamat',
-                      controller: _alamatController,
-                      maxLines: 3,
-                      isReadOnly: true),
-                  const SizedBox(height: 20),
-                  
-                  // No.Telp (Read-Only)
-                  _buildTextField(
-                      label: 'No.Telp',
-                      controller: _telpController,
-                      isReadOnly: true),
-                  const SizedBox(height: 40),
-                  
-                  _buildSaveButton(),
-                  const SizedBox(height: 20),
-                  _buildLogoutButton(authViewModel),
-                ],
-              ),
+            child: Column(
+              children: [
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
+                    child: Column(
+                      children: [
+                        _buildProfilePicture(primaryColor),
+                        const SizedBox(height: 32),
+                        _buildTextField(
+                            label: 'NIK (Serial Number)',
+                            controller: _nikController),
+                        const SizedBox(height: 20),
+                        _buildTextField(
+                            label: 'Nama Lengkap',
+                            controller: _namaController),
+                        const SizedBox(height: 20),
+                        _buildTextField(
+                            label: 'Wilayah RW',
+                            controller: _rwController),
+                        const SizedBox(height: 20),
+                        _buildTextField(
+                            label: 'Alamat',
+                            controller: _alamatController,
+                            maxLines: 3),
+                        const SizedBox(height: 20),
+                        _buildTextField(
+                            label: 'No. Telp',
+                            controller: _telpController),
+                      ],
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(24.0),
+                  child: _buildLogoutButton(authViewModel),
+                ),
+              ],
             ),
           ),
         );
@@ -129,108 +129,102 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  Widget _buildProfilePicture() {
-    return Stack(
-      children: [
-        CircleAvatar(
-          radius: 60,
-          backgroundColor: const Color(0xFF4A4E8A).withOpacity(0.8),
-          child: const Icon(Icons.person, size: 60, color: Colors.white),
-        ),
-      ],
+  Widget _buildProfilePicture(Color color) {
+    return CircleAvatar(
+      radius: 60,
+      backgroundColor: color.withOpacity(0.1),
+      child: Icon(Icons.person, size: 70, color: color),
     );
   }
 
-  Widget _buildTextField(
-      {required String label,
-      required TextEditingController controller,
-      int maxLines = 1,
-      bool isReadOnly = false}) {
+  Widget _buildTextField({
+    required String label,
+    required TextEditingController controller,
+    int maxLines = 1,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label,
-            style: TextStyle(color: Colors.grey.shade700, fontSize: 14)),
+        Text(
+          label,
+          style: TextStyle(
+              color: Colors.grey.shade700,
+              fontSize: 13,
+              fontWeight: FontWeight.w500),
+        ),
         const SizedBox(height: 8),
         TextField(
           controller: controller,
-          readOnly: isReadOnly,
+          readOnly: true,
           maxLines: maxLines,
           style: TextStyle(
-            color: isReadOnly ? Colors.grey.shade600 : Colors.black,
-            fontWeight: isReadOnly ? FontWeight.normal : FontWeight.bold,
+            color: Colors.grey.shade800,
+            fontSize: 15,
+            fontWeight: FontWeight.w500,
           ),
           decoration: InputDecoration(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             filled: true,
-            fillColor: isReadOnly ? Colors.grey.shade200 : Colors.grey.shade100, 
+            fillColor: Colors.grey.shade100,
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(15),
+              borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(color: Colors.grey.shade300),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(15),
-              borderSide: BorderSide(
-                  color: isReadOnly ? Colors.grey.shade400 : Colors.grey.shade300),
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: Colors.grey.shade200),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(15),
-              borderSide: const BorderSide(color: Color(0xFF4A4E8A), width: 2),
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Color(0xFF4A4E8A), width: 1),
             ),
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildSaveButton() {
-    return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton(
-        onPressed: () {
-          // Implementasi update nama ke API jika diperlukan
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Perubahan nama berhasil disimpan secara lokal')),
-          );
-        },
-        style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF2C2C2C),
-          padding: const EdgeInsets.symmetric(vertical: 18),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(30),
-          ),
-        ),
-        child: const Text(
-          'Simpan Perubahan',
-          style: TextStyle(
-              fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
-        ),
-      ),
     );
   }
 
   Widget _buildLogoutButton(AuthViewModel authViewModel) {
+    final bool isLoading = authViewModel.isLoading;
+
     return SizedBox(
       width: double.infinity,
-      child: OutlinedButton(
-        onPressed: () {
-          authViewModel.logout(context);
-        },
-        style: OutlinedButton.styleFrom(
-          side: BorderSide(color: Colors.red.shade600, width: 2),
-          padding: const EdgeInsets.symmetric(vertical: 18),
+      child: ElevatedButton(
+        // Disable button saat loading
+        onPressed: isLoading ? null : () => authViewModel.logout(context),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.red.shade600,
+          disabledBackgroundColor: Colors.red.shade300,
+          elevation: 0,
+          padding: const EdgeInsets.symmetric(vertical: 16),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(30),
           ),
         ),
-        child: Text(
-          'Logout',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: Colors.red.shade600,
-          ),
-        ),
+        child: isLoading
+            ? const SizedBox(
+                height: 20,
+                width: 20,
+                child: CircularProgressIndicator(
+                  color: Colors.white,
+                  strokeWidth: 2,
+                ),
+              )
+            : const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.logout, color: Colors.white),
+                  SizedBox(width: 8),
+                  Text(
+                    'Logout',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
       ),
     );
   }
