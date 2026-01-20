@@ -21,7 +21,6 @@ class _KegiatanPageState extends State<KegiatanPage> {
   @override
   void didChangeDependencies() {
     if (_isInit) {
-      // Memicu pemuatan data dari Database Lokal + Sync API untuk semua kategori
       WidgetsBinding.instance.addPostFrameCallback((_) {
         context.read<RondaViewModel>().loadRondaData();
         context.read<PosyanduViewmodel>().fetchPosyandu();
@@ -33,97 +32,60 @@ class _KegiatanPageState extends State<KegiatanPage> {
     super.didChangeDependencies();
   }
 
-  // Fungsi untuk menyatukan berbagai model data ke satu format Map untuk UI
-  List<Map<String, dynamic>> _mapAllDataToKegiatanList(
-    RondaViewModel rondaVM,
-    PosyanduViewmodel posyanduVM,
-    AgendaViewmodel agendaVM,
-    RapatViewmodel rapatVM,
-  ) {
+  // --- LOGIKA MAPPING DATA KE UI LIST ---
+  List<Map<String, dynamic>> _mapAllDataToKegiatanList(BuildContext context) {
     List<Map<String, dynamic>> list = [];
+    final rondaVM = context.watch<RondaViewModel>();
+    final posyanduVM = context.watch<PosyanduViewmodel>();
+    final agendaVM = context.watch<AgendaViewmodel>();
+    final rapatVM = context.watch<RapatViewmodel>();
 
-    // Helper untuk menentukan status berdasarkan tanggal
-    Map<String, dynamic> determineStatus(String dateString, {String timeStart = '', String timeEnd = ''}) {
+    Map<String, dynamic> determineStatus(String? dateString, String? timeString) {
+      if (dateString == null) return {'status': 'N/A', 'waktu': 'N/A'};
       try {
-        DateTime date = DateTime.parse(dateString.split('T').first);
         DateTime now = DateTime.now();
+        DateTime activityDate = DateTime.parse(dateString.split('T').first);
         DateTime today = DateTime(now.year, now.month, now.day);
-        String formattedWaktu = (timeStart.isNotEmpty && timeEnd.isNotEmpty) ? '$timeStart - $timeEnd' : '08:00 - Selesai';
 
-        if (date.isBefore(today)) {
-          return {'status': 'Selesai', 'waktu': formattedWaktu};
-        } else if (date.isAtSameMomentAs(today)) {
-          return {'status': 'Berlangsung', 'waktu': formattedWaktu};
-        } else {
-          return {'status': 'Akan Datang', 'waktu': formattedWaktu};
+        String displayTime = (timeString != null && timeString.length >= 5) 
+            ? timeString.substring(0, 5) 
+            : "08:00";
+
+        if (activityDate.isBefore(today)) return {'status': 'Selesai', 'waktu': displayTime};
+        if (activityDate.isAfter(today)) return {'status': 'Akan Datang', 'waktu': displayTime};
+
+        if (timeString != null && timeString.isNotEmpty) {
+          List<String> parts = timeString.split(':');
+          int startHour = int.parse(parts[0]);
+          int startMinute = int.parse(parts[1]);
+          DateTime startDateTime = DateTime(now.year, now.month, now.day, startHour, startMinute);
+
+          if (now.isBefore(startDateTime)) return {'status': 'Akan Datang', 'waktu': displayTime};
+          return {'status': 'Berlangsung', 'waktu': displayTime};
         }
+        return {'status': 'Berlangsung', 'waktu': displayTime};
       } catch (e) {
         return {'status': 'N/A', 'waktu': 'N/A'};
       }
     }
 
-    // 1. Mapping RONDA (Disesuaikan dengan model RondaData baru)
     for (var r in rondaVM.listRonda) {
-      // Mengambil jam dari detail pertama jika ada
-      String jamMulai = r.detailRondas?.isNotEmpty == true ? r.detailRondas!.first.jamMulai?.substring(0, 5) ?? '22:00' : '22:00';
-      String jamSelesai = r.detailRondas?.isNotEmpty == true ? r.detailRondas!.first.jamSelesai?.substring(0, 5) ?? '04:00' : '04:00';
-      var info = determineStatus(r.tanggal ?? '', timeStart: jamMulai, timeEnd: jamSelesai);
-
-      list.add({
-        'tipe': 'Ronda',
-        'nama': 'Ronda Malam',
-        'tanggal': r.tanggal?.split('T').first ?? 'N/A',
-        'waktu': info['waktu'],
-        'status': info['status'],
-        'lokasi': r.lokasi ?? 'Pos Kamling',
-        'original_data': r, // Menyimpan objek asli untuk detail page
-      });
+      String? jam = (r.detailRondas != null && r.detailRondas!.isNotEmpty) ? r.detailRondas!.first.jamMulai : "22:00";
+      var info = determineStatus(r.tanggal, jam);
+      list.add({'tipe': 'Ronda', 'nama': 'Ronda Malam', 'tanggal': r.tanggal?.split('T').first ?? 'N/A', 'waktu': "${info['waktu']} - Selesai", 'status': info['status'], 'lokasi': r.lokasi ?? 'Pos Ronda', 'original_data': r});
     }
-
-    // 2. Mapping POSYANDU
     for (var p in posyanduVM.posyanduList) {
-      var info = determineStatus(p.tanggal ?? '');
-      list.add({
-        'tipe': 'Posyandu',
-        'nama': p.judulPosyandu ?? 'Kegiatan Posyandu',
-        'tanggal': p.tanggal?.split('T').first ?? 'N/A',
-        'waktu': '08:00 - 11:00',
-        'status': info['status'],
-        'lokasi': p.lokasi ?? 'Balai Desa',
-        'original_data': p,
-      });
+      var info = determineStatus(p.tanggal, p.jamMulai);
+      list.add({'tipe': 'Posyandu', 'nama': p.judulPosyandu ?? 'Posyandu', 'tanggal': p.tanggal?.split('T').first ?? 'N/A', 'waktu': "${info['waktu']} - Selesai", 'status': info['status'], 'lokasi': p.lokasi ?? 'Balai Desa', 'original_data': p});
     }
-
-    // 3. Mapping AGENDA
     for (var a in agendaVM.agendaList) {
-      var info = determineStatus(a.tanggal ?? '');
-      list.add({
-        'tipe': 'Agenda',
-        'nama': a.namaAgenda ?? 'Agenda Desa',
-        'tanggal': a.tanggal?.split('T').first ?? 'N/A',
-        'waktu': '09:00 - Selesai',
-        'status': info['status'],
-        'lokasi': a.lokasi ?? 'Kantor Desa',
-        'original_data': a,
-      });
+      var info = determineStatus(a.tanggal, a.jamMulai);
+      list.add({'tipe': 'Agenda', 'nama': a.namaAgenda ?? 'Agenda Desa', 'tanggal': a.tanggal?.split('T').first ?? 'N/A', 'waktu': "${info['waktu']} - Selesai", 'status': info['status'], 'lokasi': a.lokasi ?? 'Balai Desa', 'original_data': a});
     }
-
-    // 4. Mapping RAPAT
     for (var rp in rapatVM.rapatList) {
-      // Rapat biasanya pakai createdAt jika tidak ada field tanggal khusus
-      var info = determineStatus(rp.createdAt ?? '');
-      list.add({
-        'tipe': 'Rapat',
-        'nama': rp.judulRapat ?? 'Rapat Warga',
-        'tanggal': rp.createdAt?.split('T').first ?? 'N/A',
-        'waktu': '19:30 - Selesai',
-        'status': info['status'],
-        'lokasi': rp.lokasi ?? 'Balai Pertemuan',
-        'original_data': rp,
-      });
+      var info = determineStatus(rp.tanggal, rp.jamMulai);
+      list.add({'tipe': 'Rapat', 'nama': rp.judulRapat ?? 'Rapat Desa', 'tanggal': rp.tanggal?.split('T').first ?? 'N/A', 'waktu': "${info['waktu']} - Selesai", 'status': info['status'], 'lokasi': rp.lokasi ?? 'Kantor Desa', 'original_data': rp});
     }
-
-    // Urutkan berdasarkan tanggal terbaru
     list.sort((a, b) => (b['tanggal'] ?? '').compareTo(a['tanggal'] ?? ''));
     return list;
   }
@@ -134,13 +96,8 @@ class _KegiatanPageState extends State<KegiatanPage> {
 
     return Consumer4<RondaViewModel, PosyanduViewmodel, AgendaViewmodel, RapatViewmodel>(
       builder: (context, rondaVM, posyanduVM, agendaVM, rapatVM, child) {
-        // Gabungkan semua data
-        final allData = _mapAllDataToKegiatanList(rondaVM, posyanduVM, agendaVM, rapatVM);
-        
-        // Filter berdasarkan chip yang dipilih
+        final allData = _mapAllDataToKegiatanList(context);
         final filteredKegiatan = allData.where((k) => k['tipe'] == _filters[_selectedFilterIndex]).toList();
-        
-        // Status loading gabungan
         final isLoading = rondaVM.isLoading || posyanduVM.isLoading || agendaVM.isLoading || rapatVM.isLoading;
 
         return Scaffold(
@@ -152,6 +109,7 @@ class _KegiatanPageState extends State<KegiatanPage> {
             centerTitle: true,
             title: const Text('Jadwal Kegiatan', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
           ),
+          // TOMBOL TAMBAH DIHAPUS (READ-ONLY)
           body: Container(
             width: double.infinity,
             decoration: const BoxDecoration(
@@ -163,16 +121,28 @@ class _KegiatanPageState extends State<KegiatanPage> {
                 _buildFilterChips(),
                 Expanded(
                   child: RefreshIndicator(
+                    color: const Color(0xFFFFC212),
+                    backgroundColor: Colors.white,
                     onRefresh: () async {
-                      // Trigger sinkronisasi ulang semua data dari API
                       await Future.wait([
-                        rondaVM.synchronizeRonda(),
-                        posyanduVM.fetchPosyandu(),
-                        agendaVM.fetchAgenda(),
-                        rapatVM.fetchRapat(),
+                        context.read<RondaViewModel>().synchronizeRonda(),
+                        context.read<PosyanduViewmodel>().synchronizePosyandu(),
+                        context.read<AgendaViewmodel>().synchronizeAgenda(),
+                        context.read<RapatViewmodel>().fetchRapat(),
                       ]);
                     },
-                    child: _buildListContent(isLoading, filteredKegiatan),
+                    child: (isLoading && filteredKegiatan.isEmpty)
+                        ? const Center(child: CircularProgressIndicator())
+                        : filteredKegiatan.isEmpty
+                            ? ListView(children: [
+                                SizedBox(height: MediaQuery.of(context).size.height * 0.25),
+                                Center(child: Text('Tidak ada ${_filters[_selectedFilterIndex]} yang ditemukan.', style: TextStyle(color: Colors.grey.shade600))),
+                              ])
+                            : ListView.builder(
+                                padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
+                                itemCount: filteredKegiatan.length,
+                                itemBuilder: (context, index) => _buildKegiatanCard(filteredKegiatan[index]),
+                              ),
                   ),
                 ),
               ],
@@ -183,35 +153,9 @@ class _KegiatanPageState extends State<KegiatanPage> {
     );
   }
 
-  Widget _buildListContent(bool isLoading, List<Map<String, dynamic>> items) {
-    if (isLoading && items.isEmpty) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
-    if (items.isEmpty) {
-      return ListView( // Gunakan ListView agar RefreshIndicator tetap bekerja saat kosong
-        children: [
-          SizedBox(height: MediaQuery.of(context).size.height * 0.3),
-          Center(
-            child: Text(
-              'Tidak ada ${_filters[_selectedFilterIndex]} ditemukan.',
-              style: TextStyle(color: Colors.grey.shade600),
-            ),
-          ),
-        ],
-      );
-    }
-
-    return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10),
-      itemCount: items.length,
-      itemBuilder: (context, index) => _buildKegiatanCard(items[index]),
-    );
-  }
-
   Widget _buildFilterChips() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 20, 16, 10),
+      padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
       child: SizedBox(
         height: 40,
         child: ListView.separated(
@@ -231,10 +175,7 @@ class _KegiatanPageState extends State<KegiatanPage> {
                 child: Center(
                   child: Text(
                     _filters[index],
-                    style: TextStyle(
-                      color: isSelected ? Colors.white : Colors.black54,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(color: isSelected ? Colors.white : Colors.black54, fontWeight: FontWeight.bold),
                   ),
                 ),
               ),
@@ -256,19 +197,18 @@ class _KegiatanPageState extends State<KegiatanPage> {
     }
 
     return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => DetailKegiatanPage(kegiatan: kegiatan)),
-        );
-      },
+      // ON TAP TETAP ADA UNTUK MELIHAT DETAIL
+      onTap: () => Navigator.push(
+        context, 
+        MaterialPageRoute(builder: (context) => DetailKegiatanPage(kegiatan: kegiatan))
+      ),
+      // ON LONG PRESS DIHAPUS (READ-ONLY)
       child: Container(
         margin: const EdgeInsets.only(bottom: 16.0),
         padding: const EdgeInsets.all(16.0),
         decoration: BoxDecoration(
-          color: Colors.grey.shade100,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Colors.grey.shade300),
+          color: Colors.grey.shade100, 
+          borderRadius: BorderRadius.circular(20), 
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -278,44 +218,48 @@ class _KegiatanPageState extends State<KegiatanPage> {
               children: [
                 Expanded(
                   child: Text(
-                    kegiatan['nama']!,
-                    style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.black87),
+                    kegiatan['nama']!, 
+                    style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold)
                   ),
                 ),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: getStatusColor(kegiatan['status']!),
-                    borderRadius: BorderRadius.circular(10),
+                    color: getStatusColor(kegiatan['status']!), 
+                    borderRadius: BorderRadius.circular(10)
                   ),
                   child: Text(
-                    kegiatan['status']!,
-                    style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+                    kegiatan['status']!, 
+                    style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)
                   ),
                 ),
               ],
             ),
-            const Divider(height: 20),
+            const Divider(height: 24),
             Row(
               children: [
                 const Icon(Icons.calendar_month, size: 16, color: Colors.blueGrey),
-                const SizedBox(width: 8),
-                Text(kegiatan['tanggal']!, style: const TextStyle(fontSize: 13, color: Colors.black54)),
-                const SizedBox(width: 16),
-                const Icon(Icons.access_time, size: 16, color: Colors.blueGrey),
-                const SizedBox(width: 8),
-                Text(kegiatan['waktu']!, style: const TextStyle(fontSize: 13, color: Colors.black54)),
+                const SizedBox(width: 10),
+                Text(kegiatan['tanggal']!, style: const TextStyle(fontSize: 14, color: Colors.blueGrey)),
               ],
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                const Icon(Icons.access_time, size: 16, color: Colors.blueGrey),
+                const SizedBox(width: 10),
+                Text(kegiatan['waktu']!, style: const TextStyle(fontSize: 14, color: Colors.blueGrey)),
+              ],
+            ),
+            const SizedBox(height: 10),
             Row(
               children: [
                 const Icon(Icons.location_on, size: 16, color: Colors.blueGrey),
-                const SizedBox(width: 8),
+                const SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    kegiatan['lokasi']!,
-                    style: const TextStyle(fontSize: 13, color: Colors.black54),
+                    kegiatan['lokasi']!, 
+                    style: const TextStyle(fontSize: 14, color: Colors.blueGrey),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),

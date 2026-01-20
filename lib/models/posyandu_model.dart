@@ -63,10 +63,16 @@ class Data {
 
   Data.fromJson(Map<String, dynamic> json) {
     id = json['id'];
-    idKas = json['id_kas'];
-    anggaran = json['anggaran'];
+    idKas = json['id_kas'] != null ? int.tryParse(json['id_kas'].toString()) : null;
+    anggaran = json['anggaran'] != null ? int.tryParse(json['anggaran'].toString()) : null;
     judulPosyandu = json['judul_posyandu'];
-    penanggungJawab = json['penanggung_jawab'];
+    
+    // Perbaikan untuk penanggung_jawab yang bisa berupa Map (Objek) atau String
+    if (json['penanggung_jawab'] is Map) {
+       penanggungJawab = json['penanggung_jawab']['name']?.toString() ?? "Admin";
+    } else {
+       penanggungJawab = json['penanggung_jawab']?.toString();
+    }
     tanggal = json['tanggal'];
     keterangan = json['keterangan'];
     lokasi = json['lokasi'];

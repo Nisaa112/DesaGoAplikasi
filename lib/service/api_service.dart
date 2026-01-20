@@ -1,10 +1,12 @@
 import 'dart:convert';
 import 'package:desa_go_aplikasi/models/agenda_model.dart' as AgendaModel;
 import 'package:desa_go_aplikasi/models/jabatan_model.dart' as JabatanModel;
+import 'package:desa_go_aplikasi/models/kas_model.dart' as KasModel show Data;
 import 'package:desa_go_aplikasi/models/pengaduan_model.dart' as PengaduanModel;
 import 'package:desa_go_aplikasi/models/posyandu_model.dart' as PosyanduModel;
 import 'package:desa_go_aplikasi/models/rapat_model.dart' as RapatModel;
 import 'package:desa_go_aplikasi/models/rw_model.dart' as RwModel;
+import 'package:desa_go_aplikasi/models/transaksi_model.dart' as TransaksiModel show Data;
 import 'package:desa_go_aplikasi/models/user_model.dart';
 import 'package:desa_go_aplikasi/models/warga_model.dart' as WargaModel;
 import 'package:desa_go_aplikasi/models/struktur_model.dart' as StrukturModel;
@@ -273,17 +275,37 @@ class ApiService {
     return null;
   }
 
-  static Future<void> updateRapat(RapatModel.Data rapat) async {
+  static Future<RapatModel.Data?> updateRapat(RapatModel.Data rapat) async {
     final token = await TokenStorage.getToken();
-    await _handleApiRequest(
-      http.put(
+    try {
+      final response = await http.put(
         Uri.parse('$baseUrl/api/rapat/${rapat.id}'),
-        headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $token'},
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
         body: jsonEncode(rapat.toJson()),
-      ),
-      'mengupdate',
-      'rapat',
-    );
+      );
+
+      print('📤 Response update rapat: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final decodedBody = jsonDecode(response.body);
+        // Cek null safety agar tidak error Map <String, dynamic>
+        if (decodedBody['data'] != null) {
+          return RapatModel.Data.fromJson(decodedBody['data']);
+        } else {
+          return rapat;
+        }
+      } else {
+        final errorMsg = jsonDecode(response.body)['message'] ?? 'Gagal mengupdate rapat';
+        throw Exception(errorMsg);
+      }
+    } catch (e) {
+      print('❌ Error updateRapat: $e');
+      rethrow;
+    }
   }
 
   static Future<void> deleteRapat(int id) async {
@@ -350,17 +372,32 @@ class ApiService {
     return null;
   }
 
-  static Future<void> updateAgenda(AgendaModel.Data agenda) async {
+  static Future<AgendaModel.Data?> updateAgenda(AgendaModel.Data agenda) async {
     final token = await TokenStorage.getToken();
-    await _handleApiRequest(
-      http.put(
+    try {
+      final response = await http.put(
         Uri.parse('$baseUrl/api/agenda/${agenda.id}'),
-        headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $token'},
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
         body: jsonEncode(agenda.toJson()),
-      ),
-      'mengupdate',
-      'agenda',
-    );
+      );
+
+      if (response.statusCode == 200) {
+        final decodedBody = jsonDecode(response.body);
+        if (decodedBody['data'] != null) {
+          return AgendaModel.Data.fromJson(decodedBody['data']);
+        } else {
+          return agenda; 
+        }
+      } else {
+        throw Exception('Gagal update agenda');
+      }
+    } catch (e) {
+      rethrow;
+    }
   }
 
   static Future<void> deleteAgenda(int id) async {
@@ -427,17 +464,36 @@ class ApiService {
     return null;
   }
 
-  static Future<void> updatePosyandu(PosyanduModel.Data posyandu) async {
+  static Future<PosyanduModel.Data?> updatePosyandu(PosyanduModel.Data posyandu) async {
     final token = await TokenStorage.getToken();
-    await _handleApiRequest(
-      http.put(
+    try {
+      final response = await http.put(
         Uri.parse('$baseUrl/api/posyandu/${posyandu.id}'),
-        headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $token'},
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
         body: jsonEncode(posyandu.toJson()),
-      ),
-      'mengupdate',
-      'posyandu',
-    );
+      );
+
+      print('📤 Response update posyandu: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final decodedBody = jsonDecode(response.body);
+        if (decodedBody['data'] != null) {
+          return PosyanduModel.Data.fromJson(decodedBody['data']);
+        } else {
+          return posyandu; 
+        }
+      } else {
+        final errorMsg = jsonDecode(response.body)['message'] ?? 'Gagal mengupdate posyandu';
+        throw Exception(errorMsg);
+      }
+    } catch (e) {
+      print('❌ Error updatePosyandu: $e');
+      rethrow;
+    }
   }
 
   static Future<void> deletePosyandu(int id) async {
@@ -458,72 +514,126 @@ class ApiService {
 
   static Future<List<RondaModel.RondaData>> fetchRonda() async {
     final token = await TokenStorage.getToken();
-    final response = await http.get(
-      Uri.parse('$baseUrl/api/ronda'),
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Accept': 'application/json',
-      },
-    );
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/api/ronda'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Accept': 'application/json',
+        },
+      ).timeout(const Duration(seconds: 15));
 
-    if (response.statusCode == 200) {
-      Map<String, dynamic> decodedBody = jsonDecode(response.body);
-      List<dynamic> dataList = decodedBody['data'];
-      // Gunakan RondaData (dari model yang kita buat sebelumnya)
-      return dataList.map((json) => RondaModel.RondaData.fromJson(json)).toList();
-    } else {
-      throw Exception('Gagal mengambil data ronda dari server');
+      print('📥 Response status ronda: ${response.statusCode}');
+
+      if (response.statusCode == 200) {
+        print("RAW JSON: ${response.body}");
+        Map<String, dynamic> decodedBody = jsonDecode(response.body);
+        
+        // Pastikan mengambil dari key 'data'
+        if (decodedBody['data'] != null && decodedBody['data'] is List) {
+          List<dynamic> dataList = decodedBody['data'];
+          return dataList.map((json) => RondaModel.RondaData.fromJson(json)).toList();
+        } else {
+          return [];
+        }
+      } else {
+        throw Exception('Server mengembalikan error: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('❌ Error fetchRonda: $e');
+      rethrow; 
     }
   }
 
-  static Future<RondaModel.RondaData?> createRonda(RondaModel.RondaData ronda) async {
+  static Future<RondaModel.RondaData?> createRonda(Map<String, dynamic> rondaPayload) async {
     final token = await TokenStorage.getToken();
-    final response = await http.post(
-      Uri.parse('$baseUrl/api/ronda'),
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
-      body: jsonEncode(ronda.toJson()),
-    );
+    try {
+      // Tambahkan print ini untuk memastikan payload yang dikirim sudah benar
+      print('📤 Payload create ronda: ${jsonEncode(rondaPayload)}');
 
-    if (response.statusCode == 201 || response.statusCode == 200) {
-      final body = jsonDecode(response.body);
-      return RondaModel.RondaData.fromJson(body['data']);
+      final response = await http.post(
+        Uri.parse('$baseUrl/api/ronda'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        // LANGSUNG GUNAKAN PAYLOAD MAP YANG SUDAH BERSIH
+        body: jsonEncode(rondaPayload),
+      );
+
+      print('📥 Response create ronda: ${response.body}');
+
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        final decodedBody = jsonDecode(response.body);
+        // Pastikan mengambil objek dari key 'data'
+        if (decodedBody.containsKey('data')) {
+          return RondaModel.RondaData.fromJson(decodedBody['data']);
+        } else {
+          // Jika server tidak mengembalikan 'data', coba parse langsung
+          return RondaModel.RondaData.fromJson(decodedBody);
+        }
+      } else {
+        final errorMsg = jsonDecode(response.body)['message'] ?? 'Gagal menambah data ronda';
+        throw Exception(errorMsg);
+      }
+    } catch (e) {
+      print('❌ Error createRonda: $e');
+      rethrow;
     }
-    return null;
   }
 
   static Future<RondaModel.RondaData?> updateRonda(RondaModel.RondaData ronda) async {
     final token = await TokenStorage.getToken();
-    final response = await http.put(
-      Uri.parse('$baseUrl/api/ronda/${ronda.id}'),
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
-      body: jsonEncode(ronda.toJson()),
-    );
+    try {
+      final response = await http.put(
+        Uri.parse('$baseUrl/api/ronda/${ronda.id}'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: jsonEncode(ronda.toJson()),
+      );
 
-    if (response.statusCode == 200) {
-      final body = jsonDecode(response.body);
-      return RondaModel.RondaData.fromJson(body['data']);
-    } else {
-      final body = jsonDecode(response.body);
-      throw Exception(body['message'] ?? 'Gagal mengupdate data ronda');
+      print('📤 Response update ronda: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final decodedBody = jsonDecode(response.body);
+          if (decodedBody['data'] != null) {
+          return RondaModel.RondaData.fromJson(decodedBody['data']);
+        } else {
+          return ronda; 
+        }
+      } else {
+        final errorMsg = jsonDecode(response.body)['message'] ?? 'Gagal mengupdate data ronda';
+        throw Exception(errorMsg);
+      }
+    } catch (e) {
+      print('❌ Error updateRonda: $e');
+      rethrow;
     }
   }
 
   static Future<void> deleteRonda(int id) async {
     final token = await TokenStorage.getToken();
-    final response = await http.delete(
-      Uri.parse('$baseUrl/api/ronda/$id'),
-      headers: {'Authorization': 'Bearer $token'},
-    );
-    if (response.statusCode != 200 && response.statusCode != 204) {
-      throw Exception('Gagal menghapus data di server');
+    try {
+      final response = await http.delete(
+        Uri.parse('$baseUrl/api/ronda/$id'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Accept': 'application/json',
+        },
+      );
+
+      print('🗑️ Response delete ronda: ${response.statusCode}');
+
+      if (response.statusCode != 200 && response.statusCode != 204) {
+        throw Exception('Gagal menghapus data di server. Status: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('❌ Error deleteRonda: $e');
+      rethrow;
     }
   }
 
@@ -898,6 +1008,118 @@ class ApiService {
       ),
       'menghapus',
       'user',
+    );
+  }
+
+  // --------------------------------------------------------------------------
+  // --- KAS ---
+  // --------------------------------------------------------------------------
+
+  static Future<List<KasModel.Data>> fetchKas() async {
+    final token = await TokenStorage.getToken();
+    final response = await http.get(
+      Uri.parse('$baseUrl/api/kas'),
+      headers: {'Authorization': 'Bearer $token', 'Accept': 'application/json'},
+    );
+
+    if (response.statusCode == 200) {
+      Map<String, dynamic> decodedBody = jsonDecode(response.body);
+      if (decodedBody['data'] is List) {
+        List<dynamic> dataList = decodedBody['data'];
+        return dataList.map((json) => KasModel.Data.fromJson(json)).toList();
+      }
+      return [];
+    } else {
+      throw Exception('Gagal mengambil data Kas dari API');
+    }
+  }
+
+  static Future<KasModel.Data?> createKas(KasModel.Data kas) async {
+    final token = await TokenStorage.getToken();
+    final result = await _handleApiRequest(
+      http.post(
+        Uri.parse('$baseUrl/api/kas'),
+        headers: {'Authorization': 'Bearer $token', 'Content-Type': 'application/json', 'Accept': 'application/json'},
+        body: jsonEncode(kas.toJson()),
+      ),
+      'tambah', 'kas',
+    );
+    return result != null ? KasModel.Data.fromJson(result) : null;
+  }
+
+  static Future<void> updateKas(KasModel.Data kas) async {
+    final token = await TokenStorage.getToken();
+    await _handleApiRequest(
+      http.put(
+        Uri.parse('$baseUrl/api/kas/${kas.id}'),
+        headers: {'Authorization': 'Bearer $token', 'Content-Type': 'application/json'},
+        body: jsonEncode(kas.toJson()),
+      ),
+      'mengupdate', 'kas',
+    );
+  }
+
+  static Future<void> deleteKas(int id) async {
+    final token = await TokenStorage.getToken();
+    await _handleApiRequest(
+      http.delete(Uri.parse('$baseUrl/api/kas/$id'), headers: {'Authorization': 'Bearer $token', 'Accept': 'application/json'}),
+      'menghapus', 'kas',
+    );
+  }
+
+  // --------------------------------------------------------------------------
+  // --- TRANSAKSI ---
+  // --------------------------------------------------------------------------
+
+  static Future<List<TransaksiModel.Data>> fetchTransaksi() async {
+    final token = await TokenStorage.getToken();
+    final response = await http.get(
+      Uri.parse('$baseUrl/api/kas/transaksi'),
+      headers: {'Authorization': 'Bearer $token', 'Accept': 'application/json'},
+    );
+
+    if (response.statusCode == 200) {
+      Map<String, dynamic> decodedBody = jsonDecode(response.body);
+      if (decodedBody['data'] is List) {
+        List<dynamic> dataList = decodedBody['data'];
+        return dataList.map((json) => TransaksiModel.Data.fromJson(json)).toList();
+      }
+      return [];
+    } else {
+      throw Exception('Gagal mengambil data Transaksi dari API');
+    }
+  }
+
+  static Future<TransaksiModel.Data?> createTransaksi(TransaksiModel.Data trx) async {
+    final token = await TokenStorage.getToken();
+    final result = await _handleApiRequest(
+      http.post(
+        Uri.parse('$baseUrl/api/kas/transaksi'),
+        headers: {'Authorization': 'Bearer $token', 'Content-Type': 'application/json', 'Accept': 'application/json'},
+        body: jsonEncode(trx.toJson()),
+      ),
+      'tambah', 'transaksi',
+    );
+    return result != null ? TransaksiModel.Data.fromJson(result) : null;
+  }
+
+  static Future<void> updateTransaksi(TransaksiModel.Data trx) async {
+    final token = await TokenStorage.getToken();
+    await _handleApiRequest(
+      http.put(
+        Uri.parse('$baseUrl/api/kas/transaksi/${trx.id}'),
+        headers: {'Authorization': 'Bearer $token', 'Content-Type': 'application/json'},
+        body: jsonEncode(trx.toJson()),
+      ),
+      'mengupdate', 'transaksi',
+    );
+  }
+
+  static Future<void> deleteTransaksi(int id) async {
+    final token = await TokenStorage.getToken();
+    await _handleApiRequest(
+      http.delete(Uri.parse('$baseUrl/api/kas/transaksi/$id'), headers: {'Authorization': 'Bearer $token', 'Accept': 'application/json'}),
+      'menghapus', 'transaksi',
     );
   }
 }

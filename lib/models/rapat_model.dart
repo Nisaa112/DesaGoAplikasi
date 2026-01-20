@@ -26,6 +26,7 @@ class Data {
   int? id;
   String? judulRapat;
   String? lokasi;
+  String? tanggal;
   String? penanggungJawab;
   int? idKas;
   int? anggaran;
@@ -40,6 +41,7 @@ class Data {
     this.id,
     this.judulRapat,
     this.lokasi,
+    this.tanggal,
     this.penanggungJawab,
     this.idKas,
     this.anggaran,
@@ -55,9 +57,16 @@ class Data {
     id = json['id'];
     judulRapat = json['judul_rapat'];
     lokasi = json['lokasi'];
-    penanggungJawab = json['penanggung_jawab'];
-    idKas = json['id_kas'];
-    anggaran = json['anggaran'];
+    tanggal = json['tanggal'];
+    idKas = json['id_kas'] != null ? int.tryParse(json['id_kas'].toString()) : null;
+    anggaran = json['anggaran'] != null ? int.tryParse(json['anggaran'].toString()) : null;
+    
+    // Perbaikan untuk penanggung_jawab yang bisa berupa Map (Objek) atau String
+    if (json['penanggung_jawab'] is Map) {
+       penanggungJawab = json['penanggung_jawab']['name']?.toString() ?? "Admin";
+    } else {
+       penanggungJawab = json['penanggung_jawab']?.toString();
+    }
     jamMulai = json['jam_mulai'];
     status = json['status'];
     tujuan = json['tujuan'];
@@ -71,6 +80,7 @@ class Data {
     data['id'] = this.id;
     data['judul_rapat'] = this.judulRapat;
     data['lokasi'] = this.lokasi;
+    data['tanggal'] = this.tanggal;
     data['penanggung_jawab'] = this.penanggungJawab;
     data['id_kas'] = this.idKas;
     data['anggaran'] = this.anggaran;

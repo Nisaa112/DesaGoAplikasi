@@ -58,8 +58,8 @@ class RondaData {
 
   RondaData.fromJson(Map<String, dynamic> json) {
     id = json['id'];
-    idKas = json['id_kas'];
-    anggaran = json['anggaran'];
+    idKas = json['id_kas'] != null ? int.tryParse(json['id_kas'].toString()) : null;
+    anggaran = json['anggaran'] != null ? int.tryParse(json['anggaran'].toString()) : null;
     tanggal = json['tanggal'];
     lokasi = json['lokasi'];
     detail = json['detail'];

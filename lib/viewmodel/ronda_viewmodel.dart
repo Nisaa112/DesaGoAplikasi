@@ -51,11 +51,12 @@ class RondaViewModel extends ChangeNotifier {
     }
   }
 
-  Future<void> createRonda(RondaData ronda) async {
+  Future<void> createRonda(Map<String, dynamic> rondaData) async {
     _isLoading = true;
     notifyListeners();
     try {
-      final newRonda = await ApiService.createRonda(ronda);
+      // Panggil ApiService dengan Map, bukan objek RondaData
+      final newRonda = await ApiService.createRonda(rondaData);
       if (newRonda != null) {
         await _dbHelper.insertRonda(newRonda);
         _listRonda.insert(0, newRonda);
