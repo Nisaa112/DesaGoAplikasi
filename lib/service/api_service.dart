@@ -900,4 +900,286 @@ class ApiService {
       'user',
     );
   }
+
+  // --------------------------------------------------------------------------
+  // --- LAPORAN RONDA ---
+  // --------------------------------------------------------------------------
+
+  static Future<List<RondaModel.RondaData>> fetchLaporanRonda({int? bulan, int? tahun}) async {
+    final token = await TokenStorage.getToken();
+    
+    String query = '';
+    if (bulan != null && tahun != null) {
+      query = '?bulan=$bulan&tahun=$tahun';
+    }
+
+    final response = await http.get(
+      Uri.parse('$baseUrl/api/laporan-ronda$query'),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Accept': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      Map<String, dynamic> decodedBody = jsonDecode(response.body);
+      List<dynamic> dataList = decodedBody['data']; 
+      return dataList.map((json) => RondaModel.RondaData.fromJson(json)).toList();
+    } else {
+      throw Exception('Gagal mengambil laporan ronda');
+    }
+  }
+
+  static Future<RondaModel.RondaData> showLaporanRonda(int id) async {
+    final token = await TokenStorage.getToken();
+    final response = await http.get(
+      Uri.parse('$baseUrl/api/laporan-ronda/$id'),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Accept': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final body = jsonDecode(response.body);
+      return RondaModel.RondaData.fromJson(body['data']);
+    } else {
+      throw Exception('Gagal memuat detail laporan');
+    }
+  }
+
+  static Future<dynamic> createLaporanInsiden(int idRonda, String judul, String deskripsi) async {
+    final token = await TokenStorage.getToken();
+    
+    final response = await http.post(
+      Uri.parse('$baseUrl/api/laporan-ronda'), 
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: jsonEncode({
+        'id_ronda': idRonda,
+        'judul': judul,
+        'deskripsi': deskripsi,
+      }),
+    );
+
+    if (response.statusCode == 201 || response.statusCode == 200) {
+      final body = jsonDecode(response.body);
+      return body['data'];
+    } else {
+      final body = jsonDecode(response.body);
+      throw Exception(body['message'] ?? 'Gagal mengirim laporan');
+    }
+  }
+
+  // --------------------------------------------------------------------------
+  // --- LAPORAN AGENDA ---
+  // --------------------------------------------------------------------------
+
+  static Future<List<AgendaModel.Data>> fetchLaporanAgenda({int? bulan, int? tahun}) async {
+    final token = await TokenStorage.getToken();
+    String query = '';
+    if (bulan != null && tahun != null) query = '?bulan=$bulan&tahun=$tahun';
+
+    final response = await http.get(
+      Uri.parse('$baseUrl/api/laporan-agenda$query'),
+      headers: {'Authorization': 'Bearer $token', 'Accept': 'application/json'},
+    );
+
+    if (response.statusCode == 200) {
+      final body = jsonDecode(response.body);
+      List<dynamic> data = body['data'];
+      return data.map((json) => AgendaModel.Data.fromJson(json)).toList();
+    } else {
+      throw Exception('Gagal mengambil laporan agenda');
+    }
+  }
+
+  static Future<void> createLaporanAgenda(int idAgenda, String deskripsi, int jumlahHadir) async {
+    final token = await TokenStorage.getToken();
+    final response = await http.post(
+      Uri.parse('$baseUrl/api/laporan-agenda'),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: jsonEncode({
+        'id_agenda': idAgenda,
+        'deskripsi_hasil': deskripsi,
+        'jumlah_hadir': jumlahHadir,
+      }),
+    );
+
+    if (response.statusCode != 200 && response.statusCode != 201) {
+      throw Exception('Gagal menyimpan laporan agenda');
+    }
+  }
+
+  // --------------------------------------------------------------------------
+  // --- LAPORAN POSYANDU ---
+  // --------------------------------------------------------------------------
+
+  static Future<List<PosyanduModel.Data>> fetchLaporanPosyandu({int? bulan, int? tahun}) async {
+    final token = await TokenStorage.getToken();
+    String query = '';
+    if (bulan != null && tahun != null) query = '?bulan=$bulan&tahun=$tahun';
+
+    final response = await http.get(
+      Uri.parse('$baseUrl/api/laporan-posyandu$query'),
+      headers: {'Authorization': 'Bearer $token', 'Accept': 'application/json'},
+    );
+
+    if (response.statusCode == 200) {
+      final body = jsonDecode(response.body);
+      List<dynamic> data = body['data'];
+      return data.map((json) => PosyanduModel.Data.fromJson(json)).toList();
+    } else {
+      throw Exception('Gagal mengambil laporan posyandu');
+    }
+  }
+
+  static Future<void> createLaporanPosyandu(int idPosyandu, String deskripsi, int balita, int ibuHamil, int lansia) async {
+    final token = await TokenStorage.getToken();
+    final response = await http.post(
+      Uri.parse('$baseUrl/api/laporan-posyandu'),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: jsonEncode({
+        'id_posyandu': idPosyandu,
+        'deskripsi_kegiatan': deskripsi,
+        'jumlah_balita': balita,
+        'jumlah_ibu_hamil': ibuHamil,
+        'jumlah_lansia': lansia,
+      }),
+    );
+
+    if (response.statusCode != 200 && response.statusCode != 201) {
+      throw Exception('Gagal menyimpan laporan posyandu');
+    }
+  }
+
+  // --------------------------------------------------------------------------
+  // --- LAPORAN RAPAT ---
+  // --------------------------------------------------------------------------
+
+  static Future<List<RapatModel.Data>> fetchLaporanRapat({int? bulan, int? tahun}) async {
+    final token = await TokenStorage.getToken();
+    String query = '';
+    if (bulan != null && tahun != null) query = '?bulan=$bulan&tahun=$tahun';
+
+    final response = await http.get(
+      Uri.parse('$baseUrl/api/laporan-rapat$query'),
+      headers: {'Authorization': 'Bearer $token', 'Accept': 'application/json'},
+    );
+
+    if (response.statusCode == 200) {
+      final body = jsonDecode(response.body);
+      List<dynamic> data = body['data'];
+      return data.map((json) => RapatModel.Data.fromJson(json)).toList();
+    } else {
+      throw Exception('Gagal mengambil laporan rapat');
+    }
+  }
+
+  static Future<void> createLaporanRapat(int idRapat, String hasil, int jumlahHadir) async {
+    final token = await TokenStorage.getToken();
+    final response = await http.post(
+      Uri.parse('$baseUrl/api/laporan-rapat'),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: jsonEncode({
+        'id_rapat': idRapat,
+        'hasil_keputusan': hasil,
+        'jumlah_hadir': jumlahHadir,
+      }),
+    );
+
+    if (response.statusCode != 200 && response.statusCode != 201) {
+      throw Exception('Gagal menyimpan laporan rapat');
+    }
+  }
+
+  // --------------------------------------------------------------------------
+  // --- KEUANGAN (KAS & TRANSAKSI) ---
+  // --------------------------------------------------------------------------
+
+  static Future<List<dynamic>> fetchKas() async {
+    final token = await TokenStorage.getToken();
+    final response = await http.get(
+      Uri.parse('$baseUrl/api/kas'),
+      headers: {'Authorization': 'Bearer $token', 'Accept': 'application/json'},
+    );
+
+    if (response.statusCode == 200) {
+      final body = jsonDecode(response.body);
+      return body['data'];
+    } else {
+      throw Exception('Gagal mengambil data kas');
+    }
+  }
+
+  static Future<Map<String, dynamic>> showKas(int id) async {
+    final token = await TokenStorage.getToken();
+    final response = await http.get(
+      Uri.parse('$baseUrl/api/kas/$id'),
+      headers: {'Authorization': 'Bearer $token', 'Accept': 'application/json'},
+    );
+
+    if (response.statusCode == 200) {
+      final body = jsonDecode(response.body);
+      return body['data'];
+    } else {
+      throw Exception('Gagal mengambil detail kas');
+    }
+  }
+
+  static Future<void> createTransaksi(int kasId, String tanggal, String jenis, int jumlah, String keterangan) async {
+    final token = await TokenStorage.getToken();
+    final response = await http.post(
+      Uri.parse('$baseUrl/api/kas/transaksi'),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: jsonEncode({
+        'kas_id': kasId,
+        'tanggal': tanggal,
+        'jenis': jenis,
+        'jumlah': jumlah,
+        'keterangan': keterangan,
+      }),
+    );
+
+    if (response.statusCode != 200 && response.statusCode != 201) {
+      throw Exception('Gagal menyimpan transaksi');
+    }
+  }
+
+  // --------------------------------------------------------------------------
+  // --- LAPORAN KEUANGAN (REKAP) ---
+  // --------------------------------------------------------------------------
+
+  static Future<Map<String, dynamic>> fetchLaporanKeuangan(int tahun) async {
+    final token = await TokenStorage.getToken();
+    final response = await http.get(
+      Uri.parse('$baseUrl/api/laporan-keuangan?tahun=$tahun'),
+      headers: {'Authorization': 'Bearer $token', 'Accept': 'application/json'},
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Gagal mengambil laporan keuangan');
+    }
+  }
 }

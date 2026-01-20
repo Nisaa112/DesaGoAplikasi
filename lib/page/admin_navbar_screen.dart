@@ -68,7 +68,7 @@ class _AdminNavbarScreenState extends State<AdminNavbarScreen> {
             _buildNavItem(Icons.calendar_month, Icons.calendar_month_outlined, 2),
             _buildNavItem(Icons.account_balance_wallet, Icons.account_balance_wallet_outlined, 3),
             _buildNavItem(Icons.library_books, Icons.library_books_outlined, 4),
-            _buildNavItem(Icons.support_agent, Icons.support_agent_outlined, 5),
+            // _buildNavItem(Icons.support_agent, Icons.support_agent_outlined, 5),
           ],
         ),
       ),
